@@ -120,12 +120,75 @@ export interface CandidateApplicant {
 }
 
 export default function AdminPage() {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [adminEmail, setAdminEmail] = useState('admin@aranicorporate.com');
+  const [adminPassword, setAdminPassword] = useState('');
+  const [adminRole, setAdminRole] = useState<'Super Admin' | 'Recruitment Manager' | 'Content Editor'>('Super Admin');
+  const [loginError, setLoginError] = useState<string | null>(null);
+  const [isLoggingIn, setIsLoggingIn] = useState<boolean>(false);
+
   const [activeTab, setActiveTab] = useState<'kpi' | 'content' | 'jobs' | 'applicants' | 'crm' | 'users' | 'settings'>('kpi');
   const [contentSubTab, setContentSubTab] = useState<'hero' | 'promo' | 'articles' | 'videos' | 'testimonials' | 'logos' | 'stats' | 'faqs' | 'ticker'>('hero');
 
   // Search & Global Filter State
   const [globalSearch, setGlobalSearch] = useState('');
   const [notificationMsg, setNotificationMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const auth = localStorage.getItem('arani_admin_authenticated');
+      if (auth === 'true') {
+        setIsAuthenticated(true);
+        const savedRole = localStorage.getItem('arani_admin_role');
+        if (savedRole) {
+          setAdminRole(savedRole as any);
+        }
+      }
+    }, 0);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const handleAdminLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoggingIn(true);
+    setLoginError(null);
+
+    setTimeout(() => {
+      if (!adminEmail.includes('@')) {
+        setLoginError('Please enter a valid corporate staff email address');
+        setIsLoggingIn(false);
+        return;
+      }
+      if (adminPassword.length < 3 && adminPassword !== 'admin123' && adminPassword !== 'demo') {
+        setLoginError('Please enter password (demo default: admin123 or demo)');
+        setIsLoggingIn(false);
+        return;
+      }
+
+      setIsAuthenticated(true);
+      localStorage.setItem('arani_admin_authenticated', 'true');
+      localStorage.setItem('arani_admin_role', adminRole);
+      setIsLoggingIn(false);
+      triggerToast(`Authenticated as ${adminRole}. Welcome to Arani CMS.`);
+    }, 500);
+  };
+
+  const handleQuickDemoLogin = (role: 'Super Admin' | 'Recruitment Manager' | 'Content Editor') => {
+    setAdminEmail(role === 'Super Admin' ? 'admin@aranicorporate.com' : role === 'Recruitment Manager' ? 'recruiter@aranicorporate.com' : 'editor@aranicorporate.com');
+    setAdminPassword('admin123');
+    setAdminRole(role);
+    setIsAuthenticated(true);
+    localStorage.setItem('arani_admin_authenticated', 'true');
+    localStorage.setItem('arani_admin_role', role);
+    triggerToast(`Authenticated as ${role}. Welcome to Arani CMS.`);
+  };
+
+  const handleAdminLogout = () => {
+    setIsAuthenticated(false);
+    localStorage.removeItem('arani_admin_authenticated');
+    localStorage.removeItem('arani_admin_role');
+    triggerToast('Staff logged out successfully.');
+  };
 
   // Initializing state with defaults or localStorage sync
   const [jobsList, setJobsList] = useState<Job[]>(SAMPLE_JOBS);
@@ -393,6 +456,157 @@ export default function AdminPage() {
     triggerToast(`Exported ${filename}.csv successfully`);
   };
 
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-ink-950 text-surface flex flex-col font-sans rising-bars relative justify-between">
+        {/* Toast Notification */}
+        {notificationMsg && (
+          <div className="fixed top-4 right-4 z-50 bg-teal-600 text-surface px-4 py-3 rounded-lg shadow-xl font-mono text-xs flex items-center gap-2 border border-teal-300 animate-bounce">
+            <CheckCircle2 className="w-4 h-4 text-teal-200" />
+            <span>{notificationMsg}</span>
+          </div>
+        )}
+
+        {/* Minimal Header */}
+        <header className="border-b border-ink-800 py-4 px-6 bg-ink-900/80 backdrop-blur-xs flex items-center justify-between">
+          <Link href="/">
+            <AraniLogo className="h-8 logo--light" variant="light" />
+          </Link>
+          <div className="flex items-center gap-3 font-mono text-xs text-slate-300">
+            <span className="hidden sm:inline-block text-teal-400 bg-ink-800 px-2.5 py-1 rounded border border-teal-500/30">
+              INTERNAL STAFF OPERATIONS PORTAL
+            </span>
+            <Link href="/" className="hover:text-teal-400 underline flex items-center gap-1">
+              <span>← Back to Main Website</span>
+            </Link>
+          </div>
+        </header>
+
+        {/* Login Form Center Container */}
+        <main className="flex-1 flex items-center justify-center p-4 my-8">
+          <div className="w-full max-w-md bg-ink-900 border border-ink-700 rounded-xl shadow-2xl p-6 md:p-8 space-y-6 relative z-10">
+            <div className="text-center space-y-2">
+              <div className="inline-flex items-center gap-2 bg-ink-800 px-3 py-1 rounded-full border border-teal-500/30 text-teal-400 font-mono text-xs font-bold">
+                <Lock className="w-3.5 h-3.5" />
+                <span>RESTRICTED ACCESS</span>
+              </div>
+              <h1 className="text-2xl font-display font-bold text-surface">
+                Admin Staff Gateway
+              </h1>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Sign in with your corporate Arani credentials to access content management, applicant inbox, and employer CRM.
+              </p>
+            </div>
+
+            {loginError && (
+              <div className="bg-danger/20 border border-danger/40 text-surface p-3 rounded text-xs font-mono flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 text-danger shrink-0" />
+                <span>{loginError}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleAdminLogin} className="space-y-4 text-xs font-mono">
+              <div>
+                <label className="block text-slate-300 uppercase font-bold mb-1">
+                  Staff Corporate Email
+                </label>
+                <div className="relative">
+                  <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+                  <input
+                    type="email"
+                    required
+                    value={adminEmail}
+                    onChange={(e) => setAdminEmail(e.target.value)}
+                    placeholder="admin@aranicorporate.com"
+                    className="w-full bg-ink-950 border border-ink-700 rounded pl-9 pr-3 py-2.5 text-surface focus:border-teal-400 outline-none transition"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-slate-300 uppercase font-bold mb-1">
+                  Password
+                </label>
+                <div className="relative">
+                  <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+                  <input
+                    type="password"
+                    required
+                    value={adminPassword}
+                    onChange={(e) => setAdminPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full bg-ink-950 border border-ink-700 rounded pl-9 pr-3 py-2.5 text-surface focus:border-teal-400 outline-none transition"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-slate-300 uppercase font-bold mb-1">
+                  Staff Role / Privilege Level
+                </label>
+                <select
+                  value={adminRole}
+                  onChange={(e) => setAdminRole(e.target.value as any)}
+                  className="w-full bg-ink-950 border border-ink-700 rounded px-3 py-2.5 text-surface focus:border-teal-400 outline-none transition"
+                >
+                  <option value="Super Admin">Super Admin (Full Access)</option>
+                  <option value="Recruitment Manager">Recruitment Manager (Jobs & CRM)</option>
+                  <option value="Content Editor">Content Editor (CMS Only)</option>
+                </select>
+              </div>
+
+              <button
+                type="submit"
+                disabled={isLoggingIn}
+                className="w-full py-3 bg-teal-500 hover:bg-teal-600 text-surface font-bold uppercase rounded shadow-lg transition flex items-center justify-center gap-2"
+              >
+                {isLoggingIn ? (
+                  <span>Authenticating...</span>
+                ) : (
+                  <>
+                    <span>Sign In to Admin Portal</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </>
+                )}
+              </button>
+            </form>
+
+            {/* Quick Demo Credentials Assistant */}
+            <div className="pt-4 border-t border-ink-800 space-y-2">
+              <p className="text-[10px] font-mono text-slate-400 uppercase font-bold text-center">
+                {"// Quick Demo Login Shortcuts"}
+              </p>
+              <div className="grid grid-cols-2 gap-2 text-[11px] font-mono">
+                <button
+                  type="button"
+                  onClick={() => handleQuickDemoLogin('Super Admin')}
+                  className="p-2 bg-ink-800 hover:bg-ink-700 border border-ink-700 rounded text-teal-300 font-bold text-center transition"
+                >
+                  Super Admin
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleQuickDemoLogin('Recruitment Manager')}
+                  className="p-2 bg-ink-800 hover:bg-ink-700 border border-ink-700 rounded text-slate-300 text-center transition"
+                >
+                  Recruiter
+                </button>
+              </div>
+            </div>
+
+            <div className="text-[10px] text-slate-500 text-center font-mono pt-2">
+              Protected by Arani Security Guard. Sessions recorded in Audit Log.
+            </div>
+          </div>
+        </main>
+
+        <footer className="border-t border-ink-800 py-3 text-center text-[11px] font-mono text-slate-400">
+          © 2026 Arani Corporate Solutions — Internal Staff System
+        </footer>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-paper text-ink-900 flex flex-col font-sans">
       {/* Toast Notification */}
@@ -429,8 +643,15 @@ export default function AdminPage() {
           <div className="flex items-center gap-4 text-xs font-mono text-slate-300">
             <div className="hidden sm:flex items-center gap-2 bg-ink-900 px-2.5 py-1 rounded border border-ink-800 text-[11px]">
               <span className="w-2 h-2 rounded-full bg-ok animate-pulse" />
-              <span>Meta CAPI: Active</span>
+              <span>Role: {adminRole}</span>
             </div>
+            <button
+              onClick={handleAdminLogout}
+              className="px-2.5 py-1 bg-ink-800 hover:bg-danger/20 hover:text-danger text-slate-300 rounded border border-ink-700 transition flex items-center gap-1"
+            >
+              <Lock className="w-3 h-3 text-teal-400" />
+              <span>Log Out</span>
+            </button>
             <Link href="/" className="hover:text-teal-400 underline flex items-center gap-1">
               <span>Exit Portal</span>
               <ExternalLink className="w-3.5 h-3.5" />

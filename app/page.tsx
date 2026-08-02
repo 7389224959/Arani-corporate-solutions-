@@ -155,25 +155,36 @@ export default function HomePage() {
       <PromoBanner onActionClick={() => setSearchOverlayOpen(true)} />
 
       {/* GLOBAL UTILITY BAR */}
-      <div className="bg-ink-950 text-slate-300 text-[11px] font-mono py-1.5 px-4 border-b border-ink-800">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-4 overflow-x-auto no-scrollbar whitespace-nowrap">
-            <span className="flex items-center gap-1.5 text-teal-400">
-              <Phone className="w-3 h-3" /> +91 (0) 800-ARANI-HR
+      <div className="bg-ink-950 text-slate-300 text-[11px] font-mono py-1.5 px-3 md:px-4 border-b border-ink-800">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
+          {/* Left contact details */}
+          <div className="flex items-center gap-3 min-w-0 shrink">
+            <a href="tel:+918002726447" className="flex items-center gap-1.5 text-teal-400 hover:text-teal-300 font-semibold shrink-0">
+              <Phone className="w-3.5 h-3.5 shrink-0" />
+              <span className="hidden sm:inline">+91 (0) 800-ARANI-HR</span>
+              <span className="sm:hidden text-[10px]">Call Us</span>
+            </a>
+            <span className="hidden sm:flex items-center gap-1.5 truncate">
+              <Mail className="w-3.5 h-3.5 text-teal-400 shrink-0" /> careers@aranicorporate.com
             </span>
-            <span className="hidden sm:flex items-center gap-1.5">
-              <Mail className="w-3 h-3 text-teal-400" /> careers@aranicorporate.com
-            </span>
-            <span className="hidden md:flex items-center gap-1.5">
-              <Clock className="w-3 h-3 text-teal-400" /> Sun–Thu 9:00–18:00 IST
+            <span className="hidden md:flex items-center gap-1.5 shrink-0">
+              <Clock className="w-3.5 h-3.5 text-teal-400 shrink-0" /> Sun–Thu 9:00–18:00 IST
             </span>
           </div>
-          <div className="flex items-center gap-3 shrink-0">
-            <span className="bg-teal-500/20 text-teal-300 px-2 py-0.5 rounded text-[10px] font-bold">
+
+          {/* Right badges & links */}
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0 text-[10px] sm:text-[11px]">
+            <span className="bg-teal-500/20 text-teal-300 px-2 py-0.5 rounded font-bold whitespace-nowrap">
               FREE FOR CANDIDATES
             </span>
-            <span className="flex items-center gap-1 cursor-pointer hover:text-surface">
-              <Globe className="w-3 h-3 text-teal-400" /> EN / IN
+            <a
+              href="/admin"
+              className="text-teal-400 hover:text-surface font-bold underline flex items-center gap-1 whitespace-nowrap"
+            >
+              <span>Staff Portal</span>
+            </a>
+            <span className="hidden xs:flex items-center gap-1 cursor-pointer hover:text-surface whitespace-nowrap">
+              <Globe className="w-3.5 h-3.5 text-teal-400 shrink-0" /> EN / IN
             </span>
           </div>
         </div>
@@ -428,10 +439,10 @@ export default function HomePage() {
             {/* LEFT COLUMN (55% / 7 cols) */}
             <div className="lg:col-span-7 space-y-6">
               
-              <div className="inline-flex items-center gap-2 font-mono text-xs font-bold text-teal-600 bg-teal-50 border border-teal-100 px-3 py-1 rounded">
+              <div className="inline-flex flex-wrap items-center gap-2 font-mono text-[10px] sm:text-xs font-bold text-teal-600 bg-teal-50 border border-teal-100 px-3 py-1 rounded max-w-full">
                 <span>{"// RECRUITMENT & HR ADVISORY"}</span>
-                <span className="w-1.5 h-1.5 rounded-full bg-teal-500" />
-                <span>EST. CORPORATE CONSULTANCY</span>
+                <span className="hidden sm:inline-block w-1.5 h-1.5 rounded-full bg-teal-500" />
+                <span className="hidden sm:inline-block">EST. CORPORATE CONSULTANCY</span>
               </div>
 
               {audienceView === 'seeker' ? (
@@ -517,9 +528,9 @@ export default function HomePage() {
               {audienceView === 'seeker' ? (
                 /* LIVE JOB SEARCH CARD FOR SEEKERS */
                 <div className="bg-surface border-2 border-line rounded-lg shadow-card p-6 relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-24 h-24 bg-teal-50 rounded-bl-full pointer-events-none" />
+                  <div className="absolute top-0 right-0 w-20 h-20 bg-teal-50/50 rounded-bl-full pointer-events-none -z-0" />
                   
-                  <div className="flex items-center justify-between mb-4">
+                  <div className="relative z-10 flex items-center justify-between mb-4">
                     <span className="font-mono text-xs font-bold uppercase text-teal-600 bg-teal-100 px-2.5 py-1 rounded">
                       {"// Quick Job Search"}
                     </span>
@@ -607,9 +618,9 @@ export default function HomePage() {
               ) : (
                 /* REQUEST TALENT MINI-FORM FOR EMPLOYERS */
                 <div className="bg-ink-900 text-surface border-2 border-ink-800 rounded-lg shadow-card p-6 relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-24 h-24 bg-teal-500/10 rounded-bl-full pointer-events-none" />
+                  <div className="absolute top-0 right-0 w-20 h-20 bg-teal-500/10 rounded-bl-full pointer-events-none -z-0" />
 
-                  <div className="flex items-center justify-between mb-4">
+                  <div className="relative z-10 flex items-center justify-between mb-4">
                     <span className="font-mono text-xs font-bold uppercase text-teal-300 bg-ink-800 px-2.5 py-1 rounded">
                       {"// Employer Talent Request"}
                     </span>
@@ -765,16 +776,17 @@ export default function HomePage() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             
             {/* LEFT PATH: CANDIDATES (60% / 7 cols) */}
-            <div className="lg:col-span-7 bg-surface border-2 border-teal-500/40 rounded-lg p-8 shadow-card flex flex-col justify-between relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-teal-50 rounded-bl-full pointer-events-none group-hover:scale-110 transition-transform" />
+            <div className="lg:col-span-7 bg-surface border-2 border-teal-500/40 rounded-lg p-5 sm:p-8 shadow-card flex flex-col justify-between relative overflow-hidden group">
+              {/* Corner accent graphic - set pointer-events-none, low opacity, and -z-0 so it NEVER overlays text */}
+              <div className="absolute top-0 right-0 w-20 h-20 sm:w-32 sm:h-32 bg-teal-50/60 rounded-bl-full pointer-events-none -z-0" />
 
-              <div>
-                <div className="inline-flex items-center gap-2 font-mono text-xs font-bold text-teal-700 bg-teal-50 px-3 py-1 rounded mb-4">
-                  <UserCheck className="w-4 h-4 text-teal-600" />
-                  FOR JOB SEEKERS &amp; BANKING PROFESSIONALS
+              <div className="relative z-10">
+                <div className="inline-flex items-center gap-2 font-mono text-[11px] sm:text-xs font-bold text-teal-700 bg-teal-50/90 border border-teal-100 px-3 py-1 rounded mb-4 max-w-full">
+                  <UserCheck className="w-4 h-4 text-teal-600 shrink-0" />
+                  <span className="break-words">FOR JOB SEEKERS &amp; BANKING PROFESSIONALS</span>
                 </div>
 
-                <h3 className="text-2xl md:text-3xl font-display font-bold text-ink-900 mb-3">
+                <h3 className="text-2xl sm:text-3xl font-display font-bold text-ink-900 mb-3 leading-tight">
                   Land the Job You&apos;ve Trained For
                 </h3>
                 <p className="text-slate text-sm leading-relaxed mb-6">
@@ -798,11 +810,11 @@ export default function HomePage() {
                 </ul>
               </div>
 
-              <div className="pt-6 border-t border-line flex items-center justify-between">
-                <span className="font-mono text-xs text-muted">2,400+ Active Roles</span>
+              <div className="pt-6 border-t border-line flex flex-wrap items-center justify-between gap-3 relative z-10">
+                <span className="font-mono text-xs text-muted font-semibold">2,400+ Active Roles</span>
                 <button
                   onClick={() => setRoleModalOpen(true)}
-                  className="px-6 py-2.5 bg-teal-500 hover:bg-teal-600 text-surface font-bold text-xs rounded shadow-xs transition flex items-center gap-1.5"
+                  className="px-5 sm:px-6 py-2.5 bg-teal-500 hover:bg-teal-600 text-surface font-bold text-xs rounded shadow-xs transition flex items-center gap-1.5"
                 >
                   Create Free Profile
                   <ArrowUpRight className="w-4 h-4" />
@@ -811,14 +823,14 @@ export default function HomePage() {
             </div>
 
             {/* RIGHT PATH: EMPLOYERS (40% / 5 cols) */}
-            <div className="lg:col-span-5 bg-ink-900 text-surface border-2 border-ink-800 rounded-lg p-8 shadow-card flex flex-col justify-between relative overflow-hidden rising-bars group">
-              <div>
-                <div className="inline-flex items-center gap-2 font-mono text-xs font-bold text-teal-300 bg-ink-800 px-3 py-1 rounded mb-4">
-                  <Building2 className="w-4 h-4 text-teal-400" />
-                  FOR EMPLOYERS &amp; HR LEADERS
+            <div className="lg:col-span-5 bg-ink-900 text-surface border-2 border-ink-800 rounded-lg p-5 sm:p-8 shadow-card flex flex-col justify-between relative overflow-hidden rising-bars group">
+              <div className="relative z-10">
+                <div className="inline-flex items-center gap-2 font-mono text-[11px] sm:text-xs font-bold text-teal-300 bg-ink-800 px-3 py-1 rounded mb-4 max-w-full">
+                  <Building2 className="w-4 h-4 text-teal-400 shrink-0" />
+                  <span className="break-words">FOR EMPLOYERS &amp; HR LEADERS</span>
                 </div>
 
-                <h3 className="text-2xl md:text-3xl font-display font-bold text-surface mb-3">
+                <h3 className="text-2xl sm:text-3xl font-display font-bold text-surface mb-3 leading-tight">
                   Hire People Who Stay
                 </h3>
                 <p className="text-slate-300 text-sm leading-relaxed mb-6">
@@ -840,11 +852,11 @@ export default function HomePage() {
                 </ul>
               </div>
 
-              <div className="pt-6 border-t border-ink-800 flex items-center justify-between">
-                <span className="font-mono text-xs text-slate-400">94% Retention Rate</span>
+              <div className="pt-6 border-t border-ink-800 flex flex-wrap items-center justify-between gap-3 relative z-10">
+                <span className="font-mono text-xs text-slate-400 font-semibold">94% Retention Rate</span>
                 <button
                   onClick={() => setRoleModalOpen(true)}
-                  className="px-6 py-2.5 bg-surface hover:bg-paper text-ink-900 font-bold text-xs rounded shadow-xs transition flex items-center gap-1.5"
+                  className="px-5 sm:px-6 py-2.5 bg-surface hover:bg-paper text-ink-900 font-bold text-xs rounded shadow-xs transition flex items-center gap-1.5"
                 >
                   Request Talent
                   <ArrowUpRight className="w-4 h-4 text-teal-600" />
@@ -1577,6 +1589,7 @@ export default function HomePage() {
               <a href="#" className="hover:text-slate-300">Terms of Service</a>
               <a href="#" className="hover:text-slate-300">Candidate Data Consent</a>
               <a href="#" className="hover:text-slate-300">Service Policy</a>
+              <a href="/admin" className="text-teal-400 font-bold hover:underline">Admin Staff Portal →</a>
             </div>
             <button
               onClick={scrollToTop}
