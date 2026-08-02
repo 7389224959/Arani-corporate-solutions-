@@ -1,0 +1,113 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&family=Space+Grotesk:wght@400..700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap');
+
+@theme {
+  --color-ink-950: #0B1626;
+  --color-ink-900: #0E1B30;
+  --color-ink-800: #16263F;
+  --color-ink-700: #1E3450;
+  --color-ink-600: #284563;
+  --color-ink-500: #34587C;
+
+  --color-teal-700: #0C6B5F;
+  --color-teal-600: #0E7C6E;
+  --color-teal-500: #159E8C;
+  --color-teal-400: #2BB6A4;
+  --color-teal-300: #6FD0C2;
+  --color-teal-100: #CDEEE8;
+  --color-teal-50: #E8F6F3;
+
+  --color-paper: #F5F8F8;
+  --color-surface: #FFFFFF;
+  --color-line: #E1E8E8;
+  --color-slate: #43525E;
+  --color-muted: #8A9298;
+
+  --color-ok: #15805A;
+  --color-danger: #C0392B;
+  --color-warn: #B8741A;
+
+  --font-display: 'Space Grotesk', system-ui, sans-serif;
+  --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-mono: 'Space Mono', ui-monospace, monospace;
+}
+
+@layer base {
+  body {
+    font-family: var(--font-sans);
+    background-color: var(--color-paper);
+    color: var(--color-ink-900);
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4, .font-display {
+    font-family: var(--font-display);
+  }
+
+  .font-mono {
+    font-family: var(--font-mono);
+  }
+}
+
+/* Custom Utilities & Motifs */
+.rising-bars {
+  background-image: repeating-linear-gradient(
+    90deg,
+    rgba(21, 158, 140, 0.04) 0px,
+    rgba(21, 158, 140, 0.04) 12px,
+    transparent 12px,
+    transparent 28px
+  );
+}
+
+.blueprint-grid {
+  background-size: 32px 32px;
+  background-image: 
+    linear-gradient(to right, rgba(22, 38, 63, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(22, 38, 63, 0.03) 1px, transparent 1px);
+}
+
+.logo--light {
+  filter: brightness(0) invert(1);
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 35s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.85; transform: scale(1.02); }
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 4s ease-in-out infinite;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #F5F8F8;
+}
+::-webkit-scrollbar-thumb {
+  background: #284563;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #159E8C;
+}
+
