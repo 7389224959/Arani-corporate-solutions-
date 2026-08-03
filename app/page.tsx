@@ -23,9 +23,11 @@ import {
   Globe,
   ChevronRight,
   ChevronLeft,
+  ArrowRight,
   ArrowUpRight,
   CheckCircle2,
   Building2,
+  User,
   UserCheck,
   Briefcase,
   MapPin,
@@ -490,14 +492,43 @@ export default function HomePage() {
         )}
       </header>
 
-      {/* USER SELECTION TABS & MAIN HERO SLIDING IMAGE CAROUSEL SECTION */}
+      {/* USER SELECTION TABS SECTION (Directly below Header, on White Canvas - matches Screenshot 2) */}
+      <div className="bg-surface border-b border-line py-3 px-4">
+        <div className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <button
+            onClick={() => setAudienceView('seeker')}
+            className={`w-full py-3 px-5 rounded-lg font-display text-sm sm:text-base font-extrabold transition-all duration-300 flex items-center justify-center gap-2.5 shadow-xs ${
+              audienceView === 'seeker'
+                ? 'bg-teal-600 hover:bg-teal-700 text-surface shadow-md ring-2 ring-teal-400/40'
+                : 'bg-surface text-ink-900 border border-line hover:border-teal-500 shadow-2xs hover:bg-paper'
+            }`}
+          >
+            <User className={`w-5 h-5 ${audienceView === 'seeker' ? 'text-surface' : 'text-teal-600'}`} />
+            <span>I'm Looking for a Job</span>
+          </button>
+
+          <button
+            onClick={() => setAudienceView('employer')}
+            className={`w-full py-3 px-5 rounded-lg font-display text-sm sm:text-base font-extrabold transition-all duration-300 flex items-center justify-center gap-2.5 shadow-xs ${
+              audienceView === 'employer'
+                ? 'bg-teal-600 hover:bg-teal-700 text-surface shadow-md ring-2 ring-teal-400/40'
+                : 'bg-surface text-ink-900 border border-line hover:border-teal-500 shadow-2xs hover:bg-paper'
+            }`}
+          >
+            <Building2 className={`w-5 h-5 ${audienceView === 'employer' ? 'text-surface' : 'text-teal-600'}`} />
+            <span>I'm Hiring Talent</span>
+          </button>
+        </div>
+      </div>
+
+      {/* MAIN HERO SLIDING IMAGE CAROUSEL BANNER SECTION (Matches Screenshot 2) */}
       <section
         id="hero-section"
-        className="relative bg-ink-950 text-surface overflow-hidden"
+        className="relative bg-ink-950 text-surface overflow-hidden min-h-[480px] sm:min-h-[520px] md:min-h-[580px] flex items-center"
         onMouseEnter={() => setIsCarouselPaused(true)}
         onMouseLeave={() => setIsCarouselPaused(false)}
       >
-        {/* Full-width Carousel Background Images with Smooth Transitions & Dark Gradients */}
+        {/* Full-width Carousel Background Images with Gradient Overlays */}
         <div className="absolute inset-0 z-0">
           {HERO_CAROUSEL_SLIDES.map((slide, idx) => (
             <div
@@ -514,335 +545,101 @@ export default function HomePage() {
                 className="object-cover object-center transform transition-transform duration-10000 ease-linear scale-105"
                 referrerPolicy="no-referrer"
               />
-              {/* Heavy Dark Navy Gradient Overlay for Text Readability */}
-              <div className="absolute inset-0 bg-gradient-to-r from-ink-950/95 via-ink-900/85 to-ink-950/70" />
-              <div className="absolute inset-0 bg-gradient-to-t from-ink-950 via-transparent to-ink-950/40" />
+              {/* Dark Navy / Black Gradient Overlay for Text Legibility */}
+              <div className="absolute inset-0 bg-gradient-to-r from-ink-950/95 via-ink-900/80 to-ink-950/40" />
+              <div className="absolute inset-0 bg-black/30" />
             </div>
           ))}
         </div>
 
+        {/* Carousel Side Navigation Arrows (Left `<` and Right `>`) */}
+        <button
+          onClick={handlePrevSlide}
+          className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-ink-900/70 hover:bg-teal-600 text-surface border border-surface/20 flex items-center justify-center transition-all duration-200 shadow-lg backdrop-blur-sm group"
+          aria-label="Previous slide"
+        >
+          <ChevronLeft className="w-6 h-6 group-hover:-translate-x-0.5 transition-transform" />
+        </button>
+
+        <button
+          onClick={handleNextSlide}
+          className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-ink-900/70 hover:bg-teal-600 text-surface border border-surface/20 flex items-center justify-center transition-all duration-200 shadow-lg backdrop-blur-sm group"
+          aria-label="Next slide"
+        >
+          <ChevronRight className="w-6 h-6 group-hover:translate-x-0.5 transition-transform" />
+        </button>
+
         {/* Hero Content Container */}
-        <div className="max-w-7xl mx-auto px-4 relative z-10 pt-8 pb-16 md:pt-12 md:pb-20 flex flex-col justify-between min-h-[560px] md:min-h-[640px]">
-          
-          {/* USER SELECTION TABS (Top of Hero) */}
-          <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
+        <div className="max-w-7xl mx-auto px-6 sm:px-12 relative z-10 py-12 md:py-16 w-full">
+          <div className="max-w-2xl space-y-5 animate-fadeIn">
             
-            {/* Prominent Teal / Navy Segmented Selection Tabs */}
-            <div className="inline-flex p-1.5 bg-ink-900/90 backdrop-blur-md border border-ink-700/80 rounded-xl shadow-2xl">
-              <button
-                onClick={() => setAudienceView('seeker')}
-                className={`px-5 py-2.5 rounded-lg font-mono text-xs sm:text-sm font-bold transition-all duration-300 flex items-center gap-2.5 ${
-                  audienceView === 'seeker'
-                    ? 'bg-teal-500 text-surface shadow-lg ring-2 ring-teal-300/40'
-                    : 'text-slate-300 hover:text-surface hover:bg-ink-800/60'
-                }`}
-              >
-                <span className="flex items-center justify-center w-5 h-5 rounded-full bg-surface/20 text-surface font-extrabold text-xs">
-                  ✓
-                </span>
-                <span>Looking for a Job</span>
-              </button>
-
-              <button
-                onClick={() => setAudienceView('employer')}
-                className={`px-5 py-2.5 rounded-lg font-mono text-xs sm:text-sm font-bold transition-all duration-300 flex items-center gap-2.5 ${
-                  audienceView === 'employer'
-                    ? 'bg-teal-500 text-surface shadow-lg ring-2 ring-teal-300/40'
-                    : 'text-slate-300 hover:text-surface hover:bg-ink-800/60'
-                }`}
-              >
-                <span className="flex items-center justify-center w-5 h-5 rounded-full bg-surface/20 text-surface font-extrabold text-xs">
-                  ✓
-                </span>
-                <span>Hiring Talent</span>
-              </button>
+            {/* Top Teal Pill Badge (Matches "WELCOME TO ARANI CORPORATE SOLUTIONS" in Screenshot 2) */}
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-md bg-teal-600 text-surface text-xs font-mono font-extrabold uppercase tracking-wider shadow-md">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>WELCOME TO ARANI CORPORATE SOLUTIONS</span>
             </div>
 
-            {/* Slide Category Indicator */}
-            <div className="hidden md:flex items-center gap-2 font-mono text-xs text-teal-300 bg-ink-900/80 backdrop-blur-md px-3 py-1.5 rounded-lg border border-ink-700/80">
-              <span className="w-2 h-2 rounded-full bg-teal-400 animate-ping" />
-              <span>Slide {currentSlide + 1} of {HERO_CAROUSEL_SLIDES.length}: {activeSlideData.tag}</span>
-            </div>
-          </div>
+            {/* Main Hero Headline */}
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-display font-extrabold text-surface tracking-tight leading-[1.12] drop-shadow-md">
+              {audienceView === 'seeker' ? (
+                <>Connecting Talent with Opportunities</>
+              ) : (
+                <>Connecting Enterprises with Top Talent</>
+              )}
+            </h1>
 
-          {/* MAIN HERO CONTENT OVERLAY */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center my-auto">
-            
-            {/* Left Content Area */}
-            <div className="lg:col-span-7 space-y-5 animate-fadeIn">
-              
-              {/* Small Badge */}
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-teal-500/20 border border-teal-400/40 text-teal-300 text-xs font-mono font-bold tracking-wide backdrop-blur-md">
-                <Sparkles className="w-3.5 h-3.5 text-teal-300" />
-                <span>{activeSlideData.badge}</span>
-              </div>
+            {/* Subheadline */}
+            <p className="text-slate-100 text-sm sm:text-base md:text-lg leading-relaxed font-medium drop-shadow">
+              {audienceView === 'seeker'
+                ? 'Recruitment & Placement Consultancy for Top Companies & Job Seekers. Free service for candidates.'
+                : 'Premier HR, Staffing & Talent Sourcing Services. Shortlist qualified candidates in 72 hours.'}
+            </p>
 
-              {/* Main Headline */}
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-display font-extrabold text-surface tracking-tight leading-[1.12]">
-                {audienceView === 'seeker' ? (
-                  <>
-                    Connecting Talent <br className="hidden sm:inline" />
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-300 via-teal-400 to-teal-100">
-                      With Opportunity
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    Connecting Enterprises <br className="hidden sm:inline" />
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-300 via-teal-400 to-teal-100">
-                      With Top Talent
-                    </span>
-                  </>
-                )}
-              </h1>
-
-              {/* Subheadline */}
-              <p className="text-slate-200 text-sm sm:text-base md:text-lg leading-relaxed max-w-2xl font-normal drop-shadow-sm">
-                Arani Corporate Solutions helps job seekers secure opportunities with leading companies while helping businesses hire qualified professionals across multiple industries.
-              </p>
-
-              {/* CTA Buttons */}
-              <div className="flex flex-wrap items-center gap-4 pt-2">
-                <button
-                  onClick={() => {
+            {/* Primary Action Button (Matches "Explore Opportunities →" in Screenshot 2) */}
+            <div className="pt-2 flex flex-wrap items-center gap-4">
+              <button
+                onClick={() => {
+                  if (audienceView === 'seeker') {
                     const el = document.getElementById('jobs-ledger');
                     if (el) el.scrollIntoView({ behavior: 'smooth' });
                     else setSearchOverlayOpen(true);
-                  }}
-                  className="px-7 py-3.5 bg-teal-500 hover:bg-teal-600 text-surface font-extrabold text-sm rounded-lg shadow-lg hover:shadow-teal-500/30 transition-all flex items-center gap-2 transform hover:-translate-y-0.5"
-                >
-                  <Search className="w-4 h-4" />
-                  <span>Find Jobs</span>
-                </button>
+                  } else {
+                    const el = document.getElementById('employer-spotlight');
+                    if (el) el.scrollIntoView({ behavior: 'smooth' });
+                    else setRoleModalOpen(true);
+                  }
+                }}
+                className="px-7 py-3.5 bg-teal-500 hover:bg-teal-600 text-surface font-extrabold text-sm sm:text-base rounded-md shadow-lg hover:shadow-teal-500/30 transition-all flex items-center gap-2 transform hover:-translate-y-0.5"
+              >
+                <span>{audienceView === 'seeker' ? 'Explore Opportunities' : 'Request Talent Shortlist'}</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
 
-                <button
-                  onClick={() => setRoleModalOpen(true)}
-                  className="px-7 py-3.5 bg-surface/10 hover:bg-surface/20 text-surface border border-surface/30 font-extrabold text-sm rounded-lg backdrop-blur-md transition-all flex items-center gap-2 transform hover:-translate-y-0.5"
-                >
-                  <Building2 className="w-4 h-4 text-teal-300" />
-                  <span>Hire Talent</span>
-                </button>
-              </div>
-
-            </div>
-
-            {/* Right Interactive Card (Glassmorphism Job Search / Talent Request Card) */}
-            <div className="lg:col-span-5">
-              {audienceView === 'seeker' ? (
-                /* Glassmorphism Live Job Openings Box */
-                <div className="bg-surface/95 backdrop-blur-xl border border-surface/40 text-ink-950 rounded-2xl p-5 sm:p-6 shadow-2xl space-y-3.5">
-                  <div className="flex items-center justify-between border-b border-line pb-3">
-                    <div className="flex items-center gap-2">
-                      <span className="w-2.5 h-2.5 rounded-full bg-teal-500 animate-ping" />
-                      <span className="font-mono text-xs font-bold text-teal-800 bg-teal-50 px-2.5 py-1 rounded">
-                        {"// LIVE JOB OPENINGS"}
-                      </span>
-                    </div>
-                    <span className="text-[11px] font-mono text-teal-700 font-bold bg-paper px-2 py-0.5 rounded border border-line">
-                      2,400+ Active
-                    </span>
-                  </div>
-
-                  {/* Quick Filter Bar */}
-                  <div className="flex items-center gap-2 bg-paper p-1.5 rounded-lg border border-line">
-                    <div className="flex items-center gap-1.5 flex-1 px-2 py-1 bg-surface rounded border border-line/80">
-                      <Search className="w-3.5 h-3.5 text-teal-600 shrink-0" />
-                      <input
-                        type="text"
-                        value={heroSearchKeyword}
-                        onChange={(e) => setHeroSearchKeyword(e.target.value)}
-                        placeholder="Search live jobs..."
-                        className="w-full bg-transparent text-[11px] font-semibold text-ink-950 focus:outline-none placeholder:text-slate-400"
-                      />
-                    </div>
-                    <select
-                      value={heroSearchCategory}
-                      onChange={(e) => setHeroSearchCategory(e.target.value)}
-                      className="bg-surface text-[11px] font-bold text-ink-900 border border-line rounded px-2 py-1.5 focus:outline-none cursor-pointer"
-                    >
-                      <option value="All">All Sectors</option>
-                      <option value="Banking">Banking</option>
-                      <option value="Corporate">Corporate</option>
-                      <option value="Finance">Finance</option>
-                      <option value="IT">IT</option>
-                    </select>
-                  </div>
-
-                  {/* Live Job Openings List */}
-                  <div className="space-y-2 max-h-[280px] overflow-y-auto pr-1 custom-scrollbar">
-                    {SAMPLE_JOBS
-                      .filter((job) => {
-                        const matchesKeyword = heroSearchKeyword === '' ||
-                          job.title.toLowerCase().includes(heroSearchKeyword.toLowerCase()) ||
-                          job.companyName.toLowerCase().includes(heroSearchKeyword.toLowerCase());
-                        const matchesCat = heroSearchCategory === 'All' || job.category === heroSearchCategory;
-                        return matchesKeyword && matchesCat;
-                      })
-                      .slice(0, 4)
-                      .map((job) => (
-                        <div
-                          key={job.id}
-                          onClick={() => handleJobSelect(job)}
-                          className="p-2.5 bg-surface border border-line hover:border-teal-500 rounded-xl shadow-2xs hover:shadow-md transition-all duration-200 cursor-pointer group flex items-center justify-between gap-2"
-                        >
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-1.5 mb-1">
-                              <span className="font-mono text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-teal-100 text-teal-800">
-                                {job.category}
-                              </span>
-                              {job.isUrgent && (
-                                <span className="font-mono text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 flex items-center gap-0.5">
-                                  Urgent
-                                </span>
-                              )}
-                              <span className="text-[10px] font-mono text-slate-400 truncate">
-                                {job.id}
-                              </span>
-                            </div>
-                            <h4 className="font-display font-bold text-xs text-ink-950 group-hover:text-teal-600 transition-colors truncate">
-                              {job.title}
-                            </h4>
-                            <div className="flex items-center gap-2 text-[10px] text-slate mt-0.5 font-medium">
-                              <span className="truncate">{job.companyName}</span>
-                              <span>•</span>
-                              <span className="text-teal-700 font-mono font-bold truncate">{job.salary.split('(')[0]}</span>
-                            </div>
-                          </div>
-
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleJobSelect(job);
-                            }}
-                            className="px-2.5 py-1.5 bg-teal-500 group-hover:bg-teal-600 text-surface text-[10px] font-extrabold rounded-lg shadow-xs transition shrink-0 flex items-center gap-1"
-                          >
-                            Apply
-                            <ArrowUpRight className="w-3 h-3" />
-                          </button>
-                        </div>
-                      ))}
-                  </div>
-
-                  <div className="pt-2 border-t border-line/60 flex items-center justify-between text-[11px] font-mono text-slate">
-                    <a
-                      href="#jobs-ledger"
-                      className="text-teal-700 font-bold hover:underline flex items-center gap-1"
-                    >
-                      View All 2,400+ Openings →
-                    </a>
-                    <button onClick={() => setRoleModalOpen(true)} className="text-ink-900 font-bold hover:underline">
-                      Upload Resume
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                /* Glassmorphism Quick Employer Request Box */
-                <div className="bg-ink-900/90 backdrop-blur-xl border border-ink-700/80 text-surface rounded-2xl p-5 sm:p-6 shadow-2xl space-y-4">
-                  <div className="flex items-center justify-between border-b border-ink-700 pb-3">
-                    <span className="font-mono text-xs font-bold text-teal-300 bg-ink-800 px-2.5 py-1 rounded">
-                      {"// TALENT SHORTLIST INTAKE"}
-                    </span>
-                    <span className="text-[11px] font-mono text-teal-400">72-Hour SLA</span>
-                  </div>
-
-                  {!talentSubmitted ? (
-                    <form onSubmit={handleTalentSubmit} className="space-y-3">
-                      <div>
-                        <label className="block text-[11px] font-mono text-slate-300 mb-1">Company Name *</label>
-                        <input
-                          type="text"
-                          required
-                          value={talentRequest.company}
-                          onChange={(e) => setTalentRequest({ ...talentRequest, company: e.target.value })}
-                          placeholder="e.g. Acme Financial Group"
-                          className="w-full px-3 py-2 bg-ink-800 border border-ink-700 rounded text-xs text-surface focus:outline-none focus:border-teal-400"
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-2">
-                        <div>
-                          <label className="block text-[11px] font-mono text-slate-300 mb-1">Work Email *</label>
-                          <input
-                            type="email"
-                            required
-                            value={talentRequest.email}
-                            onChange={(e) => setTalentRequest({ ...talentRequest, email: e.target.value })}
-                            placeholder="hr@company.com"
-                            className="w-full px-3 py-2 bg-ink-800 border border-ink-700 rounded text-xs text-surface focus:outline-none focus:border-teal-400"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-[11px] font-mono text-slate-300 mb-1">Headcount</label>
-                          <select
-                            value={talentRequest.headcount}
-                            onChange={(e) => setTalentRequest({ ...talentRequest, headcount: e.target.value })}
-                            className="w-full px-3 py-2 bg-ink-800 border border-ink-700 rounded text-xs text-surface focus:outline-none cursor-pointer"
-                          >
-                            <option value="1-5">1 – 5 Roles</option>
-                            <option value="6-20">6 – 20 Roles</option>
-                            <option value="20+">20+ Bulk Drive</option>
-                          </select>
-                        </div>
-                      </div>
-
-                      <button
-                        type="submit"
-                        className="w-full py-3 bg-teal-500 hover:bg-teal-600 text-surface font-extrabold text-xs rounded-lg shadow-md transition flex items-center justify-center gap-2 mt-2"
-                      >
-                        <Send className="w-4 h-4" />
-                        Get Vetted Shortlist in 72h
-                      </button>
-                    </form>
-                  ) : (
-                    <div className="py-6 text-center space-y-2 bg-ink-800/80 rounded border border-teal-500/40 p-4">
-                      <CheckCircle2 className="w-8 h-8 text-teal-400 mx-auto" />
-                      <h4 className="font-display font-bold text-surface text-sm">Talent Request Received!</h4>
-                      <p className="text-xs text-slate-300">
-                        Our Senior Account Manager will contact <strong>{talentRequest.email}</strong> within 2 business hours.
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )}
+              <button
+                onClick={() => setRoleModalOpen(true)}
+                className="px-6 py-3.5 bg-surface/10 hover:bg-surface/20 text-surface border border-surface/30 font-bold text-sm rounded-md backdrop-blur-md transition-all"
+              >
+                {audienceView === 'seeker' ? 'Upload Resume' : 'Schedule HR Call'}
+              </button>
             </div>
 
           </div>
+        </div>
 
-          {/* Carousel Navigation Controls (Bottom Bar) */}
-          <div className="flex items-center justify-between pt-6 border-t border-surface/10 mt-8 text-xs font-mono">
-            {/* Slide Dots */}
-            <div className="flex items-center gap-2">
-              {HERO_CAROUSEL_SLIDES.map((_, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setCurrentSlide(idx)}
-                  className={`h-2 rounded-full transition-all duration-300 ${
-                    idx === currentSlide ? 'w-8 bg-teal-400' : 'w-2 bg-surface/30 hover:bg-surface/60'
-                  }`}
-                  aria-label={`Go to slide ${idx + 1}`}
-                />
-              ))}
-            </div>
-
-            {/* Manual Slide Arrows */}
-            <div className="flex items-center gap-2">
-              <button
-                onClick={handlePrevSlide}
-                className="p-2 rounded-full bg-ink-900/80 hover:bg-teal-500 text-surface border border-ink-700 transition"
-                aria-label="Previous slide"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              <button
-                onClick={handleNextSlide}
-                className="p-2 rounded-full bg-ink-900/80 hover:bg-teal-500 text-surface border border-ink-700 transition"
-                aria-label="Next slide"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-
+        {/* Carousel Pagination Dots at Bottom Center */}
+        <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 bg-ink-950/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-surface/20">
+          {HERO_CAROUSEL_SLIDES.map((_, idx) => (
+            <button
+              key={idx}
+              onClick={() => setCurrentSlide(idx)}
+              className={`transition-all duration-300 rounded-full ${
+                idx === currentSlide
+                  ? 'w-6 h-2.5 bg-teal-400 shadow-xs'
+                  : 'w-2.5 h-2.5 bg-surface/50 hover:bg-surface'
+              }`}
+              aria-label={`Go to slide ${idx + 1}`}
+            />
+          ))}
         </div>
       </section>
 
