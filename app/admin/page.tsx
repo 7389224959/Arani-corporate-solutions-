@@ -120,6 +120,60 @@ export interface CandidateApplicant {
   evaluationNotes: string[];
 }
 
+{/* DIRECT DEVICE FILE UPLOAD BUTTON SUBCOMPONENT */}
+function FileUploadButton({
+  onImageSelected,
+  label = "Upload Image File from Device",
+  accept = "image/*",
+  className = ""
+}: {
+  onImageSelected: (dataUrl: string) => void;
+  label?: string;
+  accept?: string;
+  className?: string;
+}) {
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 8 * 1024 * 1024) {
+      alert("Selected image size exceeds 8MB. Please choose a smaller file.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      if (event.target?.result) {
+        onImageSelected(event.target.result as string);
+      }
+    };
+    reader.readAsDataURL(file);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  return (
+    <div className="inline-block">
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        accept={accept}
+        className="hidden"
+      />
+      <button
+        type="button"
+        onClick={() => fileInputRef.current?.click()}
+        className={`px-3.5 py-2 bg-teal-600 hover:bg-teal-500 text-surface font-mono text-xs font-bold rounded shadow-xs transition flex items-center gap-2 cursor-pointer ${className}`}
+      >
+        <Upload className="w-3.5 h-3.5" />
+        <span>{label}</span>
+      </button>
+    </div>
+  );
+}
+
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [adminEmail, setAdminEmail] = useState('admin@aranicorporate.com');
@@ -1092,27 +1146,55 @@ export default function AdminPage() {
                         <span>Director Information &amp; Photograph Settings</span>
                       </h4>
 
-                      {/* Photo Selector with Presets */}
-                      <div className="space-y-2 bg-paper p-4 rounded-lg border border-line">
-                        <label className="block text-xs font-mono font-bold text-ink-900 uppercase">
-                          Director Photograph Image URL
-                        </label>
-                        <input
-                          type="text"
-                          value={directorData.photoUrl}
-                          onChange={(e) => setDirectorData({ ...directorData, photoUrl: e.target.value })}
-                          placeholder="Paste image URL here..."
-                          className="w-full px-3 py-2 bg-surface border border-line rounded text-xs font-mono text-ink-900 focus:border-teal-500 outline-none"
-                        />
+                      {/* Photo Selector with Direct Upload, URL Input & Presets */}
+                      <div className="space-y-4 bg-paper p-5 rounded-xl border border-line shadow-xs">
+                        {/* Direct File Upload Banner */}
+                        <div className="p-4 bg-teal-50/80 border-2 border-dashed border-teal-300 rounded-lg flex flex-col sm:flex-row items-center justify-between gap-3">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-teal-600 text-surface flex items-center justify-center shrink-0 shadow-xs">
+                              <Upload className="w-5 h-5" />
+                            </div>
+                            <div>
+                              <h5 className="font-display font-bold text-sm text-ink-950">
+                                Direct Upload Director Photo from Computer or Phone
+                              </h5>
+                              <p className="text-xs text-slate-700">
+                                Select any image file (JPG, PNG, WebP) from your device to upload directly.
+                              </p>
+                            </div>
+                          </div>
+
+                          <FileUploadButton
+                            label="📁 Choose Image File"
+                            onImageSelected={(dataUrl) => {
+                              setDirectorData({ ...directorData, photoUrl: dataUrl });
+                              triggerToast('Director photo uploaded from device!');
+                            }}
+                          />
+                        </div>
+
+                        {/* Web URL Option */}
+                        <div className="space-y-1">
+                          <label className="block text-xs font-mono font-bold text-ink-900 uppercase">
+                            Or Paste Image Web URL:
+                          </label>
+                          <input
+                            type="text"
+                            value={directorData.photoUrl}
+                            onChange={(e) => setDirectorData({ ...directorData, photoUrl: e.target.value })}
+                            placeholder="Paste image URL here..."
+                            className="w-full px-3 py-2 bg-surface border border-line rounded text-xs font-mono text-ink-900 focus:border-teal-500 outline-none"
+                          />
+                        </div>
 
                         {/* Quick Preset Choice Buttons for Beginners */}
                         <div className="pt-2">
                           <span className="text-[10px] font-mono font-bold text-muted uppercase block mb-1.5">
-                            ⚡ Quick 1-Click Preset Photo Picker for Beginners:
+                            ⚡ Quick 1-Click Preset Photo Picker:
                           </span>
                           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                             {[
-                              { label: 'Desk Office Photo (Current)', url: 'https://images.unsplash.com/photo-1556157382-97eda2d62296?auto=format&fit=crop&w=800&q=80' },
+                              { label: 'Desk Office Photo', url: 'https://images.unsplash.com/photo-1556157382-97eda2d62296?auto=format&fit=crop&w=800&q=80' },
                               { label: 'Executive Boardroom', url: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=800&q=80' },
                               { label: 'Corporate Leader', url: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=800&q=80' },
                               { label: 'Managing Director', url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=80' }
@@ -1420,20 +1502,44 @@ export default function AdminPage() {
                             </div>
                           </div>
 
-                          {/* Background Image URL with 1-click Preset Selector */}
-                          <div className="space-y-2 bg-surface p-3 rounded-lg border border-line">
-                            <label className="block text-xs font-mono font-bold text-ink-900 uppercase">
-                              Background Image URL
-                            </label>
-                            <input
-                              type="text"
-                              value={slide.bgImageUrl}
-                              onChange={(e) => {
-                                const updated = heroSlides.map((s) => (s.id === slide.id ? { ...s, bgImageUrl: e.target.value } : s));
-                                setHeroSlides(updated);
-                              }}
-                              className="w-full px-3 py-2 bg-paper border border-line rounded text-xs font-mono text-ink-900"
-                            />
+                          {/* Background Image File Upload, Web URL & 1-click Preset Selector */}
+                          <div className="space-y-3 bg-surface p-4 rounded-xl border border-line shadow-2xs">
+                            <div className="p-3 bg-teal-50/70 border border-teal-200 rounded-lg flex flex-col sm:flex-row items-center justify-between gap-2">
+                              <div>
+                                <span className="font-display font-bold text-xs text-ink-950 block">
+                                  Upload Banner Background Image from Device
+                                </span>
+                                <span className="text-[11px] text-slate">
+                                  Select an image file (JPG, PNG, WebP) to upload directly for this slide banner.
+                                </span>
+                              </div>
+
+                              <FileUploadButton
+                                label="📤 Upload Banner File"
+                                onImageSelected={(dataUrl) => {
+                                  const updated = heroSlides.map((s) => (s.id === slide.id ? { ...s, bgImageUrl: dataUrl } : s));
+                                  setHeroSlides(updated);
+                                  saveHeroSlides(updated);
+                                  triggerToast(`Hero banner image uploaded for Slide #${idx + 1}!`);
+                                }}
+                              />
+                            </div>
+
+                            <div className="space-y-1">
+                              <label className="block text-xs font-mono font-bold text-ink-900 uppercase">
+                                Or Image Web URL:
+                              </label>
+                              <input
+                                type="text"
+                                value={slide.bgImageUrl}
+                                onChange={(e) => {
+                                  const updated = heroSlides.map((s) => (s.id === slide.id ? { ...s, bgImageUrl: e.target.value } : s));
+                                  setHeroSlides(updated);
+                                }}
+                                className="w-full px-3 py-2 bg-paper border border-line rounded text-xs font-mono text-ink-900"
+                              />
+                            </div>
+
                             <div className="pt-1">
                               <span className="text-[10px] font-mono text-muted uppercase block mb-1">
                                 ⚡ Quick Corporate Background Image Presets:
@@ -1666,23 +1772,32 @@ export default function AdminPage() {
                       {articlesList.map((art) => (
                         <div key={art.id} className="p-4 bg-paper border border-line rounded-lg flex flex-col md:flex-row md:items-center justify-between gap-4 font-sans">
                           <div className="flex items-start gap-3">
-                            <img src={art.image} alt="" className="w-16 h-12 rounded object-cover shrink-0" />
-                            <div>
+                            <img src={art.image} alt="" className="w-20 h-14 rounded object-cover shrink-0 border border-line" />
+                            <div className="space-y-1">
                               <div className="flex items-center gap-2 text-xs font-mono">
                                 <span className="bg-teal-100 text-teal-800 px-2 py-0.5 rounded font-bold">{art.category}</span>
                                 <span className="text-muted">{art.date} • {art.readTime}</span>
                               </div>
-                              <h4 className="font-display font-bold text-sm text-ink-900 mt-1">{art.title}</h4>
+                              <h4 className="font-display font-bold text-sm text-ink-900">{art.title}</h4>
                             </div>
                           </div>
 
                           <div className="flex items-center gap-2">
+                            <FileUploadButton
+                              label="Upload Cover"
+                              className="!py-1 !px-2.5 !text-[11px]"
+                              onImageSelected={(dataUrl) => {
+                                setArticlesList(articlesList.map(a => a.id === art.id ? { ...a, image: dataUrl } : a));
+                                triggerToast('Article cover image updated!');
+                              }}
+                            />
                             <button
                               onClick={() => {
                                 setArticlesList(articlesList.filter((a) => a.id !== art.id));
                                 triggerToast('Article deleted');
                               }}
                               className="p-1.5 bg-danger/10 text-danger rounded hover:bg-danger/20"
+                              title="Delete Article"
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>
