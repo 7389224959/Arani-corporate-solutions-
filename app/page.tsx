@@ -13,6 +13,10 @@ import {
   SAMPLE_TESTIMONIALS,
   SAMPLE_FAQS,
   PARTNER_LOGOS,
+  DEFAULT_DIRECTOR_DATA,
+  DEFAULT_CAROUSEL_SLIDES,
+  DirectorData,
+  CarouselSlideData,
   Job
 } from '@/lib/sampleData';
 import {
@@ -102,6 +106,74 @@ export default function HomePage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileTab, setMobileTab] = useState<'seeker' | 'employer'>('seeker');
 
+  // CMS Dynamic State (Loads from localStorage with fallbacks)
+  const [directorData, setDirectorData] = useState<DirectorData>(DEFAULT_DIRECTOR_DATA);
+  const [heroCarouselSlides, setHeroCarouselSlides] = useState<CarouselSlideData[]>(DEFAULT_CAROUSEL_SLIDES);
+  const [jobsList, setJobsList] = useState<Job[]>(SAMPLE_JOBS);
+  const [partnerLogosList, setPartnerLogosList] = useState(PARTNER_LOGOS);
+  const [testimonialsList, setTestimonialsList] = useState(SAMPLE_TESTIMONIALS);
+  const [faqsList, setFaqsList] = useState(SAMPLE_FAQS);
+  const [articlesList, setArticlesList] = useState(SAMPLE_ARTICLES);
+  const [liveStats, setLiveStats] = useState({
+    placements: '12,000+',
+    timeToFill: '21 Days',
+    retentionRate: '94%',
+    partners: '350+'
+  });
+
+  // Load CMS data from localStorage on mount & listen to updates from Admin Panel
+  useEffect(() => {
+    const syncFromCms = () => {
+      try {
+        const storedDirector = localStorage.getItem('arani_director_data');
+        if (storedDirector) setDirectorData(JSON.parse(storedDirector));
+
+        const storedHero = localStorage.getItem('arani_hero_slides');
+        if (storedHero) {
+          const parsed = JSON.parse(storedHero);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setHeroCarouselSlides(parsed);
+          }
+        }
+
+        const storedJobs = localStorage.getItem('arani_jobs_list');
+        if (storedJobs) {
+          const parsed = JSON.parse(storedJobs);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setJobsList(parsed);
+          }
+        }
+
+        const storedLogos = localStorage.getItem('arani_partner_logos');
+        if (storedLogos) setPartnerLogosList(JSON.parse(storedLogos));
+
+        const storedTestimonials = localStorage.getItem('arani_testimonials');
+        if (storedTestimonials) setTestimonialsList(JSON.parse(storedTestimonials));
+
+        const storedFaqs = localStorage.getItem('arani_faqs');
+        if (storedFaqs) setFaqsList(JSON.parse(storedFaqs));
+
+        const storedArticles = localStorage.getItem('arani_articles');
+        if (storedArticles) setArticlesList(JSON.parse(storedArticles));
+
+        const storedStats = localStorage.getItem('arani_live_stats');
+        if (storedStats) setLiveStats(JSON.parse(storedStats));
+      } catch (err) {
+        console.error('Error loading CMS data:', err);
+      }
+    };
+
+    syncFromCms();
+
+    window.addEventListener('arani_cms_updated', syncFromCms);
+    window.addEventListener('storage', syncFromCms);
+
+    return () => {
+      window.removeEventListener('arani_cms_updated', syncFromCms);
+      window.removeEventListener('storage', syncFromCms);
+    };
+  }, []);
+
   // Modals & Overlays
   const [roleModalOpen, setRoleModalOpen] = useState(false);
   const [searchOverlayOpen, setSearchOverlayOpen] = useState(false);
@@ -155,12 +227,12 @@ export default function HomePage() {
 
   // Auto rotate carousel every 5 seconds
   useEffect(() => {
-    if (isCarouselPaused) return;
+    if (isCarouselPaused || !heroCarouselSlides.length) return;
     const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % HERO_CAROUSEL_SLIDES.length);
+      setCurrentSlide((prev) => (prev + 1) % heroCarouselSlides.length);
     }, 5000);
     return () => clearInterval(interval);
-  }, [isCarouselPaused]);
+  }, [isCarouselPaused, heroCarouselSlides.length]);
 
   // Track header shrink on scroll
   useEffect(() => {
@@ -172,11 +244,13 @@ export default function HomePage() {
   }, []);
 
   const handleNextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % HERO_CAROUSEL_SLIDES.length);
+    if (!heroCarouselSlides.length) return;
+    setCurrentSlide((prev) => (prev + 1) % heroCarouselSlides.length);
   };
 
   const handlePrevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + HERO_CAROUSEL_SLIDES.length) % HERO_CAROUSEL_SLIDES.length);
+    if (!heroCarouselSlides.length) return;
+    setCurrentSlide((prev) => (prev - 1 + heroCarouselSlides.length) % heroCarouselSlides.length);
   };
 
   const handleJobSelect = (job: Job) => {
@@ -209,14 +283,14 @@ export default function HomePage() {
   };
 
   const filteredJobs = ledgerCategory === 'All'
-    ? SAMPLE_JOBS
-    : SAMPLE_JOBS.filter((j) => j.category === ledgerCategory);
+    ? jobsList
+    : jobsList.filter((j) => j.category === ledgerCategory);
 
   const filteredPartners = partnerCategory === 'All'
-    ? PARTNER_LOGOS
-    : PARTNER_LOGOS.filter((p) => p.category.toLowerCase().includes(partnerCategory.toLowerCase()));
+    ? partnerLogosList
+    : partnerLogosList.filter((p) => p.category.toLowerCase().includes(partnerCategory.toLowerCase()));
 
-  const activeSlideData = HERO_CAROUSEL_SLIDES[currentSlide];
+  const activeSlideData = heroCarouselSlides[currentSlide] || heroCarouselSlides[0];
 
   return (
     <div className="min-h-screen flex flex-col bg-paper text-ink-900 font-sans selection:bg-teal-500 selection:text-surface">
@@ -530,7 +604,7 @@ export default function HomePage() {
       >
         {/* Full-width Carousel Background Images with Gradient Overlays */}
         <div className="absolute inset-0 z-0">
-          {HERO_CAROUSEL_SLIDES.map((slide, idx) => (
+          {heroCarouselSlides.map((slide, idx) => (
             <div
               key={slide.id}
               className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
@@ -768,34 +842,40 @@ export default function HomePage() {
           <div className="bg-gradient-to-r from-paper via-surface to-paper border-2 border-line rounded-2xl p-6 sm:p-10 shadow-card">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
               
-              {/* Left Side: Large Professional Director Photograph */}
+              {/* Left Side: Director Photograph Frame */}
               <div className="lg:col-span-5 relative">
-                <div className="relative mx-auto max-w-md lg:max-w-none rounded-xl overflow-hidden shadow-2xl border-4 border-surface group">
+                <div className="relative mx-auto max-w-md lg:max-w-none rounded-2xl overflow-hidden shadow-2xl border-4 border-surface bg-ink-950 group">
                   <Image
-                    src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=80"
-                    alt="Director of Arani Corporate Solutions"
+                    src={directorData.photoUrl}
+                    alt={`${directorData.name} - ${directorData.title} of Arani Corporate Solutions`}
                     width={600}
                     height={750}
-                    className="w-full h-[380px] sm:h-[440px] object-cover object-top transform group-hover:scale-105 transition-transform duration-700"
+                    className="w-full h-[400px] sm:h-[460px] object-cover object-center transform group-hover:scale-105 transition-transform duration-700"
                     referrerPolicy="no-referrer"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-ink-950/80 via-transparent to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-ink-950/90 via-ink-950/20 to-transparent" />
                   
-                  {/* Floating Experience Badge */}
-                  <div className="absolute bottom-4 left-4 right-4 bg-surface/90 backdrop-blur-md p-3.5 rounded-lg border border-line shadow-lg flex items-center justify-between">
+                  {/* Floating Director Badge */}
+                  <div className="absolute bottom-4 left-4 right-4 bg-surface/95 backdrop-blur-md p-3.5 rounded-xl border border-line shadow-xl flex items-center justify-between">
                     <div>
                       <span className="font-display font-extrabold text-ink-950 text-base block">
-                        Rajesh Sharma
+                        {directorData.name}
                       </span>
-                      <span className="font-mono text-xs text-teal-700 font-bold">
-                        Managing Director
+                      <span className="font-mono text-xs text-teal-700 font-bold flex items-center gap-1">
+                        <span className="w-2 h-2 rounded-full bg-teal-500 animate-pulse"></span>
+                        {directorData.title}
                       </span>
                     </div>
-                    <span className="bg-teal-500 text-surface font-mono font-bold text-[10px] uppercase px-2.5 py-1 rounded">
-                      15+ Yrs Exp
+                    <span className="bg-teal-600 text-surface font-mono font-bold text-[10px] uppercase px-2.5 py-1 rounded-md shadow-xs">
+                      {directorData.experienceTag || 'Director'}
                     </span>
                   </div>
                 </div>
+                
+                {/* Caption below photo */}
+                <p className="text-[11px] font-mono text-slate text-center mt-2.5">
+                  {directorData.badgeText || `📷 Director ${directorData.name} at Arani Corporate Solutions Head Office Desk`}
+                </p>
               </div>
 
               {/* Right Side: Meet Our Director Details & Highlights */}
@@ -811,64 +891,36 @@ export default function HomePage() {
 
                 <div>
                   <h3 className="text-xl font-display font-bold text-ink-900">
-                    Rajesh Sharma <span className="text-sm font-sans font-medium text-slate">| Managing Director</span>
+                    {directorData.name} <span className="text-sm font-sans font-medium text-slate">| {directorData.title}</span>
                   </h3>
                   <p className="text-slate text-sm sm:text-base leading-relaxed mt-2">
-                    With years of experience in recruitment and talent acquisition, he has successfully helped thousands of candidates and organizations achieve their hiring goals. Under his leadership, Arani Corporate Solutions has built a reputation for excellence, trust, and speed across financial and corporate sectors.
+                    {directorData.bio}
                   </p>
                 </div>
 
-                {/* 4 Checkmark Highlights */}
+                {/* Checkmark Highlights */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-2">
-                  <div className="flex items-start gap-3 p-3 bg-surface border border-line rounded-lg shadow-xs">
-                    <div className="w-6 h-6 rounded-full bg-teal-100 text-teal-700 flex items-center justify-center shrink-0 font-bold text-xs mt-0.5">
-                      ✓
+                  {directorData.highlights.map((item, idx) => (
+                    <div key={idx} className="flex items-start gap-3 p-3 bg-surface border border-line rounded-lg shadow-xs">
+                      <div className="w-6 h-6 rounded-full bg-teal-100 text-teal-700 flex items-center justify-center shrink-0 font-bold text-xs mt-0.5">
+                        ✓
+                      </div>
+                      <div>
+                        <h4 className="font-display font-bold text-ink-950 text-sm">{item.title}</h4>
+                        <p className="text-slate text-xs">{item.subtitle}</p>
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="font-display font-bold text-ink-950 text-sm">Industry Experience</h4>
-                      <p className="text-slate text-xs">15+ Years in Banking &amp; Corporate Staffing</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-3 p-3 bg-surface border border-line rounded-lg shadow-xs">
-                    <div className="w-6 h-6 rounded-full bg-teal-100 text-teal-700 flex items-center justify-center shrink-0 font-bold text-xs mt-0.5">
-                      ✓
-                    </div>
-                    <div>
-                      <h4 className="font-display font-bold text-ink-950 text-sm">Successful Placements</h4>
-                      <p className="text-slate text-xs">12,000+ Candidates Hired Nationally</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-3 p-3 bg-surface border border-line rounded-lg shadow-xs">
-                    <div className="w-6 h-6 rounded-full bg-teal-100 text-teal-700 flex items-center justify-center shrink-0 font-bold text-xs mt-0.5">
-                      ✓
-                    </div>
-                    <div>
-                      <h4 className="font-display font-bold text-ink-950 text-sm">Employer Network</h4>
-                      <p className="text-slate text-xs">350+ Partner Enterprises &amp; Tier-1 Banks</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-3 p-3 bg-surface border border-line rounded-lg shadow-xs">
-                    <div className="w-6 h-6 rounded-full bg-teal-100 text-teal-700 flex items-center justify-center shrink-0 font-bold text-xs mt-0.5">
-                      ✓
-                    </div>
-                    <div>
-                      <h4 className="font-display font-bold text-ink-950 text-sm">Candidate Success Rate</h4>
-                      <p className="text-slate text-xs">98% Satisfaction &amp; Retention SLA</p>
-                    </div>
-                  </div>
+                  ))}
                 </div>
 
                 {/* Professional Signature Style Element */}
                 <div className="pt-4 border-t border-line flex items-center justify-between gap-4">
                   <div>
                     <span className="font-serif italic text-2xl text-ink-800 font-bold tracking-wide block">
-                      Rajesh Sharma
+                      {directorData.signatureName || directorData.name}
                     </span>
                     <span className="font-mono text-[11px] text-muted font-bold">
-                      Managing Director, Arani Corporate Solutions
+                      {directorData.signatureTitle || `${directorData.title}, Arani Corporate Solutions`}
                     </span>
                   </div>
 
@@ -878,12 +930,10 @@ export default function HomePage() {
                     </span>
                   </div>
                 </div>
-
               </div>
 
             </div>
           </div>
-
         </div>
       </section>
 

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { AraniLogo } from '@/components/AraniLogo';
-import { SAMPLE_JOBS, SAMPLE_ARTICLES, SAMPLE_TESTIMONIALS, SAMPLE_FAQS, PARTNER_LOGOS, Job, Article, Testimonial, FAQ } from '@/lib/sampleData';
+import { SAMPLE_JOBS, SAMPLE_ARTICLES, SAMPLE_TESTIMONIALS, SAMPLE_FAQS, PARTNER_LOGOS, DEFAULT_DIRECTOR_DATA, DirectorData, Job, Article, Testimonial, FAQ } from '@/lib/sampleData';
 import {
   LayoutDashboard,
   FileText,
@@ -46,7 +46,8 @@ import {
   Star,
   Share2,
   Lock,
-  RefreshCw
+  RefreshCw,
+  User
 } from 'lucide-react';
 
 // Admin CMS Types
@@ -128,7 +129,7 @@ export default function AdminPage() {
   const [isLoggingIn, setIsLoggingIn] = useState<boolean>(false);
 
   const [activeTab, setActiveTab] = useState<'kpi' | 'content' | 'jobs' | 'applicants' | 'crm' | 'users' | 'settings'>('kpi');
-  const [contentSubTab, setContentSubTab] = useState<'hero' | 'promo' | 'articles' | 'videos' | 'testimonials' | 'logos' | 'stats' | 'faqs' | 'ticker'>('hero');
+  const [contentSubTab, setContentSubTab] = useState<'director' | 'hero' | 'promo' | 'articles' | 'videos' | 'testimonials' | 'logos' | 'stats' | 'faqs' | 'ticker'>('director');
 
   // Search & Global Filter State
   const [globalSearch, setGlobalSearch] = useState('');
@@ -191,45 +192,99 @@ export default function AdminPage() {
   };
 
   // Initializing state with defaults or localStorage sync
-  const [jobsList, setJobsList] = useState<Job[]>(SAMPLE_JOBS);
+  const [directorData, setDirectorData] = useState<DirectorData>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('arani_director_data');
+      if (saved) {
+        try { return JSON.parse(saved); } catch (e) {}
+      }
+    }
+    return DEFAULT_DIRECTOR_DATA;
+  });
+
+  const saveDirectorData = (updated: DirectorData) => {
+    setDirectorData(updated);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('arani_director_data', JSON.stringify(updated));
+      window.dispatchEvent(new Event('arani_cms_updated'));
+    }
+    triggerToast('Director Ashutosh Raj Choure profile & photo updated successfully!');
+  };
+
+  const [jobsList, setJobsList] = useState<Job[]>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('arani_jobs_list');
+      if (saved) {
+        try { return JSON.parse(saved); } catch (e) {}
+      }
+    }
+    return SAMPLE_JOBS;
+  });
+
+  const saveJobsList = (updated: Job[]) => {
+    setJobsList(updated);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('arani_jobs_list', JSON.stringify(updated));
+      window.dispatchEvent(new Event('arani_cms_updated'));
+    }
+    triggerToast('Job Board list updated and synced live!');
+  };
+
   const [articlesList, setArticlesList] = useState<Article[]>(SAMPLE_ARTICLES);
   const [testimonialsList, setTestimonialsList] = useState<Testimonial[]>(SAMPLE_TESTIMONIALS);
   const [faqsList, setFaqsList] = useState<FAQ[]>(SAMPLE_FAQS);
   const [partnerLogos, setPartnerLogos] = useState(PARTNER_LOGOS);
 
   // Hero Banners State
-  const [heroSlides, setHeroSlides] = useState<HeroSlide[]>([
-    {
-      id: 'HERO-101',
-      headline: 'Land the Banking or Corporate Role You Have Trained For',
-      highlightText: 'Trained For',
-      subtext: 'Direct access to 2,400+ pre-vetted banking, finance, and corporate openings with top-tier firms. 100% free for job seekers.',
-      ctaText: 'Search 2,400+ Openings',
-      ctaUrl: '/jobs',
-      secondaryCtaText: 'Register Profile Free',
-      secondaryCtaUrl: '/register',
-      audience: 'Seekers',
-      bgImageUrl: 'https://picsum.photos/seed/bankinghero/1600/900',
-      isActive: true,
-      order: 1,
-      utmVariant: 'meta_fb_seekers_q3'
-    },
-    {
-      id: 'HERO-102',
-      headline: 'Hire the Right Banking & HR Talent in 72 Hours',
-      highlightText: '72 Hours',
-      subtext: 'End-to-end recruitment, contract staffing, and background verification with a 90-day placement guarantee.',
-      ctaText: 'Request Talent Shortlist',
-      ctaUrl: '/employers',
-      secondaryCtaText: 'Book HR Consultation',
-      secondaryCtaUrl: '/employers#consultation',
-      audience: 'Employers',
-      bgImageUrl: 'https://picsum.photos/seed/corporatehero/1600/900',
-      isActive: true,
-      order: 2,
-      utmVariant: 'meta_b2b_corporate'
+  const [heroSlides, setHeroSlides] = useState<HeroSlide[]>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('arani_hero_slides');
+      if (saved) {
+        try { return JSON.parse(saved); } catch (e) {}
+      }
     }
-  ]);
+    return [
+      {
+        id: 'HERO-101',
+        headline: 'Land the Banking or Corporate Role You Have Trained For',
+        highlightText: 'Trained For',
+        subtext: 'Direct access to 2,400+ pre-vetted banking, finance, and corporate openings with top-tier firms. 100% free for job seekers.',
+        ctaText: 'Search 2,400+ Openings',
+        ctaUrl: '/jobs',
+        secondaryCtaText: 'Register Profile Free',
+        secondaryCtaUrl: '/register',
+        audience: 'Seekers',
+        bgImageUrl: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1920&q=80',
+        isActive: true,
+        order: 1,
+        utmVariant: 'meta_fb_seekers_q3'
+      },
+      {
+        id: 'HERO-102',
+        headline: 'Hire the Right Banking & HR Talent in 72 Hours',
+        highlightText: '72 Hours',
+        subtext: 'End-to-end recruitment, contract staffing, and background verification with a 90-day placement guarantee.',
+        ctaText: 'Request Talent Shortlist',
+        ctaUrl: '/employers',
+        secondaryCtaText: 'Book HR Consultation',
+        secondaryCtaUrl: '/employers#consultation',
+        audience: 'Employers',
+        bgImageUrl: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1920&q=80',
+        isActive: true,
+        order: 2,
+        utmVariant: 'meta_b2b_corporate'
+      }
+    ];
+  });
+
+  const saveHeroSlides = (updated: HeroSlide[]) => {
+    setHeroSlides(updated);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('arani_hero_slides', JSON.stringify(updated));
+      window.dispatchEvent(new Event('arani_cms_updated'));
+    }
+    triggerToast('Hero Carousel Banners saved and updated live!');
+  };
 
   // Promo Banner State
   const [promoConfig, setPromoConfig] = useState<PromoBannerConfig>({
@@ -951,14 +1006,15 @@ export default function AdminPage() {
                 {/* Sub-navigation tabs */}
                 <div className="flex flex-wrap gap-2 border-b border-line pb-2 text-xs font-mono">
                   {[
-                    { id: 'hero', label: 'Hero Banners' },
-                    { id: 'promo', label: 'Promo Ribbon' },
-                    { id: 'articles', label: 'Articles & News' },
-                    { id: 'testimonials', label: 'Testimonials' },
-                    { id: 'logos', label: 'Partner Logos' },
-                    { id: 'stats', label: 'Live Stats Counters' },
-                    { id: 'faqs', label: 'FAQ Manager' },
-                    { id: 'ticker', label: 'Openings Ticker' }
+                    { id: 'director', label: '📸 Director Photo & Bio' },
+                    { id: 'hero', label: '🖼️ Hero Banners' },
+                    { id: 'promo', label: '📢 Promo Ribbon' },
+                    { id: 'articles', label: '📰 Articles & News' },
+                    { id: 'testimonials', label: '💬 Testimonials' },
+                    { id: 'logos', label: '🏢 Partner Logos' },
+                    { id: 'stats', label: '📊 Live Stats' },
+                    { id: 'faqs', label: '❓ FAQ Manager' },
+                    { id: 'ticker', label: '⚡ Openings Ticker' }
                   ].map((sub) => (
                     <button
                       key={sub.id}
@@ -974,107 +1030,517 @@ export default function AdminPage() {
                   ))}
                 </div>
 
+                {/* DIRECTOR PHOTO & BIO TOOL */}
+                {contentSubTab === 'director' && (
+                  <div className="bg-surface border border-line rounded-lg p-6 shadow-xs space-y-6">
+                    {/* Visual Section Location Indicator */}
+                    <div className="bg-teal-50 border-2 border-teal-200 rounded-lg p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="bg-teal-600 text-surface text-[10px] font-mono font-extrabold uppercase px-2 py-0.5 rounded shadow-2xs">
+                            SECTION 1 LOCATION: #director-trust
+                          </span>
+                          <span className="text-xs font-mono font-bold text-teal-800">
+                            Editing Director Profile &amp; Photograph
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-700 mt-1">
+                          Changes saved here update Director Ashutosh Raj Choure&apos;s photo, name, title, bio, and 4 checkmark highlights directly on the live website.
+                        </p>
+                      </div>
+
+                      <Link
+                        href="/#director-trust"
+                        target="_blank"
+                        className="px-3.5 py-2 bg-surface hover:bg-paper border border-teal-300 text-teal-800 font-mono text-xs font-bold rounded shadow-2xs flex items-center gap-1.5 shrink-0 transition"
+                      >
+                        <span>Preview Main Website</span>
+                        <ExternalLink className="w-3.5 h-3.5 text-teal-600" />
+                      </Link>
+                    </div>
+
+                    {/* Live Card Preview */}
+                    <div className="space-y-2">
+                      <span className="text-xs font-mono text-muted uppercase font-bold tracking-wider">
+                        Live Preview Card (How it appears to website visitors):
+                      </span>
+                      <div className="bg-paper border border-line rounded-xl p-4 flex flex-col sm:flex-row gap-4 items-center">
+                        <div className="relative w-24 h-28 rounded-lg overflow-hidden border-2 border-surface shadow-md shrink-0 bg-ink-950">
+                          <img
+                            src={directorData.photoUrl}
+                            alt={directorData.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="flex-1 space-y-1 text-left">
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-display font-bold text-base text-ink-950">{directorData.name}</h4>
+                            <span className="bg-teal-600 text-surface font-mono font-bold text-[9px] uppercase px-2 py-0.5 rounded">
+                              {directorData.experienceTag || 'Director'}
+                            </span>
+                          </div>
+                          <p className="text-xs font-mono font-bold text-teal-700">{directorData.title}</p>
+                          <p className="text-xs text-slate line-clamp-2">{directorData.bio}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Editor Form */}
+                    <div className="space-y-5 border-t border-line pt-4">
+                      <h4 className="font-display font-bold text-base text-ink-900 flex items-center gap-2">
+                        <User className="w-5 h-5 text-teal-600" />
+                        <span>Director Information &amp; Photograph Settings</span>
+                      </h4>
+
+                      {/* Photo Selector with Presets */}
+                      <div className="space-y-2 bg-paper p-4 rounded-lg border border-line">
+                        <label className="block text-xs font-mono font-bold text-ink-900 uppercase">
+                          Director Photograph Image URL
+                        </label>
+                        <input
+                          type="text"
+                          value={directorData.photoUrl}
+                          onChange={(e) => setDirectorData({ ...directorData, photoUrl: e.target.value })}
+                          placeholder="Paste image URL here..."
+                          className="w-full px-3 py-2 bg-surface border border-line rounded text-xs font-mono text-ink-900 focus:border-teal-500 outline-none"
+                        />
+
+                        {/* Quick Preset Choice Buttons for Beginners */}
+                        <div className="pt-2">
+                          <span className="text-[10px] font-mono font-bold text-muted uppercase block mb-1.5">
+                            ⚡ Quick 1-Click Preset Photo Picker for Beginners:
+                          </span>
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                            {[
+                              { label: 'Desk Office Photo (Current)', url: 'https://images.unsplash.com/photo-1556157382-97eda2d62296?auto=format&fit=crop&w=800&q=80' },
+                              { label: 'Executive Boardroom', url: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=800&q=80' },
+                              { label: 'Corporate Leader', url: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=800&q=80' },
+                              { label: 'Managing Director', url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=80' }
+                            ].map((preset, idx) => (
+                              <button
+                                key={idx}
+                                type="button"
+                                onClick={() => setDirectorData({ ...directorData, photoUrl: preset.url })}
+                                className={`p-2 border rounded text-[11px] text-left transition flex items-center gap-2 ${
+                                  directorData.photoUrl === preset.url
+                                    ? 'bg-teal-50 border-teal-500 text-teal-800 font-bold ring-1 ring-teal-400'
+                                    : 'bg-surface border-line hover:bg-paper text-slate'
+                                }`}
+                              >
+                                <img src={preset.url} alt="" className="w-8 h-8 rounded object-cover shrink-0" />
+                                <span className="line-clamp-2 leading-tight">{preset.label}</span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Name & Title Inputs */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                          <label className="block text-xs font-mono font-bold text-muted uppercase mb-1">
+                            Director Full Name
+                          </label>
+                          <input
+                            type="text"
+                            value={directorData.name}
+                            onChange={(e) => setDirectorData({ ...directorData, name: e.target.value })}
+                            className="w-full px-3 py-2 bg-paper border border-line rounded text-xs text-ink-900 font-bold"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-mono font-bold text-muted uppercase mb-1">
+                            Designation / Official Title
+                          </label>
+                          <input
+                            type="text"
+                            value={directorData.title}
+                            onChange={(e) => setDirectorData({ ...directorData, title: e.target.value })}
+                            className="w-full px-3 py-2 bg-paper border border-line rounded text-xs text-ink-900 font-bold"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-mono font-bold text-muted uppercase mb-1">
+                            Experience Tag / Badge
+                          </label>
+                          <input
+                            type="text"
+                            value={directorData.experienceTag}
+                            onChange={(e) => setDirectorData({ ...directorData, experienceTag: e.target.value })}
+                            className="w-full px-3 py-2 bg-paper border border-line rounded text-xs text-ink-900 font-bold"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Photo Caption */}
+                      <div>
+                        <label className="block text-xs font-mono font-bold text-muted uppercase mb-1">
+                          Photo Caption Tagline
+                        </label>
+                        <input
+                          type="text"
+                          value={directorData.badgeText}
+                          onChange={(e) => setDirectorData({ ...directorData, badgeText: e.target.value })}
+                          className="w-full px-3 py-2 bg-paper border border-line rounded text-xs text-ink-900"
+                        />
+                      </div>
+
+                      {/* Bio Speech */}
+                      <div>
+                        <label className="block text-xs font-mono font-bold text-muted uppercase mb-1">
+                          Director Bio &amp; Corporate Vision Speech
+                        </label>
+                        <textarea
+                          rows={4}
+                          value={directorData.bio}
+                          onChange={(e) => setDirectorData({ ...directorData, bio: e.target.value })}
+                          className="w-full px-3 py-2 bg-paper border border-line rounded text-xs text-ink-900 leading-relaxed font-sans"
+                        />
+                      </div>
+
+                      {/* 4 Checkmark Highlights Editor */}
+                      <div className="space-y-3 pt-2">
+                        <span className="text-xs font-mono font-bold text-ink-900 uppercase block">
+                          Edit 4 Director Trust Highlights (Checkmark Boxes):
+                        </span>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {directorData.highlights.map((item, idx) => (
+                            <div key={idx} className="p-3 bg-paper border border-line rounded space-y-2">
+                              <span className="font-mono text-[10px] font-bold text-teal-700 uppercase">
+                                Highlight #{idx + 1}
+                              </span>
+                              <input
+                                type="text"
+                                value={item.title}
+                                onChange={(e) => {
+                                  const updated = [...directorData.highlights];
+                                  updated[idx] = { ...updated[idx], title: e.target.value };
+                                  setDirectorData({ ...directorData, highlights: updated });
+                                }}
+                                placeholder="Highlight Title"
+                                className="w-full px-2.5 py-1.5 bg-surface border border-line rounded text-xs font-bold text-ink-900"
+                              />
+                              <input
+                                type="text"
+                                value={item.subtitle}
+                                onChange={(e) => {
+                                  const updated = [...directorData.highlights];
+                                  updated[idx] = { ...updated[idx], subtitle: e.target.value };
+                                  setDirectorData({ ...directorData, highlights: updated });
+                                }}
+                                placeholder="Subtitle / Stats"
+                                className="w-full px-2.5 py-1.5 bg-surface border border-line rounded text-xs text-slate"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Save Action Bar */}
+                      <div className="pt-4 border-t border-line flex items-center justify-between">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setDirectorData(DEFAULT_DIRECTOR_DATA);
+                            saveDirectorData(DEFAULT_DIRECTOR_DATA);
+                          }}
+                          className="px-3 py-2 bg-paper border border-line hover:bg-surface text-slate text-xs font-mono rounded transition"
+                        >
+                          Reset to Original Director Defaults
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => saveDirectorData(directorData)}
+                          className="px-6 py-2.5 bg-teal-600 hover:bg-teal-500 text-surface font-bold text-xs uppercase rounded shadow-md transition flex items-center gap-2"
+                        >
+                          <Save className="w-4 h-4" />
+                          <span>Save Director Profile &amp; Photo</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* HERO BANNERS TOOL */}
                 {contentSubTab === 'hero' && (
                   <div className="bg-surface border border-line rounded-lg p-6 shadow-xs space-y-6">
+                    {/* Location Indicator Banner */}
+                    <div className="bg-ink-950 text-surface rounded-lg p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border border-ink-800">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="bg-teal-500 text-ink-950 text-[10px] font-mono font-extrabold uppercase px-2 py-0.5 rounded">
+                            SECTION LOCATION: #hero-section
+                          </span>
+                          <span className="text-xs font-mono font-bold text-teal-300">
+                            Editing Homepage Hero Banner Carousel
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-300 mt-1">
+                          Manage sliding background images, main titles, subtext, and call-to-action buttons for website visitors.
+                        </p>
+                      </div>
+
+                      <Link
+                        href="/#hero-section"
+                        target="_blank"
+                        className="px-3.5 py-2 bg-ink-800 hover:bg-ink-700 border border-ink-700 text-teal-300 font-mono text-xs font-bold rounded flex items-center gap-1.5 shrink-0 transition"
+                      >
+                        <span>Preview Hero Banner</span>
+                        <ExternalLink className="w-3.5 h-3.5 text-teal-400" />
+                      </Link>
+                    </div>
+
                     <div className="flex items-center justify-between pb-4 border-b border-line">
                       <div>
-                        <h3 className="font-display font-bold text-lg text-ink-900">Hero Carousel &amp; A/B Campaign Slides</h3>
-                        <p className="text-xs text-slate">Manage hero headlines, background imagery, and campaign UTM variations.</p>
+                        <h3 className="font-display font-bold text-lg text-ink-900">Hero Carousel Banners ({heroSlides.length} Slides)</h3>
+                        <p className="text-xs text-slate">Directly edit slide titles, images, and CTA buttons below.</p>
                       </div>
                       <button
                         onClick={() => {
                           const newSlide: HeroSlide = {
                             id: `HERO-${100 + heroSlides.length + 1}`,
-                            headline: 'New Campaign Hero Headline for Banking Seekers',
-                            highlightText: 'Banking Seekers',
-                            subtext: 'Description for campaign slide...',
-                            ctaText: 'Explore Roles',
+                            headline: 'Premier Placement & Banking Recruitment Services',
+                            highlightText: 'Banking Recruitment',
+                            subtext: 'Connecting candidates to top corporate banking careers across India.',
+                            ctaText: 'Search Openings',
                             ctaUrl: '/jobs',
-                            secondaryCtaText: 'Contact Advisor',
-                            secondaryCtaUrl: '/contact',
+                            secondaryCtaText: 'Contact Recruiter',
+                            secondaryCtaUrl: '/employers',
                             audience: 'Seekers',
-                            bgImageUrl: 'https://picsum.photos/seed/heronew/1600/900',
+                            bgImageUrl: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1920&q=80',
                             isActive: true,
                             order: heroSlides.length + 1,
                             utmVariant: 'meta_ad_new_variant'
                           };
-                          setHeroSlides([...heroSlides, newSlide]);
-                          triggerToast('New Hero Slide added.');
+                          const updated = [...heroSlides, newSlide];
+                          setHeroSlides(updated);
+                          saveHeroSlides(updated);
                         }}
-                        className="px-3.5 py-2 bg-teal-600 text-surface font-bold text-xs uppercase rounded hover:bg-teal-500 transition flex items-center gap-1.5"
+                        className="px-3.5 py-2 bg-teal-600 text-surface font-bold text-xs uppercase rounded hover:bg-teal-500 transition flex items-center gap-1.5 shadow-sm"
                       >
                         <Plus className="w-4 h-4" />
-                        Add Hero Slide
+                        Add New Hero Slide
                       </button>
                     </div>
 
-                    <div className="space-y-4">
+                    <div className="space-y-6">
                       {heroSlides.map((slide, idx) => (
-                        <div key={slide.id} className="p-4 bg-paper border border-line rounded-lg space-y-3 font-sans">
-                          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                        <div key={slide.id} className="p-5 bg-paper border-2 border-line rounded-xl space-y-4 font-sans shadow-2xs">
+                          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-line">
                             <div className="flex items-center gap-3">
-                              <span className="font-mono text-xs font-bold bg-ink-800 text-surface px-2 py-1 rounded">
-                                #{slide.order}
+                              <span className="font-mono text-xs font-bold bg-ink-800 text-surface px-2.5 py-1 rounded">
+                                Slide #{idx + 1}
                               </span>
-                              <div>
-                                <span className="font-mono text-[10px] text-teal-700 font-bold uppercase tracking-wider block">
-                                  Audience: {slide.audience} • UTM: {slide.utmVariant || 'Default'}
-                                </span>
-                                <h4 className="font-display font-bold text-base text-ink-900">{slide.headline}</h4>
-                              </div>
+                              <span className="font-mono text-xs text-teal-700 font-bold uppercase">
+                                ID: {slide.id}
+                              </span>
                             </div>
 
                             <div className="flex items-center gap-2">
                               <button
+                                type="button"
                                 onClick={() => {
                                   const updated = heroSlides.map((s) => (s.id === slide.id ? { ...s, isActive: !s.isActive } : s));
                                   setHeroSlides(updated);
                                 }}
-                                className={`px-2.5 py-1 rounded font-mono text-xs font-bold ${
-                                  slide.isActive ? 'bg-ok/10 text-ok border border-ok/30' : 'bg-slate/10 text-slate'
+                                className={`px-3 py-1 rounded font-mono text-xs font-bold transition ${
+                                  slide.isActive ? 'bg-ok/10 text-ok border border-ok/30' : 'bg-slate/10 text-slate border border-slate/20'
                                 }`}
                               >
-                                {slide.isActive ? 'Active' : 'Inactive'}
+                                {slide.isActive ? '✓ Active on Website' : 'Hidden Slide'}
                               </button>
 
                               <button
+                                type="button"
                                 onClick={() => {
                                   const dup: HeroSlide = {
                                     ...slide,
                                     id: `HERO-AB-${Math.floor(Math.random() * 1000)}`,
-                                    headline: `[A/B Variant] ${slide.headline}`,
+                                    headline: `[Variant] ${slide.headline}`,
                                     utmVariant: `variant_ab_${Math.floor(Math.random() * 100)}`
                                   };
-                                  setHeroSlides([...heroSlides, dup]);
-                                  triggerToast('Duplicated as A/B Campaign Variant');
+                                  const updated = [...heroSlides, dup];
+                                  setHeroSlides(updated);
+                                  saveHeroSlides(updated);
                                 }}
                                 className="p-1.5 bg-surface border border-line rounded hover:bg-paper text-slate"
-                                title="Duplicate as A/B Variant"
+                                title="Duplicate Slide"
                               >
                                 <Copy className="w-4 h-4" />
                               </button>
 
                               <button
+                                type="button"
                                 onClick={() => {
-                                  setHeroSlides(heroSlides.filter((s) => s.id !== slide.id));
-                                  triggerToast('Hero slide removed');
+                                  const updated = heroSlides.filter((s) => s.id !== slide.id);
+                                  setHeroSlides(updated);
+                                  saveHeroSlides(updated);
                                 }}
                                 className="p-1.5 bg-danger/10 text-danger rounded hover:bg-danger/20"
+                                title="Delete Slide"
                               >
                                 <Trash2 className="w-4 h-4" />
                               </button>
                             </div>
                           </div>
 
-                          <p className="text-xs text-slate">{slide.subtext}</p>
+                          {/* Editable Fields */}
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <label className="block text-xs font-mono font-bold text-ink-900 uppercase mb-1">
+                                Hero Slide Title / Headline
+                              </label>
+                              <input
+                                type="text"
+                                value={slide.headline}
+                                onChange={(e) => {
+                                  const updated = heroSlides.map((s) => (s.id === slide.id ? { ...s, headline: e.target.value } : s));
+                                  setHeroSlides(updated);
+                                }}
+                                className="w-full px-3 py-2 bg-surface border border-line rounded text-xs text-ink-900 font-bold"
+                              />
+                            </div>
 
-                          <div className="flex flex-wrap items-center gap-4 text-xs font-mono pt-2 border-t border-line text-slate">
-                            <span>Primary CTA: <strong className="text-teal-700">{slide.ctaText}</strong> ({slide.ctaUrl})</span>
-                            <span>Secondary CTA: <strong className="text-ink-800">{slide.secondaryCtaText}</strong></span>
+                            <div>
+                              <label className="block text-xs font-mono font-bold text-ink-900 uppercase mb-1">
+                                Subtitle / Supporting Copy
+                              </label>
+                              <input
+                                type="text"
+                                value={slide.subtext}
+                                onChange={(e) => {
+                                  const updated = heroSlides.map((s) => (s.id === slide.id ? { ...s, subtext: e.target.value } : s));
+                                  setHeroSlides(updated);
+                                }}
+                                className="w-full px-3 py-2 bg-surface border border-line rounded text-xs text-ink-900"
+                              />
+                            </div>
+                          </div>
+
+                          {/* Background Image URL with 1-click Preset Selector */}
+                          <div className="space-y-2 bg-surface p-3 rounded-lg border border-line">
+                            <label className="block text-xs font-mono font-bold text-ink-900 uppercase">
+                              Background Image URL
+                            </label>
+                            <input
+                              type="text"
+                              value={slide.bgImageUrl}
+                              onChange={(e) => {
+                                const updated = heroSlides.map((s) => (s.id === slide.id ? { ...s, bgImageUrl: e.target.value } : s));
+                                setHeroSlides(updated);
+                              }}
+                              className="w-full px-3 py-2 bg-paper border border-line rounded text-xs font-mono text-ink-900"
+                            />
+                            <div className="pt-1">
+                              <span className="text-[10px] font-mono text-muted uppercase block mb-1">
+                                ⚡ Quick Corporate Background Image Presets:
+                              </span>
+                              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                                {[
+                                  { label: 'Modern Highrise Office', url: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1920&q=80' },
+                                  { label: 'Corporate Desk & Team', url: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1920&q=80' },
+                                  { label: 'Banking & Financial Hub', url: 'https://images.unsplash.com/photo-1554469384-e58fac16e23a?auto=format&fit=crop&w=1920&q=80' },
+                                  { label: 'Executive Boardroom', url: 'https://images.unsplash.com/photo-1517502884422-41eaead166d4?auto=format&fit=crop&w=1920&q=80' }
+                                ].map((preset, pIdx) => (
+                                  <button
+                                    key={pIdx}
+                                    type="button"
+                                    onClick={() => {
+                                      const updated = heroSlides.map((s) => (s.id === slide.id ? { ...s, bgImageUrl: preset.url } : s));
+                                      setHeroSlides(updated);
+                                    }}
+                                    className="p-1.5 bg-paper border border-line hover:border-teal-500 rounded text-[10px] text-left truncate flex items-center gap-2"
+                                  >
+                                    <img src={preset.url} alt="" className="w-6 h-6 rounded object-cover shrink-0" />
+                                    <span className="truncate">{preset.label}</span>
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* CTA Configuration */}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                            <div>
+                              <label className="block text-[11px] font-mono font-bold text-slate uppercase mb-1">
+                                Primary CTA Button Text
+                              </label>
+                              <input
+                                type="text"
+                                value={slide.ctaText}
+                                onChange={(e) => {
+                                  const updated = heroSlides.map((s) => (s.id === slide.id ? { ...s, ctaText: e.target.value } : s));
+                                  setHeroSlides(updated);
+                                }}
+                                className="w-full px-2.5 py-1.5 bg-surface border border-line rounded text-xs font-bold text-teal-700"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block text-[11px] font-mono font-bold text-slate uppercase mb-1">
+                                Primary CTA URL Link
+                              </label>
+                              <input
+                                type="text"
+                                value={slide.ctaUrl}
+                                onChange={(e) => {
+                                  const updated = heroSlides.map((s) => (s.id === slide.id ? { ...s, ctaUrl: e.target.value } : s));
+                                  setHeroSlides(updated);
+                                }}
+                                className="w-full px-2.5 py-1.5 bg-surface border border-line rounded text-xs font-mono text-slate"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block text-[11px] font-mono font-bold text-slate uppercase mb-1">
+                                Secondary CTA Button Text
+                              </label>
+                              <input
+                                type="text"
+                                value={slide.secondaryCtaText}
+                                onChange={(e) => {
+                                  const updated = heroSlides.map((s) => (s.id === slide.id ? { ...s, secondaryCtaText: e.target.value } : s));
+                                  setHeroSlides(updated);
+                                }}
+                                className="w-full px-2.5 py-1.5 bg-surface border border-line rounded text-xs font-bold text-ink-900"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block text-[11px] font-mono font-bold text-slate uppercase mb-1">
+                                Target Audience Category
+                              </label>
+                              <select
+                                value={slide.audience}
+                                onChange={(e) => {
+                                  const updated = heroSlides.map((s) => (s.id === slide.id ? { ...s, audience: e.target.value as any } : s));
+                                  setHeroSlides(updated);
+                                }}
+                                className="w-full px-2.5 py-1.5 bg-surface border border-line rounded text-xs font-mono text-ink-900"
+                              >
+                                <option value="Seekers">Job Seekers</option>
+                                <option value="Employers">Employers / HR</option>
+                                <option value="Both">Both Audiences</option>
+                              </select>
+                            </div>
                           </div>
                         </div>
                       ))}
+                    </div>
+
+                    {/* Big Save Button */}
+                    <div className="pt-4 border-t border-line flex justify-end">
+                      <button
+                        type="button"
+                        onClick={() => saveHeroSlides(heroSlides)}
+                        className="px-6 py-3 bg-teal-600 hover:bg-teal-500 text-surface font-bold text-xs uppercase rounded shadow-md transition flex items-center gap-2"
+                      >
+                        <Save className="w-4 h-4" />
+                        <span>Save All Hero Carousel Banners Live</span>
+                      </button>
                     </div>
                   </div>
                 )}

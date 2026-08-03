@@ -1,3 +1,90 @@
+export interface DirectorData {
+  name: string;
+  title: string;
+  photoUrl: string;
+  badgeText: string;
+  experienceTag: string;
+  bio: string;
+  signatureName: string;
+  signatureTitle: string;
+  highlights: { title: string; subtitle: string }[];
+}
+
+export const DEFAULT_DIRECTOR_DATA: DirectorData = {
+  name: 'Ashutosh Raj Choure',
+  title: 'Managing Director & Founder',
+  photoUrl: 'https://images.unsplash.com/photo-1556157382-97eda2d62296?auto=format&fit=crop&w=800&q=80',
+  badgeText: '📷 Director Ashutosh Raj Choure at Arani Corporate Solutions Head Office Desk',
+  experienceTag: 'Director',
+  bio: 'Under the leadership of Director Ashutosh Raj Choure, Arani Corporate Solutions has established itself as a premier recruitment, staffing, and placement consultancy. He is dedicated to connecting ambitious job seekers with leading banking and corporate opportunities while providing employers with top-tier, screened talent.',
+  signatureName: 'Ashutosh Raj Choure',
+  signatureTitle: 'Managing Director, Arani Corporate Solutions',
+  highlights: [
+    { title: 'Industry Experience', subtitle: '15+ Years in Banking & Corporate Staffing' },
+    { title: 'Successful Placements', subtitle: '12,000+ Candidates Hired Nationally' },
+    { title: 'Employer Network', subtitle: '350+ Partner Enterprises & Tier-1 Banks' },
+    { title: 'Candidate Success Rate', subtitle: '98% Satisfaction & Retention SLA' }
+  ]
+};
+
+export interface CarouselSlideData {
+  id: number | string;
+  title: string;
+  image: string;
+  badge: string;
+  headline: string;
+  subheadline: string;
+  tag: string;
+}
+
+export const DEFAULT_CAROUSEL_SLIDES: CarouselSlideData[] = [
+  {
+    id: 1,
+    title: 'Office Reception & Corporate Headquarters',
+    image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1920&q=80',
+    badge: 'Trusted Recruitment & Placement Consultancy',
+    headline: 'Connecting Talent With Opportunity',
+    subheadline: 'Arani Corporate Solutions helps job seekers secure opportunities with leading companies while helping businesses hire qualified professionals across multiple industries.',
+    tag: 'Corporate Headquarters'
+  },
+  {
+    id: 2,
+    title: 'Executive Recruitment & Talent Consultation',
+    image: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1920&q=80',
+    badge: '350+ Enterprise & Banking Employer Partners',
+    headline: 'Engineered Talent for High-Growth Businesses',
+    subheadline: 'From banking branch leadership to corporate executive positions, we deliver pre-screened, background-verified candidates within 72 hours.',
+    tag: 'Talent Acquisition'
+  },
+  {
+    id: 3,
+    title: '1-on-1 Candidate Placement Session',
+    image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=1920&q=80',
+    badge: '100% Free Placement Service For Job Seekers',
+    headline: 'Accelerate Your Career in Banking & Corporate',
+    subheadline: 'Access unadvertised vacancies in premier financial institutions with personalized resume guidance and zero candidate placement fees.',
+    tag: 'Career Growth'
+  },
+  {
+    id: 4,
+    title: 'Modern Corporate Office Workspace',
+    image: 'https://images.unsplash.com/photo-1497215728101-856f4ea42174?auto=format&fit=crop&w=1920&q=80',
+    badge: '12,000+ Successful Placements Made',
+    headline: 'End-to-End HR & Staffing Advisory',
+    subheadline: 'Permanent recruitment, contract staffing, payroll administration, and background verification backed by a 90-day replacement guarantee.',
+    tag: 'HR Solutions'
+  },
+  {
+    id: 5,
+    title: 'Candidate Interview & Screening Session',
+    image: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=1920&q=80',
+    badge: '98% Employer & Candidate Retention Rate',
+    headline: 'Quality Hiring. Zero Recruitment Delay.',
+    subheadline: 'Rigorous multi-stage screening and background verification ensure long-term employee retention and immediate office productivity.',
+    tag: 'Executive Search'
+  }
+];
+
 export interface Job {
   id: string;
   title: string;
