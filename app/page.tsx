@@ -643,6 +643,124 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* LIVE JOB OPENINGS SECTION (Kept directly below the banner section) */}
+      <section id="live-job-openings" className="py-8 bg-paper border-b border-line">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="bg-surface border border-line rounded-2xl p-5 sm:p-6 shadow-card space-y-4">
+            
+            {/* Header / Filter Bar */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-line pb-4">
+              <div className="flex items-center gap-3">
+                <span className="flex h-3 w-3 relative">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-teal-500"></span>
+                </span>
+                <div>
+                  <h3 className="font-display font-extrabold text-ink-950 text-base sm:text-lg flex items-center gap-2">
+                    Live Job Openings
+                    <span className="font-mono text-xs font-bold text-teal-800 bg-teal-50 border border-teal-200 px-2.5 py-0.5 rounded-full">
+                      2,400+ Active
+                    </span>
+                  </h3>
+                  <p className="text-xs text-slate font-medium">Explore instant hiring drives across Tier-1 Banks &amp; Top Corporate Firms</p>
+                </div>
+              </div>
+
+              {/* Quick Search & Filter Inputs */}
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-paper border border-line rounded-lg focus-within:border-teal-500 text-xs min-w-[180px]">
+                  <Search className="w-3.5 h-3.5 text-teal-600 shrink-0" />
+                  <input
+                    type="text"
+                    value={heroSearchKeyword}
+                    onChange={(e) => setHeroSearchKeyword(e.target.value)}
+                    placeholder="Search designation or company..."
+                    className="w-full bg-transparent text-xs font-semibold text-ink-950 focus:outline-none placeholder:text-slate-400"
+                  />
+                </div>
+                <select
+                  value={heroSearchCategory}
+                  onChange={(e) => setHeroSearchCategory(e.target.value)}
+                  className="bg-paper text-xs font-bold text-ink-900 border border-line rounded-lg px-3 py-2 focus:outline-none cursor-pointer"
+                >
+                  <option value="All">All Sectors</option>
+                  <option value="Banking">Banking</option>
+                  <option value="Corporate">Corporate</option>
+                  <option value="Finance">Finance</option>
+                  <option value="IT">IT</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Live Job Cards Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+              {SAMPLE_JOBS
+                .filter((job) => {
+                  const matchesKeyword = heroSearchKeyword === '' ||
+                    job.title.toLowerCase().includes(heroSearchKeyword.toLowerCase()) ||
+                    job.companyName.toLowerCase().includes(heroSearchKeyword.toLowerCase());
+                  const matchesCat = heroSearchCategory === 'All' || job.category === heroSearchCategory;
+                  return matchesKeyword && matchesCat;
+                })
+                .slice(0, 4)
+                .map((job) => (
+                  <div
+                    key={job.id}
+                    onClick={() => handleJobSelect(job)}
+                    className="p-4 bg-surface border border-line hover:border-teal-500 rounded-xl shadow-2xs hover:shadow-md transition-all duration-200 cursor-pointer group flex flex-col justify-between gap-3 relative overflow-hidden"
+                  >
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-mono text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-teal-100 text-teal-800">
+                          {job.category}
+                        </span>
+                        {job.isUrgent && (
+                          <span className="font-mono text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-amber-100 text-amber-800">
+                            Urgent Drive
+                          </span>
+                        )}
+                      </div>
+                      <h4 className="font-display font-bold text-sm text-ink-950 group-hover:text-teal-600 transition-colors line-clamp-1">
+                        {job.title}
+                      </h4>
+                      <div className="text-xs text-slate font-medium truncate">
+                        {job.companyName} • <span className="font-mono font-bold text-teal-700">{job.salary.split('(')[0]}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-2 border-t border-line/60 text-xs font-mono">
+                      <span className="text-slate-400">{job.location}</span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleJobSelect(job);
+                        }}
+                        className="px-3 py-1 bg-teal-500 group-hover:bg-teal-600 text-surface text-xs font-bold rounded shadow-xs transition flex items-center gap-1"
+                      >
+                        Apply <ArrowUpRight className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+            </div>
+
+            {/* Bottom Link Bar */}
+            <div className="pt-2 flex items-center justify-between text-xs font-mono text-slate border-t border-line/60">
+              <span className="flex items-center gap-1.5 text-teal-700 font-bold">
+                ⚡ 100% Free Service For Job Candidates
+              </span>
+              <a
+                href="#jobs-ledger"
+                className="text-teal-700 font-bold hover:underline flex items-center gap-1"
+              >
+                View All 2,400+ Job Openings Below →
+              </a>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
       {/* DIRECTOR TRUST SECTION (Immediately Below Hero Banner) */}
       <section id="director-trust" className="py-16 md:py-24 bg-surface border-b border-line">
         <div className="max-w-7xl mx-auto px-4">
