@@ -674,9 +674,7 @@ export default function HomePage() {
               <button
                 onClick={() => {
                   if (audienceView === 'seeker') {
-                    const el = document.getElementById('jobs-ledger');
-                    if (el) el.scrollIntoView({ behavior: 'smooth' });
-                    else setSearchOverlayOpen(true);
+                    window.location.href = '/candidate/dashboard';
                   } else {
                     const el = document.getElementById('employer-spotlight');
                     if (el) el.scrollIntoView({ behavior: 'smooth' });
@@ -685,7 +683,7 @@ export default function HomePage() {
                 }}
                 className="px-7 py-3.5 bg-teal-500 hover:bg-teal-600 text-surface font-extrabold text-sm sm:text-base rounded-md shadow-lg hover:shadow-teal-500/30 transition-all flex items-center gap-2 transform hover:-translate-y-0.5"
               >
-                <span>{audienceView === 'seeker' ? 'Explore Opportunities' : 'Request Talent Shortlist'}</span>
+                <span>{audienceView === 'seeker' ? 'Get a Job Now' : 'Request Talent Shortlist'}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
 

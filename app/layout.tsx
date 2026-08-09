@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   title: 'Arani Corporate Solutions | Banking & Corporate Recruitment, HR Advisory',
   description: 'Connecting top talent with leading banks and enterprise corporations. End-to-end HR services, contract staffing, and career placement.',
   verification: {
-    google: 'google97018c4eebf6d727',
+    google: 'googlecde01b7b69da4d8f',
   },
 };
 
