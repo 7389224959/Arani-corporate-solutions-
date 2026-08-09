@@ -6,6 +6,7 @@ import { AraniLogo } from '@/components/AraniLogo';
 import { PromoBanner } from '@/components/PromoBanner';
 import { JobQuickModal } from '@/components/JobQuickModal';
 import { RoleChoiceModal } from '@/components/RoleChoiceModal';
+import { CounsellingModal } from '@/components/CounsellingModal';
 import { SearchOverlay } from '@/components/SearchOverlay';
 import {
   SAMPLE_JOBS,
@@ -176,6 +177,7 @@ export default function HomePage() {
 
   // Modals & Overlays
   const [roleModalOpen, setRoleModalOpen] = useState(false);
+  const [counsellingModalOpen, setCounsellingModalOpen] = useState(false);
   const [searchOverlayOpen, setSearchOverlayOpen] = useState(false);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
 
@@ -318,15 +320,13 @@ export default function HomePage() {
 
           {/* Right badges & links */}
           <div className="flex items-center gap-2 sm:gap-3 shrink-0 text-[10px] sm:text-[11px]">
-            <span className="bg-teal-500/20 text-teal-300 px-2 py-0.5 rounded font-bold whitespace-nowrap">
-              FREE FOR CANDIDATES
-            </span>
-            <a
-              href="/admin"
-              className="text-teal-400 hover:text-surface font-bold underline flex items-center gap-1 whitespace-nowrap"
+            <button
+              onClick={() => setRoleModalOpen(true)}
+              className="bg-teal-500 hover:bg-teal-600 text-surface px-2.5 py-0.5 rounded font-bold whitespace-nowrap transition flex items-center gap-1"
             >
-              <span>Staff Portal</span>
-            </a>
+              <User className="w-3 h-3" />
+              <span>Login</span>
+            </button>
             <span className="hidden xs:flex items-center gap-1 cursor-pointer hover:text-surface whitespace-nowrap">
               <Globe className="w-3.5 h-3.5 text-teal-400 shrink-0" /> EN / IN
             </span>
@@ -674,7 +674,7 @@ export default function HomePage() {
               <button
                 onClick={() => {
                   if (audienceView === 'seeker') {
-                    window.location.href = '/candidate/dashboard';
+                    setRoleModalOpen(true);
                   } else {
                     const el = document.getElementById('employer-spotlight');
                     if (el) el.scrollIntoView({ behavior: 'smooth' });
@@ -688,10 +688,17 @@ export default function HomePage() {
               </button>
 
               <button
-                onClick={() => setRoleModalOpen(true)}
-                className="px-6 py-3.5 bg-surface/10 hover:bg-surface/20 text-surface border border-surface/30 font-bold text-sm rounded-md backdrop-blur-md transition-all"
+                onClick={() => {
+                  if (audienceView === 'seeker') {
+                    setCounsellingModalOpen(true);
+                  } else {
+                    setRoleModalOpen(true);
+                  }
+                }}
+                className="px-6 py-3.5 bg-surface/10 hover:bg-surface/20 text-surface border border-surface/30 font-bold text-sm sm:text-base rounded-md backdrop-blur-md transition-all flex items-center gap-2 transform hover:-translate-y-0.5"
               >
-                {audienceView === 'seeker' ? 'Upload Resume' : 'Schedule HR Call'}
+                <span>{audienceView === 'seeker' ? 'Get Free Job Counselling' : 'Schedule HR Call'}</span>
+                <Phone className="w-4 h-4 text-teal-400" />
               </button>
             </div>
 
@@ -1877,6 +1884,11 @@ export default function HomePage() {
           setRoleModalOpen(false);
           alert(`Redirecting to ${role === 'candidate' ? 'Candidate Registration & Profile Builder' : 'Employer Requirement Intake'}...`);
         }}
+      />
+
+      <CounsellingModal
+        isOpen={counsellingModalOpen}
+        onClose={() => setCounsellingModalOpen(false)}
       />
 
       <SearchOverlay

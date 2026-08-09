@@ -29,7 +29,7 @@ import {
 } from 'lucide-react';
 
 export default function CandidateDashboardPage() {
-  const [activeTab, setActiveTab] = useState<'overview' | 'applications' | 'profile' | 'saved' | 'alerts' | 'messages'>('overview');
+  const [activeTab, setActiveTab] = useState<'available' | 'overview' | 'applications' | 'profile' | 'saved' | 'alerts' | 'messages'>('available');
 
   // Candidate Profile State with detailed Phase 3 fields
   const [profile, setProfile] = useState({
@@ -104,7 +104,7 @@ export default function CandidateDashboardPage() {
   ]);
 
   // Saved Jobs
-  const savedJobs = SAMPLE_JOBS.slice(0, 3);
+  const [savedJobs, setSavedJobs] = useState(SAMPLE_JOBS.slice(0, 3));
 
   // Messages State
   const [messages, setMessages] = useState([
@@ -173,6 +173,18 @@ export default function CandidateDashboardPage() {
 
               {/* Navigation List */}
               <nav className="space-y-1">
+                <button
+                  onClick={() => setActiveTab('available')}
+                  className={`w-full text-left px-3 py-2.5 rounded text-xs font-mono font-bold uppercase tracking-wider transition flex items-center gap-2.5 ${
+                    activeTab === 'available'
+                      ? 'bg-teal-50 text-teal-700 border-l-2 border-teal-500'
+                      : 'text-slate hover:bg-paper'
+                  }`}
+                >
+                  <Briefcase className="w-4 h-4 text-teal-600" />
+                  Available Jobs
+                </button>
+
                 <button
                   onClick={() => setActiveTab('overview')}
                   className={`w-full text-left px-3 py-2.5 rounded text-xs font-mono font-bold uppercase tracking-wider transition flex items-center gap-2.5 ${
@@ -264,6 +276,44 @@ export default function CandidateDashboardPage() {
 
           {/* Main Dashboard Panel (9 Cols) */}
           <main className="lg:col-span-9 space-y-6">
+            {/* AVAILABLE JOBS TAB */}
+            {activeTab === 'available' && (
+              <div className="bg-surface border border-line rounded-lg p-6 shadow-xs space-y-4">
+                <h3 className="font-display font-bold text-xl text-ink-900">Available Jobs for You</h3>
+                <div className="space-y-3">
+                  {SAMPLE_JOBS.map((job) => (
+                    <div key={job.id} className="p-4 bg-paper border border-line rounded-lg flex items-center justify-between">
+                      <div>
+                        <span className="font-mono text-xs text-teal-600 font-bold bg-teal-50 px-2 py-0.5 rounded">
+                          {job.id}
+                        </span>
+                        <h4 className="font-display font-bold text-base text-ink-900 mt-1">{job.title}</h4>
+                        <p className="text-xs text-slate">{job.companyName} • {job.location} • {job.salary}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => {
+                            if (!savedJobs.find(j => j.id === job.id)) {
+                                setSavedJobs([...savedJobs, job]);
+                            }
+                          }}
+                          className={`px-4 py-2 border text-xs font-bold uppercase rounded transition ${savedJobs.find(j => j.id === job.id) ? 'bg-teal-50 border-teal-500 text-teal-700' : 'bg-paper border-teal-500 text-teal-600 hover:bg-teal-50'}`}
+                        >
+                          {savedJobs.find(j => j.id === job.id) ? 'Saved' : 'Save'}
+                        </button>
+                        <Link
+                          href={`/jobs/${job.id}`}
+                          className="px-4 py-2 bg-teal-500 text-surface text-xs font-bold uppercase rounded hover:bg-teal-600 transition"
+                        >
+                          Apply Now
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* OVERVIEW TAB */}
             {activeTab === 'overview' && (
               <div className="space-y-6">
