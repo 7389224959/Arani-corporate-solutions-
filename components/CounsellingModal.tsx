@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, ArrowLeft, Phone, Mail, User, Briefcase, Calendar, CheckCircle2, Sparkles, GraduationCap, Clock } from 'lucide-react';
+import { X, ArrowLeft, Phone, Mail, User, Briefcase, Calendar, CheckCircle2, Sparkles, GraduationCap, Clock, Loader2 } from 'lucide-react';
+import { submitCounsellingLead } from '@/lib/supabase';
 
 interface CounsellingModalProps {
   isOpen: boolean;
@@ -15,35 +16,33 @@ export const CounsellingModal: React.FC<CounsellingModalProps> = ({ isOpen, onCl
   const [sector, setSector] = useState('Banking & Financial Services');
   const [experience, setExperience] = useState('Fresher / Graduate');
   const [preferredTime, setPreferredTime] = useState('Morning (9 AM - 12 PM)');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!fullName || !phone || !email) return;
 
-    // Save lead to localStorage
+    setIsSubmitting(true);
     try {
-      const existingStr = localStorage.getItem('arani_counselling_leads') || '[]';
-      const existing = JSON.parse(existingStr);
-      const newLead = {
-        id: `CNS-${Date.now().toString().slice(-4)}`,
+      await submitCounsellingLead({
         fullName,
         phone,
         email,
         sector,
         experience,
         preferredTime,
-        bookedAt: new Date().toLocaleString(),
-        status: 'Pending Callback'
-      };
-      localStorage.setItem('arani_counselling_leads', JSON.stringify([newLead, ...existing]));
+      });
+      setIsSubmitted(true);
     } catch (err) {
-      console.warn('Failed to save counselling lead:', err);
+      console.error('Failed to submit counselling lead:', err);
+      // Fallback
+      setIsSubmitted(true);
+    } finally {
+      setIsSubmitting(false);
     }
-
-    setIsSubmitted(true);
   };
 
   const handleResetAndClose = () => {
@@ -263,10 +262,20 @@ export const CounsellingModal: React.FC<CounsellingModalProps> = ({ isOpen, onCl
               <div className="pt-1">
                 <button
                   type="submit"
-                  className="w-full py-3 bg-teal-500 hover:bg-teal-600 text-surface font-extrabold text-sm rounded-lg transition shadow-md flex items-center justify-center gap-2"
+                  disabled={isSubmitting}
+                  className="w-full py-3 bg-teal-500 hover:bg-teal-600 disabled:opacity-60 text-surface font-extrabold text-sm rounded-lg transition shadow-md flex items-center justify-center gap-2"
                 >
-                  <Phone className="w-4 h-4" />
-                  <span>Book a Call Back</span>
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Submitting Request...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Phone className="w-4 h-4" />
+                      <span>Book a Call Back</span>
+                    </>
+                  )}
                 </button>
               </div>
             </form>

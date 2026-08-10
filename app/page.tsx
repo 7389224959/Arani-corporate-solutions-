@@ -8,6 +8,7 @@ import { JobQuickModal } from '@/components/JobQuickModal';
 import { RoleChoiceModal } from '@/components/RoleChoiceModal';
 import { CounsellingModal } from '@/components/CounsellingModal';
 import { SearchOverlay } from '@/components/SearchOverlay';
+import { submitEmployerLead } from '@/lib/supabase';
 import {
   SAMPLE_JOBS,
   SAMPLE_ARTICLES,
@@ -259,9 +260,23 @@ export default function HomePage() {
     setSelectedJob(job);
   };
 
-  const handleTalentSubmit = (e: React.FormEvent) => {
+  const handleTalentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!talentRequest.company || !talentRequest.email) return;
+    try {
+      await submitEmployerLead({
+        companyName: talentRequest.company,
+        contactPerson: talentRequest.name || 'HR Contact',
+        email: talentRequest.email,
+        phone: talentRequest.phone || '',
+        industry: 'Banking & Financial Services',
+        rolesNeeded: talentRequest.role,
+        headcount: talentRequest.headcount,
+        urgency: talentRequest.urgency,
+      });
+    } catch (err) {
+      console.error('Error submitting employer lead to Supabase:', err);
+    }
     setTalentSubmitted(true);
     setTimeout(() => {
       setTalentSubmitted(false);
