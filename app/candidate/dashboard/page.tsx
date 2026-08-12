@@ -32,31 +32,74 @@ export default function CandidateDashboardPage() {
   const [activeTab, setActiveTab] = useState<'available' | 'overview' | 'applications' | 'profile' | 'saved' | 'alerts' | 'messages'>('available');
 
   // Candidate Profile State with detailed Phase 3 fields
-  const [profile, setProfile] = useState({
-    fullName: 'Rahul Sharma',
-    email: 'rahul.sharma@example.com',
-    phone: '+91 98765 43210',
-    nationalId: 'ABCDE1234F',
-    address: 'Flat 402, Sunshine Heights, Powai',
-    district: 'Mumbai Suburban',
-    city: 'Mumbai',
-    state: 'Maharashtra',
-    zipCode: '400076',
-    education: 'MBA Finance, Mumbai University (2022)',
-    currentCompany: 'Private Sector Bank',
-    currentRole: 'Assistant Credit Analyst',
-    experienceYears: '3 Years',
-    expectedCtc: '₹14,00,000 / yr ($3.5k/mo)',
-    noticePeriod: '30 Days',
-    skills: 'Credit Risk Analysis, Financial Modeling, CIBIL Verification, Commercial Underwriting, RBI Compliance',
-    confidentialSearch: true
+  const [profile, setProfile] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('arani_candidate_profile');
+      if (saved) {
+        try { return JSON.parse(saved); } catch (e) {}
+      }
+    }
+    return {
+      fullName: 'Rahul Sharma',
+      email: 'rahul.sharma@example.com',
+      phone: '+91 98765 43210',
+      nationalId: 'ABCDE1234F',
+      address: 'Flat 402, Sunshine Heights, Powai',
+      district: 'Mumbai Suburban',
+      city: 'Mumbai',
+      state: 'Maharashtra',
+      zipCode: '400076',
+      education: 'MBA Finance, Mumbai University (2022)',
+      currentCompany: 'Private Sector Bank',
+      currentRole: 'Assistant Credit Analyst',
+      experienceYears: '3 Years',
+      expectedCtc: '₹14,00,000 / yr ($3.5k/mo)',
+      noticePeriod: '30 Days',
+      skills: 'Credit Risk Analysis, Financial Modeling, CIBIL Verification, Commercial Underwriting, RBI Compliance',
+      confidentialSearch: true
+    };
   });
 
   const [resumeUploaded, setResumeUploaded] = useState('Rahul_Sharma_Banking_CV_2026.pdf');
   const [savedSuccess, setSavedSuccess] = useState(false);
 
-  const handleProfileSave = (e: React.FormEvent) => {
+  const handleProfileSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Attempt Supabase save first
+    try {
+      const { saveCandidateProfile } = await import('@/lib/supabase');
+      await saveCandidateProfile(profile);
+    } catch (err) {
+      console.warn('Failed to save candidate profile to Supabase', err);
+    }
+
+    // Fallback/Demo local storage
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('arani_candidate_profile', JSON.stringify(profile));
+
+      const savedUsersStr = localStorage.getItem('arani_users_list') || '[]';
+      try {
+        let savedUsers = JSON.parse(savedUsersStr);
+        const existingIdx = savedUsers.findIndex((u: any) => u.email === profile.email);
+        if (existingIdx >= 0) {
+          savedUsers[existingIdx] = { ...savedUsers[existingIdx], name: profile.fullName };
+        } else {
+          savedUsers.unshift({
+            id: `USR-${Date.now().toString().slice(-3)}`,
+            name: profile.fullName,
+            email: profile.email,
+            role: 'Candidate',
+            status: 'Active',
+            verified: false,
+            joined: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+          });
+        }
+        localStorage.setItem('arani_users_list', JSON.stringify(savedUsers));
+      } catch (e) {
+        console.error(e);
+      }
+    }
     setSavedSuccess(true);
     setTimeout(() => setSavedSuccess(false), 3000);
   };
@@ -68,40 +111,71 @@ export default function CandidateDashboardPage() {
   };
 
   // Applications with timelines & timestamps
-  const [applications, setApplications] = useState([
-    {
-      id: 'APP-1024',
-      jobId: 'ACS-8042',
-      title: 'Senior Credit Risk Analyst',
-      company: 'Tier-1 Private Bank',
-      appliedDate: 'Aug 01, 2026 • 10:30 AM',
-      status: 'Screening Passed',
-      stepIndex: 2,
-      timeline: [
-        { title: 'Application Submitted', date: 'Aug 01, 2026 • 10:30 AM', completed: true },
-        { title: 'Profile & National ID Verified', date: 'Aug 01, 2026 • 02:15 PM', completed: true },
-        { title: 'Screening Passed — Recruiter Shortlisted', date: 'Aug 02, 2026 • 09:00 AM', completed: true },
-        { title: 'Technical Interview Round', date: 'Scheduled for Aug 05, 2026', completed: false },
-        { title: 'Final Offer & Placement', date: 'Pending Interview', completed: false }
-      ]
-    },
-    {
-      id: 'APP-0988',
-      jobId: 'ACS-8043',
-      title: 'Branch Operations Officer',
-      company: 'Leading National Bank',
-      appliedDate: 'Jul 24, 2026 • 04:45 PM',
-      status: 'Interview Scheduled',
-      stepIndex: 3,
-      timeline: [
-        { title: 'Application Submitted', date: 'Jul 24, 2026 • 04:45 PM', completed: true },
-        { title: 'Profile & National ID Verified', date: 'Jul 25, 2026 • 11:00 AM', completed: true },
-        { title: 'Screening Passed', date: 'Jul 26, 2026 • 03:20 PM', completed: true },
-        { title: 'Branch Ops Interview Scheduled', date: 'Aug 04, 2026 • 02:00 PM', completed: true },
-        { title: 'Final Offer & Placement', date: 'Pending', completed: false }
-      ]
+  const [applications, setApplications] = useState<{ id: string; jobId: string; title: string; company: string; appliedDate: string; status: string; stepIndex: number; timeline: { title: string; date: string; completed: boolean }[] }[]>(() => {
+    const initial = [
+      {
+        id: 'APP-1024',
+        jobId: 'ACS-8042',
+        title: 'Senior Credit Risk Analyst',
+        company: 'Tier-1 Private Bank',
+        appliedDate: 'Aug 01, 2026 • 10:30 AM',
+        status: 'Screening Passed',
+        stepIndex: 2,
+        timeline: [
+          { title: 'Application Submitted', date: 'Aug 01, 2026 • 10:30 AM', completed: true },
+          { title: 'Profile & National ID Verified', date: 'Aug 01, 2026 • 02:15 PM', completed: true },
+          { title: 'Screening Passed — Recruiter Shortlisted', date: 'Aug 02, 2026 • 09:00 AM', completed: true },
+          { title: 'Technical Interview Round', date: 'Scheduled for Aug 05, 2026', completed: false },
+          { title: 'Final Offer & Placement', date: 'Pending Interview', completed: false }
+        ]
+      },
+      {
+        id: 'APP-0988',
+        jobId: 'ACS-8043',
+        title: 'Branch Operations Officer',
+        company: 'Leading National Bank',
+        appliedDate: 'Jul 24, 2026 • 04:45 PM',
+        status: 'Interview Scheduled',
+        stepIndex: 3,
+        timeline: [
+          { title: 'Application Submitted', date: 'Jul 24, 2026 • 04:45 PM', completed: true },
+          { title: 'Profile & National ID Verified', date: 'Jul 25, 2026 • 11:00 AM', completed: true },
+          { title: 'Screening Passed', date: 'Jul 26, 2026 • 03:20 PM', completed: true },
+          { title: 'Branch Ops Interview Scheduled', date: 'Aug 04, 2026 • 02:00 PM', completed: true },
+          { title: 'Final Offer & Placement', date: 'Pending', completed: false }
+        ]
+      }
+    ];
+
+    if (typeof window !== 'undefined') {
+      const savedAppsStr = localStorage.getItem('arani_candidate_applications');
+      if (savedAppsStr) {
+        try {
+          const parsed = JSON.parse(savedAppsStr);
+          const mapped = parsed.map((app: any) => ({
+            id: app.id,
+            jobId: app.jobId,
+            title: app.jobTitle,
+            company: app.company,
+            appliedDate: app.appliedDate,
+            status: app.status,
+            stepIndex: 1, // Start at 1
+            timeline: [
+              { title: 'Application Submitted', date: app.appliedDate, completed: true },
+              { title: 'Profile & National ID Verified', date: 'Pending', completed: false },
+              { title: 'Screening Passed — Recruiter Shortlisted', date: 'Pending', completed: false },
+              { title: 'Technical Interview Round', date: 'Pending', completed: false },
+              { title: 'Final Offer & Placement', date: 'Pending', completed: false }
+            ]
+          }));
+          return [...mapped, ...initial];
+        } catch (e) {
+          console.error(e);
+        }
+      }
     }
-  ]);
+    return initial;
+  });
 
   // Saved Jobs
   const [savedJobs, setSavedJobs] = useState(SAMPLE_JOBS.slice(0, 3));

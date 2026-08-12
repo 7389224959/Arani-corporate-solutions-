@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { AraniLogo } from '@/components/AraniLogo';
+import { MarketingReelWizard } from '@/components/admin/MarketingReelWizard';
 import { SAMPLE_JOBS, SAMPLE_ARTICLES, SAMPLE_TESTIMONIALS, SAMPLE_FAQS, PARTNER_LOGOS, DEFAULT_DIRECTOR_DATA, DirectorData, Job, Article, Testimonial, FAQ } from '@/lib/sampleData';
 import {
   LayoutDashboard,
@@ -182,7 +183,7 @@ export default function AdminPage() {
   const [loginError, setLoginError] = useState<string | null>(null);
   const [isLoggingIn, setIsLoggingIn] = useState<boolean>(false);
 
-  const [activeTab, setActiveTab] = useState<'kpi' | 'content' | 'jobs' | 'applicants' | 'crm' | 'users' | 'settings'>('kpi');
+  const [activeTab, setActiveTab] = useState<'kpi' | 'content' | 'jobs' | 'applicants' | 'crm' | 'users' | 'settings' | 'reel-wizard'>('kpi');
   const [contentSubTab, setContentSubTab] = useState<'director' | 'hero' | 'promo' | 'articles' | 'videos' | 'testimonials' | 'logos' | 'stats' | 'faqs' | 'ticker'>('director');
 
   // Search & Global Filter State
@@ -379,66 +380,98 @@ export default function AdminPage() {
   ]);
 
   // Applicant Inbox state
-  const [applicants, setApplicants] = useState<CandidateApplicant[]>([
-    {
-      id: 'APP-1001',
-      candidateName: 'Rahul Sharma',
-      email: 'rahul.sharma@example.com',
-      phone: '+91 98765 43210',
-      nationalId: 'ABCDE1234F / PAN',
-      address: 'Bandram, Mumbai, MH - 400050',
-      jobId: 'ACS-8042',
-      jobTitle: 'Senior Credit Risk Analyst',
-      appliedDate: 'Aug 02, 2026',
-      stage: 'Screening',
-      matchScore: '92%',
-      resumeName: 'Rahul_Sharma_CV.pdf',
-      utmSource: 'meta_fb_ads',
-      screeningAnswers: [
-        { question: 'Do you have CA/MBA Finance qualification?', answer: 'Yes, MBA Finance from NMIMS (2021)' },
-        { question: 'Years of commercial banking experience?', answer: '4 years at ICICI Commercial Credit' }
-      ],
-      evaluationNotes: ['Strong financial modeling credentials', 'Ready for round 1 interview with client lead']
-    },
-    {
-      id: 'APP-1002',
-      candidateName: 'Priya Deshmukh',
-      email: 'priya.d@example.com',
-      phone: '+91 98123 45678',
-      nationalId: 'PQRST5678K / PAN',
-      address: 'Connaught Place, New Delhi - 110001',
-      jobId: 'ACS-8043',
-      jobTitle: 'Branch Operations Officer',
-      appliedDate: 'Aug 01, 2026',
-      stage: 'Interview Scheduled',
-      matchScore: '88%',
-      resumeName: 'Priya_Deshmukh_Resume.pdf',
-      utmSource: 'google_search',
-      screeningAnswers: [
-        { question: 'Experience in retail branch vault & audit?', answer: '2 years as teller & ops desk at Axis Bank' }
-      ],
-      evaluationNotes: ['Passed preliminary phone screening', 'Interview scheduled for Aug 5 at 11:00 AM']
-    },
-    {
-      id: 'APP-1003',
-      candidateName: 'Amitabh Sen',
-      email: 'amitabh.sen@example.com',
-      phone: '+91 97777 88888',
-      nationalId: 'XYZ1234567 / Passport',
-      address: 'Indiranagar, Bengaluru, KA - 560038',
-      jobId: 'ACS-8044',
-      jobTitle: 'Corporate HR Business Partner',
-      appliedDate: 'Jul 30, 2026',
-      stage: 'Offer Extended',
-      matchScore: '95%',
-      resumeName: 'Amitabh_HRBP_Portfolio.pdf',
-      utmSource: 'linkedin_direct',
-      screeningAnswers: [
-        { question: 'Notice period in current company?', answer: '30 Days (Negotiable)' }
-      ],
-      evaluationNotes: ['Top client score', 'Offer letter dispatched on July 31']
+  const [applicants, setApplicants] = useState<CandidateApplicant[]>(() => {
+    const initial: CandidateApplicant[] = [
+      {
+        id: 'APP-1001',
+        candidateName: 'Rahul Sharma',
+        email: 'rahul.sharma@example.com',
+        phone: '+91 98765 43210',
+        nationalId: 'ABCDE1234F / PAN',
+        address: 'Bandram, Mumbai, MH - 400050',
+        jobId: 'ACS-8042',
+        jobTitle: 'Senior Credit Risk Analyst',
+        appliedDate: 'Aug 02, 2026',
+        stage: 'Screening',
+        matchScore: '92%',
+        resumeName: 'Rahul_Sharma_CV.pdf',
+        utmSource: 'meta_fb_ads',
+        screeningAnswers: [
+          { question: 'Do you have CA/MBA Finance qualification?', answer: 'Yes, MBA Finance from NMIMS (2021)' },
+          { question: 'Years of commercial banking experience?', answer: '4 years at ICICI Commercial Credit' }
+        ],
+        evaluationNotes: ['Strong financial modeling credentials', 'Ready for round 1 interview with client lead']
+      },
+      {
+        id: 'APP-1002',
+        candidateName: 'Priya Deshmukh',
+        email: 'priya.d@example.com',
+        phone: '+91 98123 45678',
+        nationalId: 'PQRST5678K / PAN',
+        address: 'Connaught Place, New Delhi - 110001',
+        jobId: 'ACS-8043',
+        jobTitle: 'Branch Operations Officer',
+        appliedDate: 'Aug 01, 2026',
+        stage: 'Interview Scheduled',
+        matchScore: '88%',
+        resumeName: 'Priya_Deshmukh_Resume.pdf',
+        utmSource: 'google_search',
+        screeningAnswers: [
+          { question: 'Experience in retail branch vault & audit?', answer: '2 years as teller & ops desk at Axis Bank' }
+        ],
+        evaluationNotes: ['Passed preliminary phone screening', 'Interview scheduled for Aug 5 at 11:00 AM']
+      },
+      {
+        id: 'APP-1003',
+        candidateName: 'Amitabh Sen',
+        email: 'amitabh.sen@example.com',
+        phone: '+91 97777 88888',
+        nationalId: 'XYZ1234567 / Passport',
+        address: 'Indiranagar, Bengaluru, KA - 560038',
+        jobId: 'ACS-8044',
+        jobTitle: 'Corporate HR Business Partner',
+        appliedDate: 'Jul 30, 2026',
+        stage: 'Offer Extended',
+        matchScore: '95%',
+        resumeName: 'Amitabh_HRBP_Portfolio.pdf',
+        utmSource: 'linkedin_direct',
+        screeningAnswers: [
+          { question: 'Notice period in current company?', answer: '30 Days (Negotiable)' }
+        ],
+        evaluationNotes: ['Top client score', 'Offer letter dispatched on July 31']
+      }
+    ];
+
+    if (typeof window !== 'undefined') {
+      const savedAppsStr = localStorage.getItem('arani_candidate_applications');
+      if (savedAppsStr) {
+        try {
+          const parsed = JSON.parse(savedAppsStr);
+          const mapped: CandidateApplicant[] = parsed.map((app: any) => ({
+            id: app.id,
+            candidateName: app.applicantName,
+            email: app.applicantEmail,
+            phone: app.applicantPhone,
+            nationalId: 'Pending Verification',
+            address: 'See Profile',
+            jobId: app.jobId,
+            jobTitle: app.jobTitle,
+            appliedDate: app.appliedDate,
+            stage: app.status,
+            matchScore: 'N/A',
+            resumeName: 'Resume.pdf',
+            utmSource: app.utmSource || 'direct',
+            screeningAnswers: [],
+            evaluationNotes: []
+          }));
+          return [...mapped, ...initial];
+        } catch (e) {
+          console.error(e);
+        }
+      }
     }
-  ]);
+    return initial;
+  });
 
   // Employer CRM state
   const [leads, setLeads] = useState<EmployerLead[]>([
@@ -487,12 +520,26 @@ export default function AdminPage() {
   ]);
 
   // Candidates & Employers User Directory
-  const [userAccounts, setUserAccounts] = useState([
-    { id: 'USR-201', name: 'Rahul Sharma', email: 'rahul.sharma@example.com', role: 'Candidate', status: 'Active', verified: true, joined: 'Jul 2026' },
-    { id: 'USR-202', name: 'Priya Deshmukh', email: 'priya.d@example.com', role: 'Candidate', status: 'Active', verified: true, joined: 'Jul 2026' },
-    { id: 'USR-203', name: 'Kotak Financial', email: 'vikram.m@kotak.com', role: 'Employer', status: 'Active', verified: true, joined: 'Jun 2026' },
-    { id: 'USR-204', name: 'Sanjay Kapoor', email: 'sanjay.k@example.com', role: 'Candidate', status: 'Suspended', verified: false, joined: 'May 2026' }
-  ]);
+  const [userAccounts, setUserAccounts] = useState(() => {
+    const initial = [
+      { id: 'USR-201', name: 'Rahul Sharma', email: 'rahul.sharma@example.com', role: 'Candidate', status: 'Active', verified: true, joined: 'Jul 2026' },
+      { id: 'USR-202', name: 'Priya Deshmukh', email: 'priya.d@example.com', role: 'Candidate', status: 'Active', verified: true, joined: 'Jul 2026' },
+      { id: 'USR-203', name: 'Kotak Financial', email: 'vikram.m@kotak.com', role: 'Employer', status: 'Active', verified: true, joined: 'Jun 2026' },
+      { id: 'USR-204', name: 'Sanjay Kapoor', email: 'sanjay.k@example.com', role: 'Candidate', status: 'Suspended', verified: false, joined: 'May 2026' }
+    ];
+
+    if (typeof window !== 'undefined') {
+      const savedUsersStr = localStorage.getItem('arani_users_list');
+      if (savedUsersStr) {
+        try {
+          return [...JSON.parse(savedUsersStr), ...initial];
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    }
+    return initial;
+  });
 
   // Settings & Audit Log State
   const [siteSettings, setSiteSettings] = useState({
@@ -524,6 +571,68 @@ export default function AdminPage() {
   const [isAddingLead, setIsAddingLead] = useState(false);
   const [isAddingHero, setIsAddingHero] = useState(false);
   const [isAddingArticle, setIsAddingArticle] = useState(false);
+
+  // Sync with Supabase on mount
+  useEffect(() => {
+    async function fetchSupabaseData() {
+      try {
+        const { getJobApplications, getCandidateProfiles } = await import('@/lib/supabase');
+        
+        // Fetch Job Applications
+        const dbApps = await getJobApplications();
+        if (dbApps && dbApps.length > 0) {
+          const mappedApps: CandidateApplicant[] = dbApps.map((app: any) => ({
+            id: `APP-DB-${app.id.slice(0, 6)}`,
+            candidateName: app.full_name,
+            email: app.email,
+            phone: app.phone,
+            nationalId: app.national_id || 'Pending',
+            address: app.address || 'See Profile',
+            jobId: app.job_id || app.job_code || 'General',
+            jobTitle: app.job_code ? `Job: ${app.job_code}` : 'General Application',
+            appliedDate: new Date(app.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+            stage: app.status || 'Applied',
+            matchScore: 'N/A',
+            resumeName: app.resume_url || 'Resume.pdf',
+            utmSource: 'direct',
+            screeningAnswers: [],
+            evaluationNotes: []
+          }));
+          
+          setApplicants(prev => {
+            // Filter out existing to avoid duplication (simple email check for demo)
+            const existingEmails = new Set(prev.map(p => p.email));
+            const newApps = mappedApps.filter(a => !existingEmails.has(a.email));
+            return [...newApps, ...prev];
+          });
+        }
+
+        // Fetch Candidate Profiles
+        const dbProfiles = await getCandidateProfiles();
+        if (dbProfiles && dbProfiles.length > 0) {
+          const mappedUsers = dbProfiles.map((p: any) => ({
+            id: `USR-DB-${p.id.slice(0, 6)}`,
+            name: p.full_name,
+            email: p.email,
+            role: 'Candidate',
+            status: 'Active',
+            verified: false,
+            joined: new Date(p.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+          }));
+
+          setUserAccounts(prev => {
+            const existingEmails = new Set(prev.map(p => p.email));
+            const newUsers = mappedUsers.filter((u: any) => !existingEmails.has(u.email));
+            return [...newUsers, ...prev];
+          });
+        }
+      } catch (err) {
+        console.warn('Failed to fetch from Supabase:', err);
+      }
+    }
+    
+    fetchSupabaseData();
+  }, []);
 
   // Helper trigger notification
   const triggerToast = (msg: string) => {
@@ -881,6 +990,18 @@ export default function AdminPage() {
                 >
                   <Settings className="w-4 h-4 text-teal-600" />
                   Settings &amp; Audit Log
+                </button>
+
+                <button
+                  onClick={() => setActiveTab('reel-wizard')}
+                  className={`w-full text-left px-3 py-2.5 rounded text-xs font-mono font-bold uppercase tracking-wider transition flex items-center gap-2.5 ${
+                    activeTab === 'reel-wizard'
+                      ? 'bg-teal-50 text-teal-700 border-l-2 border-teal-500 shadow-xs'
+                      : 'text-slate hover:bg-paper'
+                  }`}
+                >
+                  <Video className="w-4 h-4 text-teal-600" />
+                  AI Reel Wizard
                 </button>
               </nav>
             </div>
@@ -2264,6 +2385,11 @@ export default function AdminPage() {
                   </button>
                 </div>
               </div>
+            )}
+
+            {/* AI MARKETING REEL WIZARD TAB */}
+            {activeTab === 'reel-wizard' && (
+              <MarketingReelWizard />
             )}
           </main>
         </div>

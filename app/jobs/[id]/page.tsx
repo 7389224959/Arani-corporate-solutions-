@@ -82,7 +82,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
     setApplyStep(3);
   };
 
-  const handleFinalSubmit = (e: React.FormEvent) => {
+  const handleFinalSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!consentData || !consentContact) return;
 
@@ -95,7 +95,25 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
       ...utm
     });
 
-    // Save to localStorage for candidate & admin inbox
+    try {
+      const { submitJobApplication } = await import('@/lib/supabase');
+      await submitJobApplication({
+        jobId: job.id,
+        jobCode: job.id,
+        fullName,
+        email,
+        phone,
+        address,
+        nationalId,
+        resumeUrl: resumeName,
+        status: 'Screening',
+        coverNote
+      });
+    } catch (err) {
+      console.warn('Failed to submit application to Supabase', err);
+    }
+
+    // Save to localStorage for candidate & admin inbox (fallback & demo)
     try {
       const existingStr = localStorage.getItem('arani_candidate_applications') || '[]';
       const existing = JSON.parse(existingStr);

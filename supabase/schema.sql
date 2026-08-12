@@ -111,7 +111,49 @@ USING (true);
 
 
 -- --------------------------------------------------------------------
--- 4. JOB APPLICATIONS TABLE
+-- 4. CANDIDATE PROFILES TABLE
+-- Stores full profiles of candidates registered on the portal
+-- --------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.candidate_profiles (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    email TEXT UNIQUE NOT NULL,
+    full_name TEXT NOT NULL,
+    phone TEXT,
+    national_id TEXT,
+    address TEXT,
+    district TEXT,
+    city TEXT,
+    state TEXT,
+    zip_code TEXT,
+    education TEXT,
+    current_company TEXT,
+    current_role TEXT,
+    experience_years TEXT,
+    expected_ctc TEXT,
+    notice_period TEXT,
+    skills TEXT,
+    confidential_search BOOLEAN DEFAULT false,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE public.candidate_profiles ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow public insert candidate_profiles" 
+ON public.candidate_profiles FOR INSERT 
+WITH CHECK (true);
+
+CREATE POLICY "Allow public update candidate_profiles" 
+ON public.candidate_profiles FOR UPDATE
+USING (true);
+
+CREATE POLICY "Allow full access candidate_profiles" 
+ON public.candidate_profiles FOR ALL 
+USING (true);
+
+
+-- --------------------------------------------------------------------
+-- 5. JOB APPLICATIONS TABLE
 -- Stores candidate job applications & uploaded resume URLs
 -- --------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS public.job_applications (

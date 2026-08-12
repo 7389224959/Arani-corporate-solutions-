@@ -143,6 +143,107 @@ export async function submitEmployerLead(data: {
   }
 }
 
+export async function saveCandidateProfile(profileData: any) {
+  const client = getSupabase();
+  if (client) {
+    const { data: inserted, error } = await client
+      .from('candidate_profiles')
+      .upsert([
+        {
+          email: profileData.email,
+          full_name: profileData.fullName,
+          phone: profileData.phone,
+          national_id: profileData.nationalId,
+          address: profileData.address,
+          district: profileData.district,
+          city: profileData.city,
+          state: profileData.state,
+          zip_code: profileData.zipCode,
+          education: profileData.education,
+          current_company: profileData.currentCompany,
+          current_role: profileData.currentRole,
+          experience_years: profileData.experienceYears,
+          expected_ctc: profileData.expectedCtc,
+          notice_period: profileData.noticePeriod,
+          skills: profileData.skills,
+          confidential_search: profileData.confidentialSearch,
+          updated_at: new Date().toISOString()
+        }
+      ], { onConflict: 'email' })
+      .select();
+      
+    if (error) {
+      console.error('Supabase save candidate profile error:', error);
+      throw error;
+    }
+    return inserted;
+  }
+}
+
+export async function getCandidateProfiles() {
+  const client = getSupabase();
+  if (client) {
+    const { data, error } = await client
+      .from('candidate_profiles')
+      .select('*')
+      .order('updated_at', { ascending: false });
+      
+    if (error) {
+      console.error('Supabase fetch candidate profiles error:', error);
+      return [];
+    }
+    return data;
+  }
+  return [];
+}
+
+export async function submitJobApplication(applicationData: any) {
+  const client = getSupabase();
+  if (client) {
+    const { data: inserted, error } = await client
+      .from('job_applications')
+      .insert([
+        {
+          job_id: applicationData.jobId || null,
+          job_code: applicationData.jobCode || '',
+          full_name: applicationData.fullName,
+          email: applicationData.email,
+          phone: applicationData.phone,
+          address: applicationData.address || '',
+          national_id: applicationData.nationalId || '',
+          resume_url: applicationData.resumeUrl || '',
+          status: applicationData.status || 'Applied',
+          cover_note: applicationData.coverNote || '',
+          created_at: new Date().toISOString()
+        }
+      ])
+      .select();
+      
+    if (error) {
+      console.error('Supabase job application error:', error);
+      throw error;
+    }
+    return inserted;
+  }
+}
+
+export async function getJobApplications() {
+  const client = getSupabase();
+  if (client) {
+    const { data, error } = await client
+      .from('job_applications')
+      .select('*')
+      .order('created_at', { ascending: false });
+      
+    if (error) {
+      console.error('Supabase fetch job applications error:', error);
+      return [];
+    }
+    return data;
+  }
+  return [];
+}
+
 // Helper: Upload file to Supabase Storage Bucket
 export async function uploadToSupabaseStorage(
   bucketName: 'counselling_resumes' | 'director_photos' | 'media_assets',
