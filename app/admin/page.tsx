@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { AraniLogo } from '@/components/AraniLogo';
-import { MarketingReelWizard } from '@/components/admin/MarketingReelWizard';
+import ClientReelWizard from '@/components/ClientReelWizard';
+import ClientTemplatesAdmin from '@/components/ClientTemplatesAdmin';
 import { SAMPLE_JOBS, SAMPLE_ARTICLES, SAMPLE_TESTIMONIALS, SAMPLE_FAQS, PARTNER_LOGOS, DEFAULT_DIRECTOR_DATA, DirectorData, Job, Article, Testimonial, FAQ } from '@/lib/sampleData';
 import {
   LayoutDashboard,
@@ -183,7 +184,7 @@ export default function AdminPage() {
   const [loginError, setLoginError] = useState<string | null>(null);
   const [isLoggingIn, setIsLoggingIn] = useState<boolean>(false);
 
-  const [activeTab, setActiveTab] = useState<'kpi' | 'content' | 'jobs' | 'applicants' | 'crm' | 'users' | 'settings' | 'reel-wizard'>('kpi');
+  const [activeTab, setActiveTab] = useState<'kpi' | 'content' | 'jobs' | 'applicants' | 'crm' | 'users' | 'settings' | 'reel-wizard' | 'reel-templates'>('kpi');
   const [contentSubTab, setContentSubTab] = useState<'director' | 'hero' | 'promo' | 'articles' | 'videos' | 'testimonials' | 'logos' | 'stats' | 'faqs' | 'ticker'>('director');
 
   // Search & Global Filter State
@@ -1002,6 +1003,18 @@ export default function AdminPage() {
                 >
                   <Video className="w-4 h-4 text-teal-600" />
                   AI Reel Wizard
+                </button>
+
+                <button
+                  onClick={() => setActiveTab('reel-templates')}
+                  className={`w-full text-left px-3 py-2.5 rounded text-xs font-mono font-bold uppercase tracking-wider transition flex items-center gap-2.5 ${
+                    activeTab === 'reel-templates'
+                      ? 'bg-teal-50 text-teal-700 border-l-2 border-teal-500 shadow-xs'
+                      : 'text-slate hover:bg-paper'
+                  }`}
+                >
+                  <Layers className="w-4 h-4 text-teal-600" />
+                  Reel Templates
                 </button>
               </nav>
             </div>
@@ -2389,7 +2402,28 @@ export default function AdminPage() {
 
             {/* AI MARKETING REEL WIZARD TAB */}
             {activeTab === 'reel-wizard' && (
-              <MarketingReelWizard />
+              <ClientReelWizard settings={siteSettings as any} onClose={() => {}} />
+            )}
+
+            {/* AI REEL TEMPLATES TAB */}
+            {activeTab === 'reel-templates' && (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="font-display font-bold text-2xl text-ink-900">Reel Templates Admin</h2>
+                    <p className="text-xs text-slate mt-0.5">Manage rendering templates and visual bounding boxes for reels.</p>
+                  </div>
+                </div>
+                
+                <div className="bg-surface border border-line rounded-lg shadow-xs">
+                   <ClientTemplatesAdmin 
+                      settings={siteSettings as any}
+                      onSaveSettings={async (updated: any) => {
+                        setSiteSettings(prev => ({ ...prev, ...updated }));
+                      }}
+                   />
+                </div>
+              </div>
             )}
           </main>
         </div>
