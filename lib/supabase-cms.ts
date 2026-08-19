@@ -9,13 +9,12 @@ export async function getSiteSettings() {
   return null;
 }
 
+import { saveSiteSettingsServer } from './supabase-admin';
+
 export async function saveSiteSettings(settings: any) {
-  const client = getSupabase();
-  if (client) {
-    const { error } = await client.from('site_settings').upsert([{ id: 1, ...settings, updated_at: new Date().toISOString() }]);
-    if (error) throw error;
-  }
+  await saveSiteSettingsServer(settings);
 }
+
 
 export async function getJobsList() {
   const client = getSupabase();
@@ -49,4 +48,22 @@ export async function saveUser(user: any) {
     const { error } = await client.from('users').upsert([{ ...user }]);
     if (error) throw error;
   }
+}
+
+export async function getEmployerLeads() {
+  const client = getSupabase();
+  if (client) {
+    const { data, error } = await client.from('employer_leads').select('*').order('created_at', { ascending: false });
+    if (!error && data) return data;
+  }
+  return null;
+}
+
+export async function getCounsellingLeads() {
+  const client = getSupabase();
+  if (client) {
+    const { data, error } = await client.from('counselling_leads').select('*').order('created_at', { ascending: false });
+    if (!error && data) return data;
+  }
+  return null;
 }

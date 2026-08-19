@@ -248,39 +248,27 @@ export default function AdminPage() {
   };
 
   // Initializing state with defaults or localStorage sync
-  const [directorData, setDirectorData] = useState<DirectorData>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = sessionStorage.getItem('arani_director_data');
-      if (saved) {
-        try { return JSON.parse(saved); } catch (e) {}
-      }
-    }
-    return DEFAULT_DIRECTOR_DATA;
-  });
+  const [directorData, setDirectorData] = useState<DirectorData>(DEFAULT_DIRECTOR_DATA);
 
-  const saveDirectorData = (updated: DirectorData) => {
+  const saveDirectorData = async (updated: DirectorData) => {
     setDirectorData(updated);
-    if (typeof window !== 'undefined') {
-      sessionStorage.setItem('arani_director_data', JSON.stringify(updated));
+    try {
+      const { saveSiteSettings } = await import('@/lib/supabase-cms');
+      await saveSiteSettings({ director_data: updated });
+      triggerToast('Director Ashutosh Raj Choure profile & photo updated successfully!');
       window.dispatchEvent(new Event('arani_cms_updated'));
+    } catch (err) {
+      console.error(err);
+      triggerToast('Failed to save Director data to database');
     }
-    triggerToast('Director Ashutosh Raj Choure profile & photo updated successfully!');
   };
 
-  const [jobsList, setJobsList] = useState<Job[]>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = sessionStorage.getItem('arani_jobs_list');
-      if (saved) {
-        try { return JSON.parse(saved); } catch (e) {}
-      }
-    }
-    return SAMPLE_JOBS;
-  });
+  const [jobsList, setJobsList] = useState<Job[]>(SAMPLE_JOBS);
 
   const saveJobsList = (updated: Job[]) => {
     setJobsList(updated);
     if (typeof window !== 'undefined') {
-      sessionStorage.setItem('arani_jobs_list', JSON.stringify(updated));
+      
       window.dispatchEvent(new Event('arani_cms_updated'));
     }
     triggerToast('Job Board list updated and synced live!');
@@ -292,51 +280,27 @@ export default function AdminPage() {
   const [partnerLogos, setPartnerLogos] = useState(PARTNER_LOGOS);
 
   // Hero Banners State
-  const [heroSlides, setHeroSlides] = useState<HeroSlide[]>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = sessionStorage.getItem('arani_hero_slides');
-      if (saved) {
-        try { return JSON.parse(saved); } catch (e) {}
-      }
+  const [heroSlides, setHeroSlides] = useState<HeroSlide[]>([
+    {
+      id: 'h1',
+      headline: 'Scaling Tech Ecosystems with Elite Engineering Leadership',
+      highlightText: 'Elite Engineering',
+      subtext: 'Arani connects visionary founders with the top 1% of technical talent in India.',
+      ctaText: 'Hire Talent',
+      ctaUrl: '/employers',
+      secondaryCtaText: 'Explore Roles',
+      secondaryCtaUrl: '/jobs',
+      audience: 'Both',
+      bgImageUrl: '/images/hero-1.jpg',
+      isActive: true,
+      order: 1
     }
-    return [
-      {
-        id: 'HERO-101',
-        headline: 'Land the Banking or Corporate Role You Have Trained For',
-        highlightText: 'Trained For',
-        subtext: 'Direct access to 2,400+ pre-vetted banking, finance, and corporate openings with top-tier firms. 100% free for job seekers.',
-        ctaText: 'Search 2,400+ Openings',
-        ctaUrl: '/jobs',
-        secondaryCtaText: 'Register Profile Free',
-        secondaryCtaUrl: '/register',
-        audience: 'Seekers',
-        bgImageUrl: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1920&q=80',
-        isActive: true,
-        order: 1,
-        utmVariant: 'meta_fb_seekers_q3'
-      },
-      {
-        id: 'HERO-102',
-        headline: 'Hire the Right Banking & HR Talent in 72 Hours',
-        highlightText: '72 Hours',
-        subtext: 'End-to-end recruitment, contract staffing, and background verification with a 90-day placement guarantee.',
-        ctaText: 'Request Talent Shortlist',
-        ctaUrl: '/employers',
-        secondaryCtaText: 'Book HR Consultation',
-        secondaryCtaUrl: '/employers#consultation',
-        audience: 'Employers',
-        bgImageUrl: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1920&q=80',
-        isActive: true,
-        order: 2,
-        utmVariant: 'meta_b2b_corporate'
-      }
-    ];
-  });
+  ]);
 
   const saveHeroSlides = (updated: HeroSlide[]) => {
     setHeroSlides(updated);
     if (typeof window !== 'undefined') {
-      sessionStorage.setItem('arani_hero_slides', JSON.stringify(updated));
+      
       window.dispatchEvent(new Event('arani_cms_updated'));
     }
     triggerToast('Hero Carousel Banners saved and updated live!');
@@ -381,98 +345,28 @@ export default function AdminPage() {
   ]);
 
   // Applicant Inbox state
-  const [applicants, setApplicants] = useState<CandidateApplicant[]>(() => {
-    const initial: CandidateApplicant[] = [
-      {
-        id: 'APP-1001',
-        candidateName: 'Rahul Sharma',
-        email: 'rahul.sharma@example.com',
-        phone: '+91 98765 43210',
-        nationalId: 'ABCDE1234F / PAN',
-        address: 'Bandram, Mumbai, MH - 400050',
-        jobId: 'ACS-8042',
-        jobTitle: 'Senior Credit Risk Analyst',
-        appliedDate: 'Aug 02, 2026',
-        stage: 'Screening',
-        matchScore: '92%',
-        resumeName: 'Rahul_Sharma_CV.pdf',
-        utmSource: 'meta_fb_ads',
-        screeningAnswers: [
-          { question: 'Do you have CA/MBA Finance qualification?', answer: 'Yes, MBA Finance from NMIMS (2021)' },
-          { question: 'Years of commercial banking experience?', answer: '4 years at ICICI Commercial Credit' }
-        ],
-        evaluationNotes: ['Strong financial modeling credentials', 'Ready for round 1 interview with client lead']
-      },
-      {
-        id: 'APP-1002',
-        candidateName: 'Priya Deshmukh',
-        email: 'priya.d@example.com',
-        phone: '+91 98123 45678',
-        nationalId: 'PQRST5678K / PAN',
-        address: 'Connaught Place, New Delhi - 110001',
-        jobId: 'ACS-8043',
-        jobTitle: 'Branch Operations Officer',
-        appliedDate: 'Aug 01, 2026',
-        stage: 'Interview Scheduled',
-        matchScore: '88%',
-        resumeName: 'Priya_Deshmukh_Resume.pdf',
-        utmSource: 'google_search',
-        screeningAnswers: [
-          { question: 'Experience in retail branch vault & audit?', answer: '2 years as teller & ops desk at Axis Bank' }
-        ],
-        evaluationNotes: ['Passed preliminary phone screening', 'Interview scheduled for Aug 5 at 11:00 AM']
-      },
-      {
-        id: 'APP-1003',
-        candidateName: 'Amitabh Sen',
-        email: 'amitabh.sen@example.com',
-        phone: '+91 97777 88888',
-        nationalId: 'XYZ1234567 / Passport',
-        address: 'Indiranagar, Bengaluru, KA - 560038',
-        jobId: 'ACS-8044',
-        jobTitle: 'Corporate HR Business Partner',
-        appliedDate: 'Jul 30, 2026',
-        stage: 'Offer Extended',
-        matchScore: '95%',
-        resumeName: 'Amitabh_HRBP_Portfolio.pdf',
-        utmSource: 'linkedin_direct',
-        screeningAnswers: [
-          { question: 'Notice period in current company?', answer: '30 Days (Negotiable)' }
-        ],
-        evaluationNotes: ['Top client score', 'Offer letter dispatched on July 31']
-      }
-    ];
-
-    if (typeof window !== 'undefined') {
-      const savedAppsStr = sessionStorage.getItem('arani_candidate_applications');
-      if (savedAppsStr) {
-        try {
-          const parsed = JSON.parse(savedAppsStr);
-          const mapped: CandidateApplicant[] = parsed.map((app: any) => ({
-            id: app.id,
-            candidateName: app.applicantName,
-            email: app.applicantEmail,
-            phone: app.applicantPhone,
-            nationalId: 'Pending Verification',
-            address: 'See Profile',
-            jobId: app.jobId,
-            jobTitle: app.jobTitle,
-            appliedDate: app.appliedDate,
-            stage: app.status,
-            matchScore: 'N/A',
-            resumeName: 'Resume.pdf',
-            utmSource: app.utmSource || 'direct',
-            screeningAnswers: [],
-            evaluationNotes: []
-          }));
-          return [...mapped, ...initial];
-        } catch (e) {
-          console.error(e);
-        }
-      }
+  const [applicants, setApplicants] = useState<CandidateApplicant[]>([
+    {
+      id: 'APP-1001',
+      candidateName: 'Rahul Verma',
+      email: 'rahul.v@example.com',
+      phone: '+91 98765 43210',
+      nationalId: 'ABCDE1234F',
+      address: 'Koramangala, Bengaluru, Karnataka',
+      jobId: 'ACS-8049',
+      jobTitle: 'Senior React Native Developer',
+      appliedDate: 'Oct 24, 2023',
+      stage: 'Screening',
+      matchScore: '94%',
+      resumeName: 'Rahul_Verma_Resume_v2.pdf',
+      utmSource: 'linkedin',
+      screeningAnswers: [
+        { question: 'Years of React Native experience?', answer: '5 years' },
+        { question: 'Notice period?', answer: '30 days' }
+      ],
+      evaluationNotes: []
     }
-    return initial;
-  });
+  ]);
 
   // Employer CRM state
   const [leads, setLeads] = useState<EmployerLead[]>([
@@ -521,26 +415,10 @@ export default function AdminPage() {
   ]);
 
   // Candidates & Employers User Directory
-  const [userAccounts, setUserAccounts] = useState(() => {
-    const initial = [
-      { id: 'USR-201', name: 'Rahul Sharma', email: 'rahul.sharma@example.com', role: 'Candidate', status: 'Active', verified: true, joined: 'Jul 2026' },
-      { id: 'USR-202', name: 'Priya Deshmukh', email: 'priya.d@example.com', role: 'Candidate', status: 'Active', verified: true, joined: 'Jul 2026' },
-      { id: 'USR-203', name: 'Kotak Financial', email: 'vikram.m@kotak.com', role: 'Employer', status: 'Active', verified: true, joined: 'Jun 2026' },
-      { id: 'USR-204', name: 'Sanjay Kapoor', email: 'sanjay.k@example.com', role: 'Candidate', status: 'Suspended', verified: false, joined: 'May 2026' }
-    ];
-
-    if (typeof window !== 'undefined') {
-      const savedUsersStr = sessionStorage.getItem('arani_users_list');
-      if (savedUsersStr) {
-        try {
-          return [...JSON.parse(savedUsersStr), ...initial];
-        } catch (e) {
-          console.error(e);
-        }
-      }
-    }
-    return initial;
-  });
+  const [userAccounts, setUserAccounts] = useState([
+    { id: 'USR-001', name: 'Ashutosh Choure', email: 'director@aranicorporate.com', role: 'Super Admin', status: 'Active', verified: true, joined: 'Jan 2020' },
+    { id: 'USR-002', name: 'Sunil Sharma', email: 'admin@aranicorporate.com', role: 'Admin', status: 'Active', verified: true, joined: 'Mar 2021' }
+  ]);
 
   // Settings & Audit Log State
   const [siteSettings, setSiteSettings] = useState({
@@ -580,6 +458,20 @@ export default function AdminPage() {
         const { getJobApplications, getCandidateProfiles } = await import('@/lib/supabase');
         
         // Fetch Job Applications
+                // Fetch Site Settings
+        const { getSiteSettings } = await import('@/lib/supabase-cms');
+        const settings = await getSiteSettings();
+        if (settings) {
+          setSiteSettings(prev => ({ ...prev, ...settings }));
+          if (settings.director_data) setDirectorData(settings.director_data);
+          if (settings.hero_slides && settings.hero_slides.length > 0) setHeroSlides(settings.hero_slides);
+          if (settings.partner_logos) setPartnerLogos(settings.partner_logos);
+          if (settings.testimonials) setTestimonialsList(settings.testimonials);
+          if (settings.faqs) setFaqsList(settings.faqs);
+          if (settings.articles) setArticlesList(settings.articles);
+          if (settings.live_stats) setLiveStats(settings.live_stats);
+        }
+
         const dbApps = await getJobApplications();
         if (dbApps && dbApps.length > 0) {
           const mappedApps: CandidateApplicant[] = dbApps.map((app: any) => ({
@@ -2417,11 +2309,19 @@ export default function AdminPage() {
                 
                 <div className="bg-surface border border-line rounded-lg shadow-xs">
                    <ClientTemplatesAdmin 
-                      settings={siteSettings as any}
-                      onSaveSettings={async (updated: any) => {
-                        setSiteSettings(prev => ({ ...prev, ...updated }));
-                      }}
-                   />
+    settings={siteSettings as any}
+    onSaveSettings={async (updated: any) => {
+      setSiteSettings(prev => ({ ...prev, ...updated }));
+      try {
+        const { saveSiteSettings } = await import('@/lib/supabase-cms');
+        await saveSiteSettings(updated);
+        triggerToast('Client reel templates saved to database!');
+      } catch (err) {
+        console.error('Failed to save templates', err);
+        triggerToast('Failed to save templates to database');
+      }
+    }}
+  />
                 </div>
               </div>
             )}

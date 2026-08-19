@@ -123,56 +123,38 @@ export default function HomePage() {
     partners: '350+'
   });
 
-  // Load CMS data from localStorage on mount & listen to updates from Admin Panel
+  // Load CMS data from Supabase on mount
   useEffect(() => {
-    const syncFromCms = () => {
+    const syncFromCms = async () => {
       try {
-        const storedDirector = sessionStorage.getItem('arani_director_data');
-        if (storedDirector) setDirectorData(JSON.parse(storedDirector));
-
-        const storedHero = sessionStorage.getItem('arani_hero_slides');
-        if (storedHero) {
-          const parsed = JSON.parse(storedHero);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            setHeroCarouselSlides(parsed);
-          }
+        const { getSiteSettings, getJobsList } = await import('@/lib/supabase-cms');
+        
+        const settings = await getSiteSettings();
+        if (settings) {
+          if (settings.director_data) setDirectorData(settings.director_data);
+          if (settings.hero_slides && settings.hero_slides.length > 0) setHeroCarouselSlides(settings.hero_slides);
+          if (settings.partner_logos) setPartnerLogosList(settings.partner_logos);
+          if (settings.testimonials) setTestimonialsList(settings.testimonials);
+          if (settings.faqs) setFaqsList(settings.faqs);
+          if (settings.articles) setArticlesList(settings.articles);
+          if (settings.live_stats) setLiveStats(settings.live_stats);
         }
-
-        const storedJobs = sessionStorage.getItem('arani_jobs_list');
-        if (storedJobs) {
-          const parsed = JSON.parse(storedJobs);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            setJobsList(parsed);
-          }
+        
+        const jobs = await getJobsList();
+        if (jobs && jobs.length > 0) {
+          setJobsList(jobs);
         }
-
-        const storedLogos = sessionStorage.getItem('arani_partner_logos');
-        if (storedLogos) setPartnerLogosList(JSON.parse(storedLogos));
-
-        const storedTestimonials = sessionStorage.getItem('arani_testimonials');
-        if (storedTestimonials) setTestimonialsList(JSON.parse(storedTestimonials));
-
-        const storedFaqs = sessionStorage.getItem('arani_faqs');
-        if (storedFaqs) setFaqsList(JSON.parse(storedFaqs));
-
-        const storedArticles = sessionStorage.getItem('arani_articles');
-        if (storedArticles) setArticlesList(JSON.parse(storedArticles));
-
-        const storedStats = sessionStorage.getItem('arani_live_stats');
-        if (storedStats) setLiveStats(JSON.parse(storedStats));
       } catch (err) {
         console.error('Error loading CMS data:', err);
       }
     };
 
     syncFromCms();
-
+    
     window.addEventListener('arani_cms_updated', syncFromCms);
-    window.addEventListener('storage', syncFromCms);
 
     return () => {
       window.removeEventListener('arani_cms_updated', syncFromCms);
-      window.removeEventListener('storage', syncFromCms);
     };
   }, []);
 

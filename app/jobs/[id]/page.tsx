@@ -113,28 +113,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
       console.warn('Failed to submit application to Supabase', err);
     }
 
-    // Save to localStorage for candidate & admin inbox (fallback & demo)
-    try {
-      const existingStr = sessionStorage.getItem('arani_candidate_applications') || '[]';
-      const existing = JSON.parse(existingStr);
-      const newApp = {
-        id: `APP-${Date.now().toString().slice(-4)}`,
-        jobId: job.id,
-        jobTitle: job.title,
-        company: job.companyName,
-        appliedDate: 'Just Now',
-        status: 'Screening',
-        category: job.category,
-        salary: job.salary,
-        applicantName: fullName,
-        applicantEmail: email,
-        applicantPhone: phone,
-        utmSource: utm.utm_source || 'direct'
-      };
-      sessionStorage.setItem('arani_candidate_applications', JSON.stringify([newApp, ...existing]));
-    } catch (e) {
-      console.warn('Failed to save application locally:', e);
-    }
+    
 
     setSubmitted(true);
   };

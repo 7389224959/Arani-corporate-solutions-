@@ -34,7 +34,7 @@ export default function CandidateDashboardPage() {
   // Candidate Profile State with detailed Phase 3 fields
   const [profile, setProfile] = useState(() => {
     if (typeof window !== 'undefined') {
-      const saved = sessionStorage.getItem('arani_candidate_profile');
+      const saved = null;
       if (saved) {
         try { return JSON.parse(saved); } catch (e) {}
       }
@@ -76,9 +76,9 @@ export default function CandidateDashboardPage() {
 
     // Fallback/Demo local storage
     if (typeof window !== 'undefined') {
-      sessionStorage.setItem('arani_candidate_profile', JSON.stringify(profile));
+      
 
-      const savedUsersStr = sessionStorage.getItem('arani_users_list') || '[]';
+      const savedUsersStr = '[]';
       try {
         let savedUsers = JSON.parse(savedUsersStr);
         const existingIdx = savedUsers.findIndex((u: any) => u.email === profile.email);
@@ -95,7 +95,7 @@ export default function CandidateDashboardPage() {
             joined: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
           });
         }
-        sessionStorage.setItem('arani_users_list', JSON.stringify(savedUsers));
+        
       } catch (e) {
         console.error(e);
       }
@@ -148,7 +148,7 @@ export default function CandidateDashboardPage() {
     ];
 
     if (typeof window !== 'undefined') {
-      const savedAppsStr = sessionStorage.getItem('arani_candidate_applications');
+      const savedAppsStr = null;
       if (savedAppsStr) {
         try {
           const parsed = JSON.parse(savedAppsStr);

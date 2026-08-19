@@ -20,7 +20,7 @@ export const JobQuickModal: React.FC<JobQuickModalProps> = ({ job, onClose, onAp
 
   if (!job) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!fullName || !email || !phone) return;
 
@@ -38,23 +38,20 @@ export const JobQuickModal: React.FC<JobQuickModalProps> = ({ job, onClose, onAp
 
     // Save application to localStorage for Candidate & Admin dashboards
     try {
-      const existingStr = sessionStorage.getItem('arani_candidate_applications') || '[]';
-      const existing = JSON.parse(existingStr);
-      const newApp = {
-        id: `APP-${Date.now().toString().slice(-4)}`,
-        jobId: job.id,
-        jobTitle: job.title,
-        company: job.companyName,
-        appliedDate: 'Just Now',
-        status: 'Screening',
-        category: job.category,
-        salary: job.salary,
-        applicantName: fullName,
-        applicantEmail: email,
-        applicantPhone: phone,
-        utmSource: utm.utm_source || 'direct'
-      };
-      sessionStorage.setItem('arani_candidate_applications', JSON.stringify([newApp, ...existing]));
+      try {
+        const { submitJobApplication } = await import('@/lib/supabase');
+        await submitJobApplication({
+          jobId: job.id,
+          jobCode: job.id,
+          fullName,
+          email,
+          phone,
+          resumeUrl: resumeName,
+          status: 'Applied'
+        });
+      } catch (err) {
+        console.error('Failed to submit application to database', err);
+      }
     } catch (err) {
       console.warn('Failed to persist application:', err);
     }
