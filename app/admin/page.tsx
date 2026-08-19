@@ -2312,14 +2312,9 @@ export default function AdminPage() {
     settings={siteSettings as any}
     onSaveSettings={async (updated: any) => {
       setSiteSettings(prev => ({ ...prev, ...updated }));
-      try {
-        const { saveSiteSettings } = await import('@/lib/supabase-cms');
-        await saveSiteSettings(updated);
-        triggerToast('Client reel templates saved to database!');
-      } catch (err) {
-        console.error('Failed to save templates', err);
-        triggerToast('Failed to save templates to database');
-      }
+      const { saveSiteSettings } = await import('@/lib/supabase-cms');
+      await saveSiteSettings(updated);
+      triggerToast('Client reel templates saved to database!');
     }}
   />
                 </div>

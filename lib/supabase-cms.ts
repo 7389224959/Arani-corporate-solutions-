@@ -1,12 +1,9 @@
 import { getSupabase } from './supabase';
 
+import { getSiteSettingsServer } from './supabase-admin';
+
 export async function getSiteSettings() {
-  const client = getSupabase();
-  if (client) {
-    const { data, error } = await client.from('site_settings').select('*').eq('id', 1).single();
-    if (!error && data) return data;
-  }
-  return null;
+  return await getSiteSettingsServer();
 }
 
 import { saveSiteSettingsServer } from './supabase-admin';

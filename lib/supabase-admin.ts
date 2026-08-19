@@ -4,10 +4,14 @@ import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 export async function getAdminSupabase() {
   if (supabaseUrl && supabaseServiceKey) {
     return createClient(supabaseUrl, supabaseServiceKey);
+  }
+  if (supabaseUrl && supabaseAnonKey) {
+    return createClient(supabaseUrl, supabaseAnonKey);
   }
   return null;
 }
@@ -30,8 +34,20 @@ export async function saveSiteSettingsServer(settings: any) {
     if (settings.clientReelTemplates !== undefined) payload.clientReelTemplates = settings.clientReelTemplates;
 
     const { error } = await client.from('site_settings').upsert([payload]);
-    if (error) throw error;
+    if (error) {
+      console.error('Supabase upsert error:', error);
+      throw new Error(`Failed to save settings: ${error.message}. Ensure the 'site_settings' table exists and has all required columns.`);
+    }
   } else {
     throw new Error('Server-side Supabase client not initialized (missing service role key)');
   }
+}
+
+export async function getSiteSettingsServer() {
+  const client = await getAdminSupabase();
+  if (client) {
+    const { data, error } = await client.from('site_settings').select('*').eq('id', 1).single();
+    if (!error && data) return data;
+  }
+  return null;
 }
