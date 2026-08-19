@@ -176,12 +176,14 @@ export async function getCandidateProfiles() {
 export async function submitJobApplication(applicationData: any) {
   const client = getSupabase();
   if (client) {
+    const isUUID = (str: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(str);
+    
     const { data: inserted, error } = await client
       .from('job_applications')
       .insert([
         {
-          job_id: applicationData.jobId || null,
-          job_code: applicationData.jobCode || '',
+          job_id: (applicationData.jobId && isUUID(applicationData.jobId)) ? applicationData.jobId : null,
+          job_code: applicationData.jobCode || applicationData.jobId || '',
           full_name: applicationData.fullName,
           email: applicationData.email,
           phone: applicationData.phone,
