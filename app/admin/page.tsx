@@ -493,9 +493,9 @@ export default function AdminPage() {
           }));
           
           setApplicants(prev => {
-            // Filter out existing to avoid duplication (simple email check for demo)
-            const existingEmails = new Set(prev.map(p => p.email));
-            const newApps = mappedApps.filter(a => !existingEmails.has(a.email));
+            // Filter out existing by ID to avoid duplication while allowing same user to have multiple applications
+            const existingIds = new Set(prev.map(p => p.id));
+            const newApps = mappedApps.filter(a => !existingIds.has(a.id));
             return [...newApps, ...prev];
           });
         }
@@ -510,13 +510,38 @@ export default function AdminPage() {
             role: 'Candidate',
             status: 'Active',
             verified: false,
-            joined: new Date(p.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+            joined: new Date(p.created_at || new Date()).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
           }));
 
           setUserAccounts(prev => {
             const existingEmails = new Set(prev.map(p => p.email));
             const newUsers = mappedUsers.filter((u: any) => !existingEmails.has(u.email));
             return [...newUsers, ...prev];
+          });
+
+          // Also map profiles to Applicant Inbox
+          const profileApps: CandidateApplicant[] = dbProfiles.map((p: any) => ({
+            id: `APP-REG-${p.id.slice(0, 6)}`,
+            candidateName: p.full_name,
+            email: p.email,
+            phone: p.phone || 'N/A',
+            nationalId: p.national_id || 'Pending',
+            address: p.address || 'See Profile',
+            jobId: 'REG-PROFILE',
+            jobTitle: 'Candidate Registration (Profile)',
+            appliedDate: new Date(p.updated_at || p.created_at || new Date()).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+            stage: 'Applied',
+            matchScore: 'N/A',
+            resumeName: 'Profile Snapshot',
+            utmSource: 'direct',
+            screeningAnswers: [],
+            evaluationNotes: []
+          }));
+          
+          setApplicants(prev => {
+            const existingIds = new Set(prev.map(p => p.id));
+            const newApps = profileApps.filter(a => !existingIds.has(a.id));
+            return [...newApps, ...prev];
           });
         }
       } catch (err) {

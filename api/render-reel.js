@@ -28,7 +28,7 @@ const downloadFile = async (url, dest) => {
   }
 
   if (url.startsWith("/")) {
-    url = `http://localhost:${process.env.PORT || 3000}${url}`;
+    url = `http://localhost:3000${url}`;
   }
 
   // Unwrap duckduckgo proxy URLs if they exist in state
