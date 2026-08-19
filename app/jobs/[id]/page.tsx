@@ -115,7 +115,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
 
     // Save to localStorage for candidate & admin inbox (fallback & demo)
     try {
-      const existingStr = localStorage.getItem('arani_candidate_applications') || '[]';
+      const existingStr = sessionStorage.getItem('arani_candidate_applications') || '[]';
       const existing = JSON.parse(existingStr);
       const newApp = {
         id: `APP-${Date.now().toString().slice(-4)}`,
@@ -131,7 +131,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
         applicantPhone: phone,
         utmSource: utm.utm_source || 'direct'
       };
-      localStorage.setItem('arani_candidate_applications', JSON.stringify([newApp, ...existing]));
+      sessionStorage.setItem('arani_candidate_applications', JSON.stringify([newApp, ...existing]));
     } catch (e) {
       console.warn('Failed to save application locally:', e);
     }

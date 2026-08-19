@@ -227,7 +227,7 @@ export default async function handler(req, res) {
     await downloadFile(templateMediaUrl, backgroundPath);
     const isJson = scriptData.headline && scriptData.headline.includes('{');
     await downloadFile(
-      isJson ? "https://raw.githubusercontent.com/google/fonts/main/ofl/robotomono/RobotoMono-Bold.ttf" : "https://raw.githubusercontent.com/google/fonts/main/ofl/hind/Hind-Bold.ttf",
+      isJson ? "https://raw.githubusercontent.com/google/fonts/main/ofl/spacemono/SpaceMono-Bold.ttf" : "https://raw.githubusercontent.com/google/fonts/main/ofl/hind/Hind-Bold.ttf",
       fontPath,
     );
 
@@ -528,33 +528,46 @@ export default async function handler(req, res) {
       currentOutput = "with_overlay";
     }
 
+    function colorToAss(c) {
+      c = c || 'white';
+      if (c === 'yellow') return '&H0000FFFF';
+      if (c === 'white') return '&H00FFFFFF';
+      if (c === 'black') return '&H00000000';
+      if (c.startsWith('#')) {
+        let hex = c.substring(1);
+        if (hex.length === 3) hex = hex.split('').map(x => x+x).join('');
+        const r = hex.substring(0,2);
+        const g = hex.substring(2,4);
+        const b = hex.substring(4,6);
+        return `&H00${b}${g}${r}`;
+      }
+      return '&H00FFFFFF';
+    }
+
+    const formatAssTime = (t) => {
+      const h = Math.floor(t / 3600);
+      const m = Math.floor((t % 3600) / 60);
+      const s = Math.floor(t % 60);
+      const cs = Math.floor((t % 1) * 100);
+      return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}.${cs.toString().padStart(2, '0')}`;
+    };
+
+    let assStyles = [];
+    let assEvents = [];
+    const pushAssEvent = (startT, endT, style, effect, text, posStr = '') => {
+      assEvents.push(`Dialogue: 0,${formatAssTime(startT)},${formatAssTime(endT)},${style},,0,0,0,${effect},${posStr}${text}`);
+    };
+
     if (scriptData.headline && hBox) {
       const fontSize = Math.round(
         (Number(styleOverrides.headlineSize) || 80) * scaleFactor,
       );
-      const headlinePath = path.join(tempDir, "headline.txt");
-      const wrappedHeadline = wrapText(scriptData.headline, hBox[2], fontSize);
-      fs.writeFileSync(headlinePath, wrappedHeadline);
-      filterGraph.push({
-        filter: "drawtext",
-        options: {
-          fontfile: fontPath,
-          fontcolor: styleOverrides.headlineColor || "yellow",
-          fontsize: fontSize.toString(),
-          x: `${hBox[0]}+(${hBox[2]}-text_w)/2`,
-          y: `${hBox[1]}+(${hBox[3]}-text_h)/2`,
-          textfile: headlinePath,
-          shadowcolor: "black@0.9",
-          shadowx: "4",
-          shadowy: "4",
-          bordercolor: "black",
-          borderw: "4",
-          enable: `gte(t,${delayTime})`,
-        },
-        inputs: currentOutput,
-        outputs: "with_headline",
-      });
-      currentOutput = "with_headline";
+      const wrappedHeadline = wrapText(scriptData.headline, hBox[2], fontSize).replace(/\n/g, '\\N');
+      const cx = hBox[0] + hBox[2] / 2;
+      const cy = hBox[1] + hBox[3] / 2;
+      const color = colorToAss(styleOverrides.headlineColor || "yellow");
+      assStyles.push(`Style: Headline,Arial,${fontSize},${color},&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,4,4,5,0,0,0,1`);
+      pushAssEvent(delayTime, delayTime + 3600, 'Headline', '', wrappedHeadline, `{\\pos(${cx},${cy})}`);
     }
 
     if (scriptData.headline && jBox) {
@@ -587,49 +600,13 @@ export default async function handler(req, res) {
           const valFontSize = Math.round(45 * scaleFactor);
           const paddingY = Math.round(15 * scaleFactor);
           
-          const keyPath = path.join(tempDir, `json_key_${i}.txt`);
-          fs.writeFileSync(keyPath, String(key).toUpperCase());
-          filterGraph.push({
-            filter: "drawtext",
-            options: {
-              fontfile: fontPath,
-              fontcolor: "#FBBF24",
-              fontsize: keyFontSize.toString(),
-              x: `${jBox[0]}`,
-              y: `${currentYOffset}`,
-              textfile: keyPath,
-              shadowcolor: "black@0.9",
-              shadowx: "4",
-              shadowy: "4",
-              enable: `gte(t,${delayTime})`,
-            },
-            inputs: currentOutput,
-            outputs: `with_json_key_${i}`,
-          });
-          currentOutput = `with_json_key_${i}`;
+          assStyles.push(`Style: JsonKey${i},Arial,${keyFontSize},&H0024BFFB,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,2,2,7,0,0,0,1`);
+          pushAssEvent(delayTime, delayTime + 3600, `JsonKey${i}`, '', String(key).toUpperCase(), `{\\pos(${jBox[0]},${currentYOffset})}`);
           
           currentYOffset += keyFontSize + Math.round(5 * scaleFactor);
           
-          const valPath = path.join(tempDir, `json_val_${i}.txt`);
-          fs.writeFileSync(valPath, String(value));
-          filterGraph.push({
-            filter: "drawtext",
-            options: {
-              fontfile: fontPath,
-              fontcolor: "white",
-              fontsize: valFontSize.toString(),
-              x: `${jBox[0]}`,
-              y: `${currentYOffset}`,
-              textfile: valPath,
-              shadowcolor: "black@0.9",
-              shadowx: "4",
-              shadowy: "4",
-              enable: `gte(t,${delayTime})`,
-            },
-            inputs: currentOutput,
-            outputs: `with_json_val_${i}`,
-          });
-          currentOutput = `with_json_val_${i}`;
+          assStyles.push(`Style: JsonVal${i},Arial,${valFontSize},&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,2,2,7,0,0,0,1`);
+          pushAssEvent(delayTime, delayTime + 3600, `JsonVal${i}`, '', String(value), `{\\pos(${jBox[0]},${currentYOffset})}`);
           
           currentYOffset += valFontSize + paddingY;
           i++;
@@ -643,11 +620,10 @@ export default async function handler(req, res) {
       const fontSize = Math.round(
         (Number(styleOverrides.tickerSize) || 50) * scaleFactor,
       );
-      const tickerPath = path.join(tempDir, "ticker.txt");
-      fs.writeFileSync(tickerPath, String(scriptData.ticker));
       const speed = Math.round(
         (template.style_rules.ticker_speed || 150) * scaleFactor,
       );
+      const cy = tBox[1] + tBox[3] / 2;
 
       // Draw static background box for ticker
       filterGraph.push({
@@ -664,26 +640,18 @@ export default async function handler(req, res) {
         inputs: currentOutput,
         outputs: "with_ticker_bg",
       });
+      currentOutput = "with_ticker_bg";
 
-      // Draw moving text over the background
-      filterGraph.push({
-        filter: "drawtext",
-        options: {
-          fontfile: fontPath,
-          fontcolor: styleOverrides.tickerColor || "white",
-          fontsize: fontSize.toString(),
-          x: `${tBox[0]}+${tBox[2]}-(t*${speed})`,
-          y: `${tBox[1]}+(${tBox[3]}-text_h)/2`,
-          textfile: tickerPath,
-          shadowcolor: "black@0.5",
-          shadowx: "2",
-          shadowy: "2",
-          enable: `gte(t,${delayTime})`,
-        },
-        inputs: "with_ticker_bg",
-        outputs: "with_ticker",
-      });
-      currentOutput = "with_ticker";
+      const color = colorToAss(styleOverrides.tickerColor || "white");
+      assStyles.push(`Style: Ticker,Arial,${fontSize},${color},&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,2,2,4,0,0,0,1`);
+      
+      // Calculate move parameters based on speed
+      const totalDist = tBox[2] + 2000;
+      const moveDuration = totalDist / speed;
+      const xStart = tBox[0] + tBox[2];
+      const xEnd = xStart - totalDist;
+      
+      pushAssEvent(delayTime, delayTime + moveDuration, 'Ticker', '', String(scriptData.ticker), `{\\move(${xStart},${cy},${xEnd},${cy})}`);
     }
 
     if ((scriptData.subtitles || scriptData.subtitleChunks) && sBox) {
@@ -691,43 +659,52 @@ export default async function handler(req, res) {
         (Number(styleOverrides.subtitleSize) || 65) * scaleFactor,
       );
 
+      const color = colorToAss(styleOverrides.subtitleColor || "white");
+      assStyles.push(`Style: Subtitle,Arial,${fontSize},${color},&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,4,4,5,0,0,0,1`);
+      const cx = sBox[0] + sBox[2] / 2;
+      const cy = sBox[1] + sBox[3] / 2;
+
       let currentTime = 0;
 
       subtitleLines.forEach((sub, index) => {
-        const nextOutput = `sub_${index}`;
-        const subPath = path.join(tempDir, `sub_${index}.txt`);
-        const wrappedSub = wrapText(sub, sBox[2], fontSize);
-        fs.writeFileSync(subPath, wrappedSub);
-
+        const wrappedSub = wrapText(sub, sBox[2], fontSize).replace(/\n/g, '\\N');
         const words = String(sub).trim().split(/\s+/).filter(Boolean).length;
-        // The proportion of the total text length dictates the duration this chunk is shown.
         let duration = (words / totalWords) * exactAudioDuration;
 
         const startT = currentTime + delayTime;
         const endT = currentTime + duration + delayTime;
         currentTime += duration;
 
-        filterGraph.push({
-          filter: "drawtext",
-          options: {
-            fontfile: fontPath,
-            fontcolor: styleOverrides.subtitleColor || "white",
-            fontsize: fontSize.toString(),
-            x: `${sBox[0]}+(${sBox[2]}-text_w)/2`,
-            y: `${sBox[1]}+(${sBox[3]}-text_h)/2`,
-            textfile: subPath,
-            shadowcolor: "black@0.9",
-            shadowx: "3",
-            shadowy: "3",
-            bordercolor: "black",
-            borderw: "4",
-            enable: `between(t,${startT.toFixed(2)},${endT.toFixed(2)})`,
-          },
-          inputs: currentOutput,
-          outputs: nextOutput,
-        });
-        currentOutput = nextOutput;
+        pushAssEvent(startT, endT, 'Subtitle', '', wrappedSub, `{\\pos(${cx},${cy})}`);
       });
+    }
+
+    if (assEvents.length > 0) {
+      const assPath = path.join(tempDir, "subs.ass");
+      const assContent = `[Script Info]
+ScriptType: v4.00+
+PlayResX: 720
+PlayResY: 1280
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+${assStyles.join('\n')}
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+${assEvents.join('\n')}
+`;
+      fs.writeFileSync(assPath, assContent);
+      filterGraph.push({
+        filter: "ass",
+        options: {
+          filename: assPath,
+          fontsdir: tempDir,
+        },
+        inputs: currentOutput,
+        outputs: "with_subs"
+      });
+      currentOutput = "with_subs";
     }
 
     console.log(

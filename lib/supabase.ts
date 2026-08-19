@@ -63,27 +63,9 @@ export async function submitCounsellingLead(data: {
       throw error;
     }
     return inserted;
-  } else {
-    // LocalStorage Fallback for preview mode
-    console.info('Supabase env vars not configured. Saving counselling lead to localStorage fallback.');
-    const existingStr = typeof window !== 'undefined' ? localStorage.getItem('arani_counselling_leads') || '[]' : '[]';
-    const existing = JSON.parse(existingStr);
-    const newLead = {
-      id: `CNS-${Date.now().toString().slice(-4)}`,
-      fullName: data.fullName,
-      phone: data.phone,
-      email: data.email,
-      sector: data.sector,
-      experience: data.experience,
-      preferredTime: data.preferredTime,
-      bookedAt: new Date().toLocaleString(),
-      status: 'Pending Callback'
-    };
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('arani_counselling_leads', JSON.stringify([newLead, ...existing]));
-    }
-    return [newLead];
   }
+  
+  throw new Error('Supabase client not initialized');
 }
 
 // Helper: Submit Employer Talent Requirement
@@ -126,24 +108,17 @@ export async function submitEmployerLead(data: {
       throw error;
     }
     return inserted;
-  } else {
-    // LocalStorage Fallback
-    const existingStr = typeof window !== 'undefined' ? localStorage.getItem('arani_employer_leads') || '[]' : '[]';
-    const existing = JSON.parse(existingStr);
-    const newLead = {
-      id: `EMP-${Date.now().toString().slice(-4)}`,
-      ...data,
-      created_at: new Date().toLocaleString(),
-      status: 'New'
-    };
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('arani_employer_leads', JSON.stringify([newLead, ...existing]));
-    }
-    return [newLead];
   }
+  
+  throw new Error('Supabase client not initialized');
 }
 
 export async function saveCandidateProfile(profileData: any) {
+  const newProfile = {
+    ...profileData,
+    updated_at: new Date().toISOString()
+  };
+  
   const client = getSupabase();
   if (client) {
     const { data: inserted, error } = await client
@@ -167,17 +142,18 @@ export async function saveCandidateProfile(profileData: any) {
           notice_period: profileData.noticePeriod,
           skills: profileData.skills,
           confidential_search: profileData.confidentialSearch,
-          updated_at: new Date().toISOString()
+          updated_at: newProfile.updated_at
         }
       ], { onConflict: 'email' })
       .select();
       
-    if (error) {
-      console.error('Supabase save candidate profile error:', error);
-      throw error;
+    if (!error) {
+      return inserted;
     }
-    return inserted;
+    throw error;
   }
+
+  throw new Error('Supabase client not initialized');
 }
 
 export async function getCandidateProfiles() {
@@ -188,12 +164,12 @@ export async function getCandidateProfiles() {
       .select('*')
       .order('updated_at', { ascending: false });
       
-    if (error) {
-      console.error('Supabase fetch candidate profiles error:', error);
-      return [];
+    if (!error && data) {
+      return data;
     }
-    return data;
+    if (error) throw error;
   }
+  
   return [];
 }
 

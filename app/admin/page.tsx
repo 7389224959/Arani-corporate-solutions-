@@ -193,10 +193,10 @@ export default function AdminPage() {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      const auth = localStorage.getItem('arani_admin_authenticated');
+      const auth = sessionStorage.getItem('arani_admin_authenticated');
       if (auth === 'true') {
         setIsAuthenticated(true);
-        const savedRole = localStorage.getItem('arani_admin_role');
+        const savedRole = sessionStorage.getItem('arani_admin_role');
         if (savedRole) {
           setAdminRole(savedRole as any);
         }
@@ -223,8 +223,8 @@ export default function AdminPage() {
       }
 
       setIsAuthenticated(true);
-      localStorage.setItem('arani_admin_authenticated', 'true');
-      localStorage.setItem('arani_admin_role', adminRole);
+      sessionStorage.setItem('arani_admin_authenticated', 'true');
+      sessionStorage.setItem('arani_admin_role', adminRole);
       setIsLoggingIn(false);
       triggerToast(`Authenticated as ${adminRole}. Welcome to Arani CMS.`);
     }, 500);
@@ -235,22 +235,22 @@ export default function AdminPage() {
     setAdminPassword('admin123');
     setAdminRole(role);
     setIsAuthenticated(true);
-    localStorage.setItem('arani_admin_authenticated', 'true');
-    localStorage.setItem('arani_admin_role', role);
+    sessionStorage.setItem('arani_admin_authenticated', 'true');
+    sessionStorage.setItem('arani_admin_role', role);
     triggerToast(`Authenticated as ${role}. Welcome to Arani CMS.`);
   };
 
   const handleAdminLogout = () => {
     setIsAuthenticated(false);
-    localStorage.removeItem('arani_admin_authenticated');
-    localStorage.removeItem('arani_admin_role');
+    sessionStorage.removeItem('arani_admin_authenticated');
+    sessionStorage.removeItem('arani_admin_role');
     triggerToast('Staff logged out successfully.');
   };
 
   // Initializing state with defaults or localStorage sync
   const [directorData, setDirectorData] = useState<DirectorData>(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('arani_director_data');
+      const saved = sessionStorage.getItem('arani_director_data');
       if (saved) {
         try { return JSON.parse(saved); } catch (e) {}
       }
@@ -261,7 +261,7 @@ export default function AdminPage() {
   const saveDirectorData = (updated: DirectorData) => {
     setDirectorData(updated);
     if (typeof window !== 'undefined') {
-      localStorage.setItem('arani_director_data', JSON.stringify(updated));
+      sessionStorage.setItem('arani_director_data', JSON.stringify(updated));
       window.dispatchEvent(new Event('arani_cms_updated'));
     }
     triggerToast('Director Ashutosh Raj Choure profile & photo updated successfully!');
@@ -269,7 +269,7 @@ export default function AdminPage() {
 
   const [jobsList, setJobsList] = useState<Job[]>(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('arani_jobs_list');
+      const saved = sessionStorage.getItem('arani_jobs_list');
       if (saved) {
         try { return JSON.parse(saved); } catch (e) {}
       }
@@ -280,7 +280,7 @@ export default function AdminPage() {
   const saveJobsList = (updated: Job[]) => {
     setJobsList(updated);
     if (typeof window !== 'undefined') {
-      localStorage.setItem('arani_jobs_list', JSON.stringify(updated));
+      sessionStorage.setItem('arani_jobs_list', JSON.stringify(updated));
       window.dispatchEvent(new Event('arani_cms_updated'));
     }
     triggerToast('Job Board list updated and synced live!');
@@ -294,7 +294,7 @@ export default function AdminPage() {
   // Hero Banners State
   const [heroSlides, setHeroSlides] = useState<HeroSlide[]>(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('arani_hero_slides');
+      const saved = sessionStorage.getItem('arani_hero_slides');
       if (saved) {
         try { return JSON.parse(saved); } catch (e) {}
       }
@@ -336,7 +336,7 @@ export default function AdminPage() {
   const saveHeroSlides = (updated: HeroSlide[]) => {
     setHeroSlides(updated);
     if (typeof window !== 'undefined') {
-      localStorage.setItem('arani_hero_slides', JSON.stringify(updated));
+      sessionStorage.setItem('arani_hero_slides', JSON.stringify(updated));
       window.dispatchEvent(new Event('arani_cms_updated'));
     }
     triggerToast('Hero Carousel Banners saved and updated live!');
@@ -444,7 +444,7 @@ export default function AdminPage() {
     ];
 
     if (typeof window !== 'undefined') {
-      const savedAppsStr = localStorage.getItem('arani_candidate_applications');
+      const savedAppsStr = sessionStorage.getItem('arani_candidate_applications');
       if (savedAppsStr) {
         try {
           const parsed = JSON.parse(savedAppsStr);
@@ -530,7 +530,7 @@ export default function AdminPage() {
     ];
 
     if (typeof window !== 'undefined') {
-      const savedUsersStr = localStorage.getItem('arani_users_list');
+      const savedUsersStr = sessionStorage.getItem('arani_users_list');
       if (savedUsersStr) {
         try {
           return [...JSON.parse(savedUsersStr), ...initial];

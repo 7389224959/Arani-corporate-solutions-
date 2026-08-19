@@ -127,10 +127,10 @@ export default function HomePage() {
   useEffect(() => {
     const syncFromCms = () => {
       try {
-        const storedDirector = localStorage.getItem('arani_director_data');
+        const storedDirector = sessionStorage.getItem('arani_director_data');
         if (storedDirector) setDirectorData(JSON.parse(storedDirector));
 
-        const storedHero = localStorage.getItem('arani_hero_slides');
+        const storedHero = sessionStorage.getItem('arani_hero_slides');
         if (storedHero) {
           const parsed = JSON.parse(storedHero);
           if (Array.isArray(parsed) && parsed.length > 0) {
@@ -138,7 +138,7 @@ export default function HomePage() {
           }
         }
 
-        const storedJobs = localStorage.getItem('arani_jobs_list');
+        const storedJobs = sessionStorage.getItem('arani_jobs_list');
         if (storedJobs) {
           const parsed = JSON.parse(storedJobs);
           if (Array.isArray(parsed) && parsed.length > 0) {
@@ -146,19 +146,19 @@ export default function HomePage() {
           }
         }
 
-        const storedLogos = localStorage.getItem('arani_partner_logos');
+        const storedLogos = sessionStorage.getItem('arani_partner_logos');
         if (storedLogos) setPartnerLogosList(JSON.parse(storedLogos));
 
-        const storedTestimonials = localStorage.getItem('arani_testimonials');
+        const storedTestimonials = sessionStorage.getItem('arani_testimonials');
         if (storedTestimonials) setTestimonialsList(JSON.parse(storedTestimonials));
 
-        const storedFaqs = localStorage.getItem('arani_faqs');
+        const storedFaqs = sessionStorage.getItem('arani_faqs');
         if (storedFaqs) setFaqsList(JSON.parse(storedFaqs));
 
-        const storedArticles = localStorage.getItem('arani_articles');
+        const storedArticles = sessionStorage.getItem('arani_articles');
         if (storedArticles) setArticlesList(JSON.parse(storedArticles));
 
-        const storedStats = localStorage.getItem('arani_live_stats');
+        const storedStats = sessionStorage.getItem('arani_live_stats');
         if (storedStats) setLiveStats(JSON.parse(storedStats));
       } catch (err) {
         console.error('Error loading CMS data:', err);
