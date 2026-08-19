@@ -25,6 +25,14 @@ export const RoleChoiceModal: React.FC<RoleChoiceModalProps> = ({ isOpen, onClos
 
   const handleRegisterSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('arani_role_registration', JSON.stringify({
+        role: 'Candidate',
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone
+      }));
+    }
     // Simulate successful registration
     router.push('/candidate/dashboard');
   };

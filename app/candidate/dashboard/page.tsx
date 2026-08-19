@@ -33,13 +33,7 @@ export default function CandidateDashboardPage() {
 
   // Candidate Profile State with detailed Phase 3 fields
   const [profile, setProfile] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const saved = null;
-      if (saved) {
-        try { return JSON.parse(saved); } catch (e) {}
-      }
-    }
-    return {
+    let defaultProfile = {
       fullName: 'Rahul Sharma',
       email: 'rahul.sharma@example.com',
       phone: '+91 98765 43210',
@@ -58,6 +52,26 @@ export default function CandidateDashboardPage() {
       skills: 'Credit Risk Analysis, Financial Modeling, CIBIL Verification, Commercial Underwriting, RBI Compliance',
       confidentialSearch: true
     };
+
+    if (typeof window !== 'undefined') {
+      try {
+        const registrationData = localStorage.getItem('arani_role_registration');
+        if (registrationData) {
+          const parsed = JSON.parse(registrationData);
+          if (parsed.name) defaultProfile.fullName = parsed.name;
+          if (parsed.email) defaultProfile.email = parsed.email;
+          if (parsed.phone) defaultProfile.phone = parsed.phone;
+        }
+      } catch (e) {
+        console.warn('Could not parse registration data from local storage', e);
+      }
+      
+      const saved = null;
+      if (saved) {
+        try { return JSON.parse(saved); } catch (e) {}
+      }
+    }
+    return defaultProfile;
   });
 
   const [resumeUploaded, setResumeUploaded] = useState('Rahul_Sharma_Banking_CV_2026.pdf');

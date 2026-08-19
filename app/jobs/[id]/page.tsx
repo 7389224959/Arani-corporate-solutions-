@@ -52,6 +52,22 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
   const [address, setAddress] = useState('Flat 402, Sunshine Heights, Powai, Mumbai - 400076');
   const [resumeName, setResumeName] = useState('Rahul_Sharma_Banking_Resume.pdf');
 
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const registrationData = localStorage.getItem('arani_role_registration');
+        if (registrationData) {
+          const parsed = JSON.parse(registrationData);
+          if (parsed.name) setFullName(parsed.name);
+          if (parsed.email) setEmail(parsed.email);
+          if (parsed.phone) setPhone(parsed.phone);
+        }
+      } catch (e) {
+        console.warn('Could not parse registration data from local storage', e);
+      }
+    }
+  }, []);
+
   // Step 2: Role-Specific Screening Questions
   const [q1ExpYears, setQ1ExpYears] = useState('3 Years');
   const [q2NoticePeriod, setQ2NoticePeriod] = useState('30 Days');
