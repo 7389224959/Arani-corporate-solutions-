@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, MouseEvent } from 'react';
 import { ReelTemplate, SiteSettings } from '../types';
 import { Plus, Edit, Trash2, CheckCircle, X, Image as ImageIcon, Zap, AlertTriangle } from 'lucide-react';
-import { uploadImage } from '../services/supabase';
+import { uploadToSupabaseStorage } from '../lib/supabase';
 
 // We'll import analyzing function from geminiService
 // import { analyzeReelTemplate } from '../services/geminiService';
@@ -309,13 +309,21 @@ const TemplateEditor: React.FC<TemplateEditorProps> = ({ template: initialTempla
 
     setIsUploading(true);
     try {
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        const base64 = reader.result as string;
-        const uploadedUrl = await uploadImage(base64);
+      const uploadedUrl = await uploadToSupabaseStorage('media_assets', file, 'screenshots');
+      if (uploadedUrl) {
         setTemplate(prev => ({ ...prev, screenshotUrl: uploadedUrl }));
-      };
-      reader.readAsDataURL(file);
+      } else {
+        // Fallback to base64 if Supabase is not configured
+        await new Promise<void>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            setTemplate(prev => ({ ...prev, screenshotUrl: reader.result as string }));
+            resolve();
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+      }
     } catch (err) {
       console.error(err);
       alert('Upload failed');
@@ -330,17 +338,21 @@ const TemplateEditor: React.FC<TemplateEditorProps> = ({ template: initialTempla
 
     setIsUploading(true);
     try {
-      // Depending on file type, we might want to upload to object storage instead of base64
-      // For images, we can use the same base64 proxy
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        const base64 = reader.result as string;
-        // if file.type.startsWith('video/'), you might want to upload natively. 
-        // For now let's assume images.
-        const uploadedUrl = await uploadImage(base64);
+      const uploadedUrl = await uploadToSupabaseStorage('media_assets', file, 'reels');
+      if (uploadedUrl) {
         setTemplate(prev => ({ ...prev, [targetField]: uploadedUrl }));
-      };
-      reader.readAsDataURL(file);
+      } else {
+        // Fallback to base64 if Supabase is not configured
+        await new Promise<void>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            setTemplate(prev => ({ ...prev, [targetField]: reader.result as string }));
+            resolve();
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+      }
     } catch (err) {
       console.error(err);
       alert('Upload failed');
