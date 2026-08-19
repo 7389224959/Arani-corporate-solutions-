@@ -236,6 +236,32 @@ export async function uploadToSupabaseStorage(
   const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
   const filePath = folderPath ? `${folderPath}/${fileName}` : fileName;
 
+  // Attempt to use a signed URL if the backend has the service role key configured
+  try {
+    const res = await fetch('/api/supabase/signed-url', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ bucketName, filePath })
+    });
+    
+    if (res.ok) {
+      const { token } = await res.json();
+      if (token) {
+        const { error: signedUploadError } = await client.storage
+          .from(bucketName)
+          .uploadToSignedUrl(filePath, token, file);
+          
+        if (!signedUploadError) {
+          const { data: publicUrlData } = client.storage.from(bucketName).getPublicUrl(filePath);
+          return publicUrlData?.publicUrl || null;
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('Signed URL upload failed, falling back to direct upload', err);
+  }
+
+  // Fallback to direct client upload (requires RLS INSERT policies on the bucket)
   const { error: uploadError } = await client.storage
     .from(bucketName)
     .upload(filePath, file, { cacheControl: '3600', upsert: true });

@@ -260,8 +260,16 @@ CREATE POLICY "Public Read director_photos"
 ON storage.objects FOR SELECT 
 USING (bucket_id = 'director_photos');
 
+CREATE POLICY "Public Upload director_photos" 
+ON storage.objects FOR INSERT 
+WITH CHECK (bucket_id = 'director_photos');
+
 CREATE POLICY "Public Read media_assets" 
 ON storage.objects FOR SELECT 
 USING (bucket_id = 'media_assets');
+
+CREATE POLICY "Public Upload media_assets" 
+ON storage.objects FOR INSERT 
+WITH CHECK (bucket_id = 'media_assets');
 
 -- Done! Your Supabase database & storage schema is completely ready!

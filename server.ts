@@ -9,9 +9,8 @@ const port = process.env.PORT || 3000;
 
 app.prepare().then(() => {
   const server = express();
-  server.use(express.json({ limit: '50mb' }));
-
-  server.post('/api/render-reel', (req, res) => {
+  
+  server.post('/api/render-reel', express.json({ limit: '50mb' }), (req, res) => {
     return renderReelHandler(req, res);
   });
 
