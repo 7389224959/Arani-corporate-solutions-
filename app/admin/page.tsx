@@ -475,7 +475,7 @@ export default function AdminPage() {
         const dbApps = await getJobApplications();
         if (dbApps && dbApps.length > 0) {
           const mappedApps: CandidateApplicant[] = dbApps.map((app: any) => ({
-            id: `APP-DB-${app.id.slice(0, 6)}`,
+            id: `APP-DB-${(app.id || '000000').slice(0, 6)}`,
             candidateName: app.full_name,
             email: app.email,
             phone: app.phone,
@@ -493,7 +493,6 @@ export default function AdminPage() {
           }));
           
           setApplicants(prev => {
-            // Filter out existing by ID to avoid duplication while allowing same user to have multiple applications
             const existingIds = new Set(prev.map(p => p.id));
             const newApps = mappedApps.filter(a => !existingIds.has(a.id));
             return [...newApps, ...prev];
@@ -504,13 +503,13 @@ export default function AdminPage() {
         const dbProfiles = await getCandidateProfiles();
         if (dbProfiles && dbProfiles.length > 0) {
           const mappedUsers = dbProfiles.map((p: any) => ({
-            id: `USR-DB-${p.id.slice(0, 6)}`,
+            id: `USR-DB-${(p.email || '000000').slice(0, 6)}`,
             name: p.full_name,
             email: p.email,
             role: 'Candidate',
             status: 'Active',
             verified: false,
-            joined: new Date(p.created_at || new Date()).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+            joined: new Date(p.updated_at || p.created_at || new Date()).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
           }));
 
           setUserAccounts(prev => {
@@ -521,7 +520,7 @@ export default function AdminPage() {
 
           // Also map profiles to Applicant Inbox
           const profileApps: CandidateApplicant[] = dbProfiles.map((p: any) => ({
-            id: `APP-REG-${p.id.slice(0, 6)}`,
+            id: `APP-REG-${(p.email || '000000').slice(0, 6)}`,
             candidateName: p.full_name,
             email: p.email,
             phone: p.phone || 'N/A',
