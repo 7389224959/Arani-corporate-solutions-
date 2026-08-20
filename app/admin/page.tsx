@@ -264,11 +264,12 @@ export default function AdminPage() {
   };
 
   const [jobsList, setJobsList] = useState<Job[]>(SAMPLE_JOBS);
+  const [jobsLoading, setJobsLoading] = useState<boolean>(true);
+  const [isSavingJob, setIsSavingJob] = useState<boolean>(false);
 
-  const saveJobsList = (updated: Job[]) => {
+  const saveJobsList = async (updated: Job[]) => {
     setJobsList(updated);
     if (typeof window !== 'undefined') {
-      
       window.dispatchEvent(new Event('arani_cms_updated'));
     }
     triggerToast('Job Board list updated and synced live!');
@@ -459,8 +460,8 @@ export default function AdminPage() {
         const { getJobApplications, getCandidateProfiles } = await import('@/lib/supabase');
         
         // Fetch Job Applications
-                // Fetch Site Settings
-        const { getSiteSettings } = await import('@/lib/supabase-cms');
+        // Fetch Site Settings
+        const { getSiteSettings, getJobsList } = await import('@/lib/supabase-cms');
         const settings = await getSiteSettings();
         if (settings) {
           setSiteSettings(prev => ({ ...prev, ...settings }));
@@ -471,6 +472,18 @@ export default function AdminPage() {
           if (settings.faqs) setFaqsList(settings.faqs);
           if (settings.articles) setArticlesList(settings.articles);
           if (settings.live_stats) setLiveStats(settings.live_stats);
+        }
+
+        // Fetch Jobs directly from Supabase
+        try {
+          const dbJobs = await getJobsList();
+          if (dbJobs && dbJobs.length > 0) {
+            setJobsList(dbJobs);
+          }
+        } catch (jobErr) {
+          console.warn('Failed to load jobs from Supabase:', jobErr);
+        } finally {
+          setJobsLoading(false);
         }
 
         const dbApps = await getJobApplications();
@@ -1980,8 +1993,14 @@ export default function AdminPage() {
               <div className="bg-surface border border-line rounded-lg p-6 shadow-xs space-y-6">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-line">
                   <div>
-                    <h3 className="font-display font-bold text-xl text-ink-900">Job Directory Management</h3>
-                    <p className="text-xs text-slate">CRUD operations for banking, finance, and corporate postings.</p>
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-display font-bold text-xl text-ink-900">Job Directory Management</h3>
+                      <span className="px-2.5 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-200 font-mono text-[10px] font-bold rounded flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        Supabase Database Live
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate">All jobs are stored and synchronized directly with your Supabase database.</p>
                   </div>
 
                   <div className="flex items-center gap-2">
@@ -2003,71 +2022,114 @@ export default function AdminPage() {
                 </div>
 
                 {/* Job Listing Table / Ledger */}
-                <div className="space-y-3">
-                  {jobsList.map((job) => (
-                    <div key={job.id} className="p-4 bg-paper border border-line rounded-lg flex flex-col md:flex-row md:items-center justify-between gap-4 text-xs font-sans">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-mono font-bold text-teal-700 bg-teal-50 px-2 py-0.5 rounded border border-teal-200">
-                            {job.id}
-                          </span>
-                          <h4 className="font-display font-bold text-base text-ink-900">{job.title}</h4>
-                          <span className="bg-ink-800 text-surface px-2 py-0.5 rounded text-[10px] font-mono font-bold">
-                            {job.category}
-                          </span>
-                          {job.isUrgent && (
-                            <span className="bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase">
-                              Urgent
+                {jobsLoading ? (
+                  <div className="py-12 text-center text-slate font-mono text-xs flex flex-col items-center gap-2">
+                    <RefreshCw className="w-5 h-5 text-teal-600 animate-spin" />
+                    <span>Loading jobs from Supabase database...</span>
+                  </div>
+                ) : jobsList.length === 0 ? (
+                  <div className="py-12 text-center text-slate font-mono text-xs border border-dashed border-line rounded-lg">
+                    No job postings found in Supabase. Click &quot;Post New Job&quot; to create one.
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {jobsList.map((job) => (
+                      <div key={job.id} className="p-4 bg-paper border border-line rounded-lg flex flex-col md:flex-row md:items-center justify-between gap-4 text-xs font-sans">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-mono font-bold text-teal-700 bg-teal-50 px-2 py-0.5 rounded border border-teal-200">
+                              {job.id}
                             </span>
-                          )}
-                          {job.isConfidential && (
-                            <span className="bg-slate/10 text-slate px-2 py-0.5 rounded text-[10px] font-mono">
-                              Confidential Client
+                            <h4 className="font-display font-bold text-base text-ink-900">{job.title}</h4>
+                            <span className="bg-ink-800 text-surface px-2 py-0.5 rounded text-[10px] font-mono font-bold">
+                              {job.category}
                             </span>
+                            {job.isUrgent && (
+                              <span className="bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase">
+                                Urgent
+                              </span>
+                            )}
+                            {job.isFeatured && (
+                              <span className="bg-teal-100 text-teal-800 px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase">
+                                Featured
+                              </span>
+                            )}
+                            {job.isConfidential && (
+                              <span className="bg-slate/10 text-slate px-2 py-0.5 rounded text-[10px] font-mono">
+                                Confidential Client
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-slate">
+                            {job.companyName} • {job.location} • <strong className="text-ink-900 font-mono">{job.salary}</strong> • {job.type} ({job.experience})
+                          </p>
+                          {job.description && (
+                            <p className="text-slate-600 line-clamp-1 text-[11px] italic">
+                              {job.description}
+                            </p>
                           )}
                         </div>
-                        <p className="text-slate">
-                          {job.companyName} • {job.location} • <strong className="text-ink-900 font-mono">{job.salary}</strong> • {job.type} ({job.experience})
-                        </p>
-                      </div>
 
-                      <div className="flex items-center gap-2 shrink-0">
-                        <button
-                          onClick={() => setEditingJob(job)}
-                          className="px-3 py-1.5 bg-surface border border-line hover:bg-paper rounded font-mono font-bold text-slate flex items-center gap-1"
-                        >
-                          <Edit2 className="w-3.5 h-3.5 text-teal-600" />
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => {
-                            const duplicate: Job = {
-                              ...job,
-                              id: `ACS-${Math.floor(8000 + Math.random() * 1000)}`,
-                              title: `${job.title} (Copy)`,
-                              postedDate: 'Just now'
-                            };
-                            setJobsList([duplicate, ...jobsList]);
-                            triggerToast(`Duplicated job as ${duplicate.id}`);
-                          }}
-                          className="p-1.5 bg-surface border border-line rounded hover:bg-paper text-slate"
-                          title="Duplicate Job"
-                        >
-                          <Copy className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => {
-                            setJobsList(jobsList.filter((j) => j.id !== job.id));
-                            triggerToast(`Job ${job.id} removed`);
-                          }}
-                          className="p-1.5 bg-danger/10 text-danger rounded hover:bg-danger/20"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <button
+                            onClick={() => setEditingJob(job)}
+                            className="px-3 py-1.5 bg-surface border border-line hover:bg-paper rounded font-mono font-bold text-slate flex items-center gap-1 cursor-pointer"
+                          >
+                            <Edit2 className="w-3.5 h-3.5 text-teal-600" />
+                            Edit
+                          </button>
+                          <button
+                            onClick={async () => {
+                              const duplicate: Job = {
+                                ...job,
+                                id: `ACS-${Math.floor(8000 + Math.random() * 1000)}`,
+                                title: `${job.title} (Copy)`,
+                                postedDate: 'Just now'
+                              };
+                              try {
+                                const { saveJob } = await import('@/lib/supabase-cms');
+                                const saved = await saveJob(duplicate);
+                                setJobsList([saved || duplicate, ...jobsList]);
+                                if (typeof window !== 'undefined') {
+                                  window.dispatchEvent(new Event('arani_cms_updated'));
+                                }
+                                triggerToast(`Duplicated job as ${duplicate.id} in Supabase!`);
+                              } catch (err: any) {
+                                console.error('Failed to duplicate job:', err);
+                                triggerToast(`Error duplicating job: ${err.message}`);
+                              }
+                            }}
+                            className="p-1.5 bg-surface border border-line rounded hover:bg-paper text-slate cursor-pointer"
+                            title="Duplicate Job"
+                          >
+                            <Copy className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={async () => {
+                              if (!confirm(`Permanently delete job ${job.id} (${job.title}) from Supabase?`)) return;
+                              try {
+                                const { deleteJob } = await import('@/lib/supabase-cms');
+                                await deleteJob(job.id);
+                                setJobsList(jobsList.filter((j) => j.id !== job.id));
+                                if (typeof window !== 'undefined') {
+                                  window.dispatchEvent(new Event('arani_cms_updated'));
+                                }
+                                triggerToast(`Job ${job.id} deleted from Supabase.`);
+                              } catch (err: any) {
+                                console.error('Failed to delete job:', err);
+                                triggerToast(`Error deleting job: ${err.message}`);
+                              }
+                            }}
+                            className="p-1.5 bg-danger/10 text-danger rounded hover:bg-danger/20 cursor-pointer"
+                            title="Delete Job"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
@@ -2517,15 +2579,19 @@ export default function AdminPage() {
         <div className="fixed inset-0 z-50 bg-ink-950/70 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-surface border border-line rounded-lg max-w-xl w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto font-sans">
             <div className="flex items-center justify-between border-b border-line pb-3">
-              <h3 className="font-display font-bold text-xl text-ink-900">Post New Banking / Corporate Job</h3>
+              <div>
+                <h3 className="font-display font-bold text-xl text-ink-900">Post New Banking / Corporate Job</h3>
+                <p className="text-xs text-slate">Creates and persists a job record directly into Supabase database.</p>
+              </div>
               <button onClick={() => setIsAddingJob(false)} className="p-1 hover:bg-paper rounded">
                 <X className="w-5 h-5 text-slate" />
               </button>
             </div>
 
             <form
-              onSubmit={(e) => {
+              onSubmit={async (e) => {
                 e.preventDefault();
+                setIsSavingJob(true);
                 const form = e.target as HTMLFormElement;
                 const newJob: Job = {
                   id: `ACS-${Math.floor(8000 + Math.random() * 1000)}`,
@@ -2533,18 +2599,36 @@ export default function AdminPage() {
                   category: (form.elements.namedItem('category') as HTMLSelectElement).value as any,
                   location: (form.elements.namedItem('location') as HTMLInputElement).value,
                   salary: (form.elements.namedItem('salary') as HTMLInputElement).value,
-                  type: 'Full-Time',
+                  type: (form.elements.namedItem('type') as HTMLSelectElement).value || 'Full-Time',
                   experience: (form.elements.namedItem('experience') as HTMLInputElement).value,
                   postedDate: 'Just now',
-                  isUrgent: true,
+                  isUrgent: (form.elements.namedItem('isUrgent') as HTMLInputElement)?.checked ?? true,
+                  isFeatured: (form.elements.namedItem('isFeatured') as HTMLInputElement)?.checked ?? false,
+                  isConfidential: (form.elements.namedItem('isConfidential') as HTMLInputElement)?.checked ?? false,
                   companyName: (form.elements.namedItem('companyName') as HTMLInputElement).value,
                   description: (form.elements.namedItem('description') as HTMLTextAreaElement).value,
-                  requirements: ['Relevant qualification/experience required'],
-                  benefits: ['Competitive compensation', 'Medical cover']
+                  requirements: (form.elements.namedItem('requirements') as HTMLTextAreaElement).value
+                    .split('\n')
+                    .map(r => r.trim())
+                    .filter(Boolean),
+                  benefits: ['Competitive compensation', 'Medical cover', 'Fast-track career progression']
                 };
-                setJobsList([newJob, ...jobsList]);
-                setIsAddingJob(false);
-                triggerToast(`Job ${newJob.id} posted successfully.`);
+
+                try {
+                  const { saveJob } = await import('@/lib/supabase-cms');
+                  const saved = await saveJob(newJob);
+                  setJobsList([saved || newJob, ...jobsList]);
+                  setIsAddingJob(false);
+                  if (typeof window !== 'undefined') {
+                    window.dispatchEvent(new Event('arani_cms_updated'));
+                  }
+                  triggerToast(`Job ${newJob.id} posted & saved to Supabase successfully!`);
+                } catch (err: any) {
+                  console.error('Failed to post job to Supabase:', err);
+                  triggerToast(`Error saving to Supabase: ${err.message}`);
+                } finally {
+                  setIsSavingJob(false);
+                }
               }}
               className="space-y-3 text-xs"
             >
@@ -2581,9 +2665,34 @@ export default function AdminPage() {
                 </div>
               </div>
 
-              <div>
-                <label className="block font-mono text-muted uppercase font-bold mb-1">Experience Required</label>
-                <input required name="experience" type="text" placeholder="2–4 Years" className="w-full px-3 py-2 bg-paper border border-line rounded text-ink-900" />
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-mono text-muted uppercase font-bold mb-1">Experience Required</label>
+                  <input required name="experience" type="text" placeholder="2–4 Years" className="w-full px-3 py-2 bg-paper border border-line rounded text-ink-900" />
+                </div>
+                <div>
+                  <label className="block font-mono text-muted uppercase font-bold mb-1">Employment Type</label>
+                  <select name="type" className="w-full px-3 py-2 bg-paper border border-line rounded text-ink-900">
+                    <option value="Full-Time">Full-Time</option>
+                    <option value="Contract">Contract</option>
+                    <option value="Part-Time">Part-Time</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-4 py-1">
+                <label className="flex items-center gap-1.5 cursor-pointer">
+                  <input name="isUrgent" type="checkbox" defaultChecked className="rounded text-teal-600" />
+                  <span className="font-mono text-ink-900">Mark Urgent</span>
+                </label>
+                <label className="flex items-center gap-1.5 cursor-pointer">
+                  <input name="isFeatured" type="checkbox" className="rounded text-teal-600" />
+                  <span className="font-mono text-ink-900">Featured Job</span>
+                </label>
+                <label className="flex items-center gap-1.5 cursor-pointer">
+                  <input name="isConfidential" type="checkbox" className="rounded text-teal-600" />
+                  <span className="font-mono text-ink-900">Confidential Employer</span>
+                </label>
               </div>
 
               <div>
@@ -2591,12 +2700,238 @@ export default function AdminPage() {
                 <textarea required name="description" rows={3} placeholder="Key responsibilities and overview..." className="w-full px-3 py-2 bg-paper border border-line rounded text-ink-900" />
               </div>
 
+              <div>
+                <label className="block font-mono text-muted uppercase font-bold mb-1">Requirements (one per line)</label>
+                <textarea name="requirements" rows={3} placeholder="CA / MBA Finance&#10;3+ years banking credit analysis experience&#10;Strong communication skills" className="w-full px-3 py-2 bg-paper border border-line rounded text-ink-900" />
+              </div>
+
               <div className="pt-3 flex justify-end gap-2">
                 <button type="button" onClick={() => setIsAddingJob(false)} className="px-4 py-2 bg-paper border border-line rounded text-slate">
                   Cancel
                 </button>
-                <button type="submit" className="px-5 py-2 bg-teal-600 text-surface font-bold uppercase rounded hover:bg-teal-500">
-                  Publish Job Posting
+                <button type="submit" disabled={isSavingJob} className="px-5 py-2 bg-teal-600 text-surface font-bold uppercase rounded hover:bg-teal-500 disabled:opacity-50 flex items-center gap-1.5">
+                  {isSavingJob && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
+                  <span>{isSavingJob ? 'Saving to Supabase...' : 'Publish Job to Supabase'}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* EDIT JOB MODAL */}
+      {editingJob && (
+        <div className="fixed inset-0 z-50 bg-ink-950/70 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-surface border border-line rounded-lg max-w-xl w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto font-sans">
+            <div className="flex items-center justify-between border-b border-line pb-3">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-xs font-bold text-teal-700 bg-teal-50 px-2 py-0.5 rounded border border-teal-200">
+                    {editingJob.id}
+                  </span>
+                  <h3 className="font-display font-bold text-xl text-ink-900">Edit Job Details</h3>
+                </div>
+                <p className="text-xs text-slate">Changes will be saved directly to the Supabase database.</p>
+              </div>
+              <button onClick={() => setEditingJob(null)} className="p-1 hover:bg-paper rounded">
+                <X className="w-5 h-5 text-slate" />
+              </button>
+            </div>
+
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                setIsSavingJob(true);
+                const form = e.target as HTMLFormElement;
+                const updatedJob: Job = {
+                  ...editingJob,
+                  title: (form.elements.namedItem('title') as HTMLInputElement).value,
+                  category: (form.elements.namedItem('category') as HTMLSelectElement).value as any,
+                  location: (form.elements.namedItem('location') as HTMLInputElement).value,
+                  salary: (form.elements.namedItem('salary') as HTMLInputElement).value,
+                  type: (form.elements.namedItem('type') as HTMLSelectElement).value || 'Full-Time',
+                  experience: (form.elements.namedItem('experience') as HTMLInputElement).value,
+                  isUrgent: (form.elements.namedItem('isUrgent') as HTMLInputElement).checked,
+                  isFeatured: (form.elements.namedItem('isFeatured') as HTMLInputElement).checked,
+                  isConfidential: (form.elements.namedItem('isConfidential') as HTMLInputElement).checked,
+                  companyName: (form.elements.namedItem('companyName') as HTMLInputElement).value,
+                  description: (form.elements.namedItem('description') as HTMLTextAreaElement).value,
+                  requirements: (form.elements.namedItem('requirements') as HTMLTextAreaElement).value
+                    .split('\n')
+                    .map(r => r.trim())
+                    .filter(Boolean)
+                };
+
+                try {
+                  const { saveJob } = await import('@/lib/supabase-cms');
+                  const saved = await saveJob(updatedJob);
+                  setJobsList(jobsList.map(j => (j.id === editingJob.id ? (saved || updatedJob) : j)));
+                  setEditingJob(null);
+                  if (typeof window !== 'undefined') {
+                    window.dispatchEvent(new Event('arani_cms_updated'));
+                  }
+                  triggerToast(`Job ${editingJob.id} updated and saved to Supabase!`);
+                } catch (err: any) {
+                  console.error('Failed to update job in Supabase:', err);
+                  triggerToast(`Error updating job: ${err.message}`);
+                } finally {
+                  setIsSavingJob(false);
+                }
+              }}
+              className="space-y-3 text-xs"
+            >
+              <div>
+                <label className="block font-mono text-muted uppercase font-bold mb-1">Job Title</label>
+                <input
+                  required
+                  name="title"
+                  type="text"
+                  defaultValue={editingJob.title}
+                  className="w-full px-3 py-2 bg-paper border border-line rounded text-ink-900"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-mono text-muted uppercase font-bold mb-1">Category</label>
+                  <select
+                    name="category"
+                    defaultValue={editingJob.category}
+                    className="w-full px-3 py-2 bg-paper border border-line rounded text-ink-900"
+                  >
+                    <option value="Banking">Banking</option>
+                    <option value="Corporate">Corporate</option>
+                    <option value="Finance">Finance</option>
+                    <option value="Operations">Operations</option>
+                    <option value="IT">IT</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block font-mono text-muted uppercase font-bold mb-1">Company Name</label>
+                  <input
+                    required
+                    name="companyName"
+                    type="text"
+                    defaultValue={editingJob.companyName}
+                    className="w-full px-3 py-2 bg-paper border border-line rounded text-ink-900"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-mono text-muted uppercase font-bold mb-1">Location</label>
+                  <input
+                    required
+                    name="location"
+                    type="text"
+                    defaultValue={editingJob.location}
+                    className="w-full px-3 py-2 bg-paper border border-line rounded text-ink-900"
+                  />
+                </div>
+                <div>
+                  <label className="block font-mono text-muted uppercase font-bold mb-1">Salary Band / Display</label>
+                  <input
+                    required
+                    name="salary"
+                    type="text"
+                    defaultValue={editingJob.salary}
+                    className="w-full px-3 py-2 bg-paper border border-line rounded text-ink-900"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-mono text-muted uppercase font-bold mb-1">Experience Required</label>
+                  <input
+                    required
+                    name="experience"
+                    type="text"
+                    defaultValue={editingJob.experience}
+                    className="w-full px-3 py-2 bg-paper border border-line rounded text-ink-900"
+                  />
+                </div>
+                <div>
+                  <label className="block font-mono text-muted uppercase font-bold mb-1">Employment Type</label>
+                  <select
+                    name="type"
+                    defaultValue={editingJob.type}
+                    className="w-full px-3 py-2 bg-paper border border-line rounded text-ink-900"
+                  >
+                    <option value="Full-Time">Full-Time</option>
+                    <option value="Contract">Contract</option>
+                    <option value="Part-Time">Part-Time</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-4 py-1">
+                <label className="flex items-center gap-1.5 cursor-pointer">
+                  <input
+                    name="isUrgent"
+                    type="checkbox"
+                    defaultChecked={editingJob.isUrgent}
+                    className="rounded text-teal-600"
+                  />
+                  <span className="font-mono text-ink-900">Mark Urgent</span>
+                </label>
+                <label className="flex items-center gap-1.5 cursor-pointer">
+                  <input
+                    name="isFeatured"
+                    type="checkbox"
+                    defaultChecked={editingJob.isFeatured}
+                    className="rounded text-teal-600"
+                  />
+                  <span className="font-mono text-ink-900">Featured Job</span>
+                </label>
+                <label className="flex items-center gap-1.5 cursor-pointer">
+                  <input
+                    name="isConfidential"
+                    type="checkbox"
+                    defaultChecked={editingJob.isConfidential}
+                    className="rounded text-teal-600"
+                  />
+                  <span className="font-mono text-ink-900">Confidential Employer</span>
+                </label>
+              </div>
+
+              <div>
+                <label className="block font-mono text-muted uppercase font-bold mb-1">Job Description</label>
+                <textarea
+                  required
+                  name="description"
+                  rows={3}
+                  defaultValue={editingJob.description}
+                  className="w-full px-3 py-2 bg-paper border border-line rounded text-ink-900"
+                />
+              </div>
+
+              <div>
+                <label className="block font-mono text-muted uppercase font-bold mb-1">Requirements (one per line)</label>
+                <textarea
+                  name="requirements"
+                  rows={3}
+                  defaultValue={editingJob.requirements?.join('\n') || ''}
+                  className="w-full px-3 py-2 bg-paper border border-line rounded text-ink-900"
+                />
+              </div>
+
+              <div className="pt-3 flex justify-end gap-2 border-t border-line">
+                <button
+                  type="button"
+                  onClick={() => setEditingJob(null)}
+                  className="px-4 py-2 bg-paper border border-line rounded text-slate hover:bg-surface"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSavingJob}
+                  className="px-5 py-2 bg-teal-600 text-surface font-bold uppercase rounded hover:bg-teal-500 disabled:opacity-50 flex items-center gap-1.5"
+                >
+                  {isSavingJob && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
+                  <span>{isSavingJob ? 'Saving Changes...' : 'Save Changes to Supabase'}</span>
                 </button>
               </div>
             </form>

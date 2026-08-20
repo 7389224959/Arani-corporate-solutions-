@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { AraniLogo } from '@/components/AraniLogo';
 import { JobQuickModal } from '@/components/JobQuickModal';
 import { SAMPLE_JOBS, Job } from '@/lib/sampleData';
+import { getJobsList } from '@/lib/supabase-cms';
 import {
   Search,
   Filter,
@@ -25,6 +26,34 @@ import {
 } from 'lucide-react';
 
 export default function JobsPage() {
+  const [jobs, setJobs] = useState<Job[]>(SAMPLE_JOBS);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  // Fetch jobs dynamically from Supabase
+  useEffect(() => {
+    async function loadJobs() {
+      try {
+        const data = await getJobsList();
+        if (data && data.length > 0) {
+          setJobs(data);
+        }
+      } catch (err) {
+        console.warn('Failed to fetch jobs from Supabase:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadJobs();
+
+    const handleCmsUpdate = () => {
+      loadJobs();
+    };
+
+    window.addEventListener('arani_cms_updated', handleCmsUpdate);
+    return () => window.removeEventListener('arani_cms_updated', handleCmsUpdate);
+  }, []);
+
   // Filter States
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [selectedLocation, setSelectedLocation] = useState<string>('All');
@@ -69,7 +98,7 @@ export default function JobsPage() {
   };
 
   // Filter Logic
-  const filteredJobs = SAMPLE_JOBS.filter((job) => {
+  const filteredJobs = jobs.filter((job) => {
     if (selectedCategory !== 'All' && job.category !== selectedCategory) return false;
     if (selectedLocation !== 'All' && !job.location.toLowerCase().includes(selectedLocation.toLowerCase())) return false;
     if (selectedJobType !== 'All' && job.type !== selectedJobType) return false;

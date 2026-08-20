@@ -2,9 +2,10 @@
   "name": "ai-studio-applet",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "start": "node --import tsx server.ts",
-    "dev": "node --import tsx server.ts",
+    "start": "node server.ts",
+    "dev": "node server.ts",
     "build": "next build",
     "lint": "eslint .",
     "clean": "next clean"

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { AraniLogo } from '@/components/AraniLogo';
 import { SAMPLE_JOBS, Job } from '@/lib/sampleData';
+import { getJobsList } from '@/lib/supabase-cms';
 import { generateJobPostingSchema } from '@/lib/jsonLd';
 import { captureUtmParams, trackPixelEvent, getUtmParams } from '@/lib/metaPixel';
 import {
@@ -30,7 +31,26 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
   const router = useRouter();
   const jobId = resolvedParams.id;
 
-  const job: Job | undefined = SAMPLE_JOBS.find((j) => j.id === jobId) || SAMPLE_JOBS[0];
+  const [job, setJob] = useState<Job | undefined>(() => {
+    return SAMPLE_JOBS.find((j) => j.id === jobId) || SAMPLE_JOBS[0];
+  });
+
+  useEffect(() => {
+    async function loadJob() {
+      try {
+        const jobs = await getJobsList();
+        if (jobs && jobs.length > 0) {
+          const found = jobs.find((j) => j.id === jobId || (j as any).job_code === jobId);
+          if (found) {
+            setJob(found);
+          }
+        }
+      } catch (e) {
+        console.warn('Could not fetch dynamic job from Supabase:', e);
+      }
+    }
+    loadJob();
+  }, [jobId]);
 
   useEffect(() => {
     captureUtmParams();
