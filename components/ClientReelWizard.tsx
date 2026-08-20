@@ -1,15 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { RefreshCw, Zap, X, Image as ImageIcon, Video, Settings, Play, ChevronRight, ChevronLeft, Mic } from 'lucide-react';
-import { Client, SiteSettings, ReelTemplate } from '../types';
+import React, { useState } from 'react';
+import { RefreshCw, Zap, X, ChevronRight, ChevronLeft, Mic } from 'lucide-react';
+import { ReelTemplate } from '../types';
 import { generateClientReelScript, generateReelAudio, ANCHOR_VOICES } from '../services/geminiService';
 import { pcmBase64ToWavUrl, pcmBase64ToWavDataUri } from '../src/utils/audioUtils';
-import { getClients } from '../services/workerService';
 
 export default function ClientReelWizard({ settings, onClose }: { settings: any, onClose: () => void }) {
   const [step, setStep] = useState(1);
-  const [clients, setClients] = useState<Client[]>([]);
-  const [selectedClientId, setSelectedClientId] = useState<string>('');
-  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [reelCategory, setReelCategory] = useState<string>('Hiring Reel');
   const [prompt, setPrompt] = useState<string>('');
   const [jobDetails, setJobDetails] = useState({ designation: '', location: '', salary: '', experience: '' });
@@ -26,25 +22,7 @@ export default function ClientReelWizard({ settings, onClose }: { settings: any,
 
   const REEL_CATEGORIES = ['Hiring Reel', 'Promotion Reel', 'Educational Reel', 'Testimonial', 'Service Showcase'];
 
-  useEffect(() => {
-    const loadClients = async () => {
-      const data = await getClients();
-      setClients(data);
-      if (data.length > 0) {
-        setSelectedClientId(data[0].id);
-        setSelectedClient(data[0]);
-      }
-    };
-    loadClients();
-  }, []);
-
-  const handleClientChange = (id: string) => {
-    setSelectedClientId(id);
-    setSelectedClient(clients.find(c => c.id === id) || null);
-  };
-
   const templates: ReelTemplate[] = settings?.clientReelTemplates || settings?.reelTemplates || [];
-  // For now, allow all templates, later we can filter by client category
   const filteredTemplates = templates;
 
   const getBoxStyle = (boxName: string, defaultStyle: React.CSSProperties): React.CSSProperties => {
@@ -69,12 +47,10 @@ export default function ClientReelWizard({ settings, onClose }: { settings: any,
   };
 
   const handleGenerateScript = async () => {
-    if (!selectedClient) return;
-    
     const template = templates.find(t => t.id === selectedTemplateId);
     
     setIsGenerating(true);
-    setStatus('Generating script tailored for ' + selectedClient.business_name + '...');
+    setStatus('Generating AI reel script...');
     try {
       // Build specific prompt for hiring
       let finalPrompt = prompt;
@@ -84,7 +60,15 @@ export default function ClientReelWizard({ settings, onClose }: { settings: any,
         prefilledHeadline = `{\n  "Role": "${jobDetails.designation}",\n  "Loc": "${jobDetails.location}",\n  "Pay": "${jobDetails.salary}",\n  "Exp": "${jobDetails.experience}"\n}`;
       }
 
-      const data = await generateClientReelScript(selectedClient, reelCategory, finalPrompt, template);
+      const clientContext = {
+        business_name: settings?.companyName || 'Arani Corporate Solutions',
+        category: 'Corporate Staffing & Banking Recruitment',
+        services: 'Executive Search, Bulk Hiring, Branch Operations Recruitment',
+        offer: '72-Hour Candidate Shortlist SLA',
+        owner_name: 'Arani Corporate Solutions'
+      };
+
+      const data = await generateClientReelScript(clientContext, reelCategory, finalPrompt, template);
       
       if (prefilledHeadline) {
         data.headline = prefilledHeadline;
@@ -119,14 +103,16 @@ export default function ClientReelWizard({ settings, onClose }: { settings: any,
 
   return (
     <div className="bg-white rounded-xl shadow-2xl overflow-hidden flex flex-col w-full max-h-[90vh] lg:max-h-[80vh] border border-gray-100 overflow-y-auto">
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-4 text-white flex justify-between items-center shrink-0">
+      <div className="bg-gradient-to-r from-teal-700 to-ink-900 p-4 text-white flex justify-between items-center shrink-0">
         <div className="flex items-center space-x-2">
           <Zap className="w-5 h-5 text-yellow-300" />
-          <h2 className="text-lg font-bold">Advanced Client Reel Generator</h2>
+          <h2 className="text-lg font-bold font-display">AI Marketing Reel Wizard</h2>
         </div>
-        <button onClick={onClose} className="p-1 hover:bg-white/20 rounded-full transition-colors">
-          <X className="w-6 h-6" />
-        </button>
+        {onClose && (
+          <button onClick={onClose} className="p-1 hover:bg-white/20 rounded-full transition-colors">
+            <X className="w-6 h-6" />
+          </button>
+        )}
       </div>
 
       <div className="flex flex-col lg:flex-row flex-1">
@@ -135,38 +121,16 @@ export default function ClientReelWizard({ settings, onClose }: { settings: any,
           
           {step === 1 && (
             <div className="space-y-6">
-              <h3 className="text-xl font-semibold">1. Select Client & Context</h3>
+              <h3 className="text-xl font-semibold text-ink-900">1. Reel Context & Details</h3>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Select Client</label>
-                <select 
-                  className="w-full border rounded-lg p-3 bg-gray-50 focus:ring-2 focus:ring-blue-500 transition-shadow"
-                  value={selectedClientId} 
-                  onChange={(e) => handleClientChange(e.target.value)}
-                >
-                  <option value="">-- Select Client --</option>
-                  {clients.map(c => (
-                    <option key={c.id} value={c.id}>{c.business_name} ({c.category})</option>
-                  ))}
-                </select>
-              </div>
-
-              {selectedClient && (
-                <div className="p-4 bg-blue-50 text-blue-800 rounded-lg text-sm">
-                  <strong>Business Type:</strong> {selectedClient.category}<br/>
-                  <strong>Services:</strong> {selectedClient.services}<br/>
-                  <strong>Offer:</strong> {selectedClient.offer || 'None set'}
-                </div>
-              )}
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Reel Category</label>
-                <div className="grid grid-cols-2 gap-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Reel Category</label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {REEL_CATEGORIES.map(cat => (
                     <button 
                       key={cat}
                       onClick={() => setReelCategory(cat)}
-                      className={`p-2 border rounded-lg text-sm font-medium transition-all ${reelCategory === cat ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
+                      className={`p-2.5 border rounded-lg text-sm font-medium transition-all ${reelCategory === cat ? 'bg-teal-600 text-white border-teal-600 shadow-xs' : 'bg-white text-gray-700 hover:bg-gray-50 border-gray-200'}`}
                     >
                       {cat}
                     </button>
@@ -174,17 +138,16 @@ export default function ClientReelWizard({ settings, onClose }: { settings: any,
                 </div>
               </div>
 
-              
               {reelCategory === 'Hiring Reel' ? (
                 <div className="space-y-3 bg-gray-50 p-4 rounded-lg border border-gray-200">
-                  <h4 className="font-bold text-gray-700 text-sm">Job Details (Will be formatted as JSON)</h4>
+                  <h4 className="font-bold text-gray-700 text-sm">Job Details (Formatted for Reel Layout)</h4>
                   <div>
-                    <label className="block text-xs font-bold text-gray-600 mb-1">Designation</label>
+                    <label className="block text-xs font-bold text-gray-600 mb-1">Designation / Role</label>
                     <input 
                       value={jobDetails.designation}
                       onChange={e => setJobDetails({...jobDetails, designation: e.target.value})}
                       placeholder="e.g. Senior Credit Analyst"
-                      className="w-full border rounded p-2 text-sm"
+                      className="w-full border rounded p-2 text-sm bg-white"
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
@@ -193,48 +156,46 @@ export default function ClientReelWizard({ settings, onClose }: { settings: any,
                       <input 
                         value={jobDetails.location}
                         onChange={e => setJobDetails({...jobDetails, location: e.target.value})}
-                        placeholder="e.g. New York, NY"
-                        className="w-full border rounded p-2 text-sm"
+                        placeholder="e.g. Mumbai, BKC"
+                        className="w-full border rounded p-2 text-sm bg-white"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-gray-600 mb-1">Salary</label>
+                      <label className="block text-xs font-bold text-gray-600 mb-1">Salary Band</label>
                       <input 
                         value={jobDetails.salary}
                         onChange={e => setJobDetails({...jobDetails, salary: e.target.value})}
-                        placeholder="e.g. $120k - $150k"
-                        className="w-full border rounded p-2 text-sm"
+                        placeholder="e.g. ₹14L - ₹18L PA"
+                        className="w-full border rounded p-2 text-sm bg-white"
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-gray-600 mb-1">Experience</label>
+                    <label className="block text-xs font-bold text-gray-600 mb-1">Experience Required</label>
                     <input 
                       value={jobDetails.experience}
                       onChange={e => setJobDetails({...jobDetails, experience: e.target.value})}
-                      placeholder="e.g. 3-5 Years"
-                      className="w-full border rounded p-2 text-sm"
+                      placeholder="e.g. 3-5 Years (Banking / NBFC)"
+                      className="w-full border rounded p-2 text-sm bg-white"
                     />
                   </div>
                 </div>
               ) : (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Specific Prompt (Optional)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Specific Prompt / Topic (Optional)</label>
                   <textarea 
                     value={prompt}
                     onChange={(e) => setPrompt(e.target.value)}
-                    placeholder="e.g., We are urgently hiring 5 senior credit analysts..."
-                    className="w-full border rounded-lg p-3 h-24 focus:ring-2 focus:ring-blue-500"
+                    placeholder="e.g., We are urgently hiring senior credit analysts for leading private banks..."
+                    className="w-full border rounded-lg p-3 h-28 focus:ring-2 focus:ring-teal-500 text-sm"
                   />
                 </div>
               )}
 
-
               <div className="pt-4 flex justify-end">
                 <button 
                   onClick={() => setStep(2)}
-                  disabled={!selectedClientId}
-                  className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 flex items-center"
+                  className="bg-teal-600 text-white px-6 py-2.5 rounded-lg font-medium hover:bg-teal-700 flex items-center shadow-xs transition"
                 >
                   Next: Choose Template <ChevronRight className="w-4 h-4 ml-1" />
                 </button>
@@ -246,7 +207,7 @@ export default function ClientReelWizard({ settings, onClose }: { settings: any,
             <div className="space-y-6">
               <div className="flex items-center space-x-2">
                 <button onClick={() => setStep(1)} className="p-1 hover:bg-gray-100 rounded-full"><ChevronLeft className="w-5 h-5"/></button>
-                <h3 className="text-xl font-semibold">2. Choose Template</h3>
+                <h3 className="text-xl font-semibold text-ink-900">2. Choose Template</h3>
               </div>
               
               <div className="grid grid-cols-2 gap-4">
@@ -254,13 +215,13 @@ export default function ClientReelWizard({ settings, onClose }: { settings: any,
                   <div 
                     key={t.id}
                     onClick={() => setSelectedTemplateId(t.id)}
-                    className={`cursor-pointer border-2 rounded-xl overflow-hidden transition-all ${selectedTemplateId === t.id ? 'border-blue-600 shadow-md scale-[1.02]' : 'border-gray-200 hover:border-blue-300'}`}
+                    className={`cursor-pointer border-2 rounded-xl overflow-hidden transition-all ${selectedTemplateId === t.id ? 'border-teal-600 shadow-md scale-[1.02]' : 'border-gray-200 hover:border-teal-300'}`}
                   >
                     <div className="aspect-[9/16] relative bg-black">
                        <img src={t.screenshotUrl || t.mediaUrl} className="w-full h-full object-cover opacity-80" />
                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end p-3 text-white">
                          <span className="font-bold text-sm truncate">{t.name}</span>
-                         <span className="text-xs text-blue-300 mb-1">{t.category}</span>
+                         <span className="text-xs text-teal-300 mb-1">{t.category}</span>
                          {t.hasVoiceover === false && (
                            <span className="text-[10px] bg-red-500/80 text-white px-2 py-0.5 rounded w-max">No Voiceover</span>
                          )}
@@ -269,18 +230,18 @@ export default function ClientReelWizard({ settings, onClose }: { settings: any,
                   </div>
                 ))}
                 {filteredTemplates.length === 0 && (
-                  <div className="col-span-2 text-gray-500 text-center py-8 bg-gray-50 rounded-lg">No templates configured. Go to Admin to add templates.</div>
+                  <div className="col-span-2 text-gray-500 text-center py-8 bg-gray-50 rounded-lg">No templates configured. Go to Reel Templates tab to add templates.</div>
                 )}
               </div>
 
               <div className="pt-4 flex justify-between">
-                <button onClick={() => setStep(1)} className="px-4 py-2 border rounded-lg hover:bg-gray-50">Back</button>
+                <button onClick={() => setStep(1)} className="px-4 py-2 border rounded-lg hover:bg-gray-50 text-gray-700">Back</button>
                 <button 
                   onClick={handleGenerateScript}
                   disabled={!selectedTemplateId || isGenerating}
-                  className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 flex items-center"
+                  className="bg-teal-600 text-white px-6 py-2.5 rounded-lg font-medium hover:bg-teal-700 disabled:opacity-50 flex items-center shadow-xs transition"
                 >
-                  {isGenerating ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Generate AI Script'}
+                  {isGenerating ? <Loader2 className="w-5 h-5 animate-spin mr-1.5" /> : 'Generate AI Script'}
                 </button>
               </div>
             </div>
@@ -290,7 +251,7 @@ export default function ClientReelWizard({ settings, onClose }: { settings: any,
             <div className="space-y-6">
               <div className="flex items-center space-x-2">
                 <button onClick={() => setStep(2)} className="p-1 hover:bg-gray-100 rounded-full"><ChevronLeft className="w-5 h-5"/></button>
-                <h3 className="text-xl font-semibold">3. Review AI Script</h3>
+                <h3 className="text-xl font-semibold text-ink-900">3. Review AI Script</h3>
               </div>
 
               <div className="space-y-4">
@@ -300,7 +261,7 @@ export default function ClientReelWizard({ settings, onClose }: { settings: any,
                     <textarea 
                       value={scriptData.headline}
                       onChange={e => setScriptData({...scriptData, headline: e.target.value})}
-                      className="w-full border-2 border-gray-200 py-2 px-2 focus:border-blue-500 outline-none font-bold text-sm font-mono h-32 rounded"
+                      className="w-full border-2 border-gray-200 py-2 px-2 focus:border-teal-500 outline-none font-bold text-sm font-mono h-32 rounded"
                     />
                   </div>
                 )}
@@ -311,7 +272,7 @@ export default function ClientReelWizard({ settings, onClose }: { settings: any,
                     <input 
                       value={scriptData.ticker}
                       onChange={e => setScriptData({...scriptData, ticker: e.target.value})}
-                      className="w-full border-b-2 border-gray-200 py-2 focus:border-blue-500 outline-none font-mono text-sm bg-yellow-50 px-2"
+                      className="w-full border-b-2 border-gray-200 py-2 focus:border-teal-500 outline-none font-mono text-sm bg-yellow-50 px-2"
                     />
                   </div>
                 )}
@@ -321,7 +282,7 @@ export default function ClientReelWizard({ settings, onClose }: { settings: any,
                   <textarea 
                     value={scriptData.voiceoverScript}
                     onChange={e => setScriptData({...scriptData, voiceoverScript: e.target.value})}
-                    className="w-full border rounded-lg p-3 h-40 focus:ring-2 focus:ring-blue-500 text-sm leading-relaxed"
+                    className="w-full border rounded-lg p-3 h-40 focus:ring-2 focus:ring-teal-500 text-sm leading-relaxed"
                   />
                 </div>
 
@@ -332,7 +293,7 @@ export default function ClientReelWizard({ settings, onClose }: { settings: any,
                       <button 
                         key={v.id}
                         onClick={() => setSelectedVoice(v.id)}
-                        className={`px-3 py-1.5 rounded-full text-sm font-medium border ${selectedVoice === v.id ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
+                        className={`px-3 py-1.5 rounded-full text-sm font-medium border ${selectedVoice === v.id ? 'bg-teal-600 text-white border-teal-600' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
                       >
                         {v.name} ({v.gender})
                       </button>
@@ -342,12 +303,12 @@ export default function ClientReelWizard({ settings, onClose }: { settings: any,
               </div>
 
               <div className="pt-4 flex justify-between">
-                <button onClick={() => setStep(2)} className="px-4 py-2 border rounded-lg hover:bg-gray-50">Back</button>
+                <button onClick={() => setStep(2)} className="px-4 py-2 border rounded-lg hover:bg-gray-50 text-gray-700">Back</button>
                 {filteredTemplates.find(t=>t.id===selectedTemplateId)?.hasVoiceover !== false ? (
                   <button 
                     onClick={handleGenerateAudio}
                     disabled={isGenerating || !scriptData.voiceoverScript}
-                    className="bg-indigo-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-indigo-700 disabled:opacity-50 flex items-center"
+                    className="bg-teal-600 text-white px-6 py-2.5 rounded-lg font-medium hover:bg-teal-700 disabled:opacity-50 flex items-center shadow-xs transition"
                   >
                     {isGenerating ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <Mic className="w-4 h-4 mr-2" />}
                     Generate Audio
@@ -360,7 +321,7 @@ export default function ClientReelWizard({ settings, onClose }: { settings: any,
                       setStep(4);
                     }}
                     disabled={isGenerating}
-                    className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 flex items-center"
+                    className="bg-teal-600 text-white px-6 py-2.5 rounded-lg font-medium hover:bg-teal-700 disabled:opacity-50 flex items-center shadow-xs transition"
                   >
                     Next: Final Output <ChevronRight className="w-4 h-4 ml-2" />
                   </button>
@@ -374,7 +335,7 @@ export default function ClientReelWizard({ settings, onClose }: { settings: any,
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
                   <button onClick={() => setStep(3)} className="p-1 hover:bg-gray-100 rounded-full"><ChevronLeft className="w-5 h-5"/></button>
-                  <h3 className="text-xl font-semibold">4. Final Output</h3>
+                  <h3 className="text-xl font-semibold text-ink-900">4. Final Output</h3>
                 </div>
               </div>
 
@@ -390,9 +351,9 @@ export default function ClientReelWizard({ settings, onClose }: { settings: any,
                 </div>
               )}
               
-              <div className="p-4 bg-green-50 text-green-800 rounded-lg text-sm border border-green-200">
+              <div className="p-4 bg-emerald-50 text-emerald-800 rounded-lg text-sm border border-emerald-200">
                 <p className="font-bold mb-1">Ready for Rendering</p>
-                <p>The client reel script {audioUrl ? 'and audio are' : 'is'} ready. We can pass these to the FFmpeg engine to combine with the selected template and client's logo.</p>
+                <p>The reel script {audioUrl ? 'and voiceover audio are' : 'is'} ready for video composition and rendering.</p>
               </div>
 
             </div>
@@ -419,10 +380,6 @@ export default function ClientReelWizard({ settings, onClose }: { settings: any,
             )}
 
             {/* Simulated Overlays */}
-            {selectedClient?.logo_url && (
-              <img src={selectedClient.logo_url} style={getBoxStyle('logo_box', { top: '2rem', right: '1rem', width: '4rem', height: '4rem', position: 'absolute' })} className="object-contain bg-white/10 rounded-lg backdrop-blur-sm p-1 z-20" />
-            )}
-
             {scriptData.headline && (
               scriptData.headline.trim().startsWith('{') ? (
                 <div 
@@ -463,15 +420,15 @@ export default function ClientReelWizard({ settings, onClose }: { settings: any,
               </div>
             )}
             
-            {selectedClient && step > 1 && (
-              <div className="absolute bottom-4 left-0 right-0 text-center text-white/80 text-sm font-semibold">
-                {selectedClient.business_name}
+            {step > 1 && (
+              <div className="absolute bottom-4 left-0 right-0 text-center text-white/80 text-xs font-semibold">
+                {settings?.companyName || 'Arani Corporate Solutions'}
               </div>
             )}
 
             {isGenerating && (
               <div className="absolute inset-0 bg-black/80 flex flex-col items-center justify-center z-50">
-                 <RefreshCw className="w-12 h-12 text-blue-500 animate-spin mb-4" />
+                 <RefreshCw className="w-12 h-12 text-teal-400 animate-spin mb-4" />
                  <span className="text-white font-medium px-6 text-center">{status}</span>
               </div>
             )}

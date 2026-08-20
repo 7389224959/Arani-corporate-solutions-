@@ -49,7 +49,7 @@ export const improveTemplateConfig = async (prompt: string, currentTemplate: any
 };
 
 export const generateClientReelScript = async (
-  client: any,
+  client: any = {},
   category: string,
   prompt: string,
   template: any,
@@ -65,12 +65,12 @@ export const generateClientReelScript = async (
   const limits = template?.safe_limits || { headline_words: 6, subtitle_lines: 2, ticker_characters: 50 };
 
   const systemPrompt = `You are an expert marketing copywriter and video script creator for businesses.
-We are creating a ${category} reel for our client:
-- Business Name: ${client.business_name}
-- Category: ${client.category}
-- Services: ${client.services}
-- Special Offer: ${client.offer || 'N/A'}
-- Owner Name: ${client.owner_name}
+We are creating a ${category} reel for:
+- Business Name: ${client?.business_name || 'Arani Corporate Solutions'}
+- Category: ${client?.category || 'Recruitment & Staffing'}
+- Services: ${client?.services || 'Corporate Staffing, Banking Recruitment'}
+- Special Offer: ${client?.offer || 'N/A'}
+- Owner Name: ${client?.owner_name || 'Arani Corporate Solutions'}
 
 The user's specific prompt for this reel is: "${prompt}"
 
