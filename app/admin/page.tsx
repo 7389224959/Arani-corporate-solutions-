@@ -114,7 +114,7 @@ export interface CandidateApplicant {
   jobId: string;
   jobTitle: string;
   appliedDate: string;
-  stage: 'Applied' | 'Screening' | 'Interview Scheduled' | 'Offer Extended' | 'Hired' | 'Rejected';
+  stage: 'Lead' | 'Applied' | 'Screening' | 'Interview Scheduled' | 'Offer Extended' | 'Hired' | 'Rejected';
   matchScore: string;
   resumeName: string;
   utmSource: string;
@@ -184,7 +184,7 @@ export default function AdminPage() {
   const [loginError, setLoginError] = useState<string | null>(null);
   const [isLoggingIn, setIsLoggingIn] = useState<boolean>(false);
 
-  const [activeTab, setActiveTab] = useState<'kpi' | 'content' | 'jobs' | 'applicants' | 'crm' | 'users' | 'settings' | 'reel-wizard' | 'reel-templates'>('kpi');
+  const [activeTab, setActiveTab] = useState<'kpi' | 'content' | 'jobs' | 'applicants' | 'crm' | 'users' | 'candidates' | 'settings' | 'reel-wizard' | 'reel-templates'>('kpi');
   const [contentSubTab, setContentSubTab] = useState<'director' | 'hero' | 'promo' | 'articles' | 'videos' | 'testimonials' | 'logos' | 'stats' | 'faqs' | 'ticker'>('director');
 
   // Search & Global Filter State
@@ -415,9 +415,10 @@ export default function AdminPage() {
   ]);
 
   // Candidates & Employers User Directory
-  const [userAccounts, setUserAccounts] = useState([
-    { id: 'USR-001', name: 'Ashutosh Choure', email: 'director@aranicorporate.com', role: 'Super Admin', status: 'Active', verified: true, joined: 'Jan 2020' },
-    { id: 'USR-002', name: 'Sunil Sharma', email: 'admin@aranicorporate.com', role: 'Admin', status: 'Active', verified: true, joined: 'Mar 2021' }
+  const [candidateProfiles, setCandidateProfiles] = useState<any[]>([]);
+  const [userAccounts, setUserAccounts] = useState<any[]>([
+    { id: 'USR-001', name: 'Ashutosh Choure', email: 'director@aranicorporate.com', role: 'Super Admin', status: 'Active', verified: true, joined: 'Jan 2020', phone: '+91 98765 00000', cv_url: null },
+    { id: 'USR-002', name: 'Sunil Sharma', email: 'admin@aranicorporate.com', role: 'Admin', status: 'Active', verified: true, joined: 'Mar 2021', phone: '+91 98765 00001', cv_url: null }
   ]);
 
   // Settings & Audit Log State
@@ -509,10 +510,18 @@ export default function AdminPage() {
             role: 'Candidate',
             status: 'Active',
             verified: false,
-            joined: new Date(p.updated_at || p.created_at || new Date()).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+            joined: new Date(p.updated_at || p.created_at || new Date()).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+            phone: p.phone || 'N/A',
+            cv_url: p.resume_url || p.cv_url || (dbApps || []).find((app: any) => app.email === p.email && app.resume_url)?.resume_url || null
           }));
 
           setUserAccounts(prev => {
+            const existingEmails = new Set(prev.map(p => p.email));
+            const newUsers = mappedUsers.filter((u: any) => !existingEmails.has(u.email));
+            return [...newUsers, ...prev];
+          });
+          
+          setCandidateProfiles(prev => {
             const existingEmails = new Set(prev.map(p => p.email));
             const newUsers = mappedUsers.filter((u: any) => !existingEmails.has(u.email));
             return [...newUsers, ...prev];
@@ -529,7 +538,7 @@ export default function AdminPage() {
             jobId: 'REG-PROFILE',
             jobTitle: 'Candidate Registration (Profile)',
             appliedDate: new Date(p.updated_at || p.created_at || new Date()).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-            stage: 'Applied',
+            stage: 'Lead',
             matchScore: 'N/A',
             resumeName: 'Profile Snapshot',
             utmSource: 'direct',
@@ -883,6 +892,19 @@ export default function AdminPage() {
                   <span className="bg-amber-100 text-amber-800 text-[10px] font-bold px-1.5 py-0.5 rounded">
                     {leads.length} Leads
                   </span>
+                </button>
+
+
+                <button
+                  onClick={() => setActiveTab('candidates')}
+                  className={`w-full text-left px-3 py-2.5 rounded text-xs font-mono font-bold uppercase tracking-wider transition flex items-center gap-2.5 ${
+                    activeTab === 'candidates'
+                      ? 'bg-teal-50 text-teal-700 border-l-2 border-teal-500 shadow-xs'
+                      : 'text-slate hover:bg-paper'
+                  }`}
+                >
+                  <Users className="w-4 h-4 text-teal-600" />
+                  Candidate Profiles
                 </button>
 
                 <button
@@ -2096,6 +2118,7 @@ export default function AdminPage() {
                             }}
                             className="px-3 py-1.5 bg-surface border border-line rounded font-mono text-xs text-ink-900 font-bold"
                           >
+                            <option value="Lead">Lead</option>
                             <option value="Applied">Applied</option>
                             <option value="Screening">Screening</option>
                             <option value="Interview Scheduled">Interview Scheduled</option>
@@ -2187,6 +2210,69 @@ export default function AdminPage() {
               </div>
             )}
 
+
+            {/* CANDIDATE PROFILES TAB */}
+            {activeTab === 'candidates' && (
+              <div className="bg-surface border border-line rounded-lg p-6 shadow-xs space-y-6">
+                <div className="flex items-center justify-between pb-4 border-b border-line">
+                  <div>
+                    <h3 className="font-display font-bold text-xl text-ink-900">Candidate Profiles</h3>
+                    <p className="text-xs text-slate">Profiles registered through the candidate portal.</p>
+                  </div>
+                  <span className="px-3 py-1 bg-teal-50 text-teal-800 font-mono text-[10px] uppercase font-bold tracking-wider rounded border border-teal-100">
+                    {candidateProfiles.length} Profiles
+                  </span>
+                </div>
+
+                <div className="space-y-3">
+                  {candidateProfiles.length === 0 ? (
+                    <div className="text-center py-10 border border-dashed border-line rounded-lg text-slate text-sm font-mono">
+                      No candidate profiles found.
+                    </div>
+                  ) : (
+                    candidateProfiles.map((user) => (
+                      <div key={user.id} className="p-4 bg-paper border border-line rounded-lg flex items-center justify-between gap-4 text-xs font-sans">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-bold text-ink-900 text-sm">{user.name}</h4>
+                            <span className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded font-mono text-[10px] uppercase tracking-wider">
+                              {user.role}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-4 text-slate mt-2 flex-wrap">
+                            <span className="flex items-center gap-1"><Mail className="w-3.5 h-3.5"/> {user.email}</span>
+                            {user.phone && user.phone !== 'N/A' && (
+                              <span className="flex items-center gap-1"><Phone className="w-3.5 h-3.5"/> {user.phone}</span>
+                            )}
+                            <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5"/> Registered: {user.joined}</span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          {user.cv_url && (
+                            <a
+                              href={user.cv_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="px-3 py-1.5 bg-teal-50 hover:bg-teal-100 text-teal-700 border border-teal-200 rounded font-mono text-[10px] font-bold flex items-center gap-1.5 transition"
+                            >
+                              <FileText className="w-3.5 h-3.5" />
+                              View CV
+                            </a>
+                          )}
+                          <span className={`px-3 py-1.5 rounded font-mono text-[10px] font-bold ${
+                            user.status === 'Active' ? 'bg-ok/10 text-ok' : 'bg-danger/10 text-danger'
+                          }`}>
+                            {user.status}
+                          </span>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* 6. USERS DIRECTORY TAB */}
             {activeTab === 'users' && (
               <div className="bg-surface border border-line rounded-lg p-6 shadow-xs space-y-6">
@@ -2207,7 +2293,7 @@ export default function AdminPage() {
                 <div className="space-y-3">
                   {userAccounts.map((user) => (
                     <div key={user.id} className="p-4 bg-paper border border-line rounded-lg flex items-center justify-between gap-4 text-xs font-sans">
-                      <div>
+                      <div className="flex-1">
                         <div className="flex items-center gap-2">
                           <span className="font-mono text-teal-700 font-bold">{user.id}</span>
                           <h4 className="font-bold text-ink-900">{user.name}</h4>
@@ -2215,17 +2301,34 @@ export default function AdminPage() {
                             {user.role}
                           </span>
                         </div>
-                        <p className="text-slate mt-0.5">{user.email} • Joined: {user.joined}</p>
+                        <div className="flex items-center gap-4 text-slate mt-1.5 flex-wrap">
+                          <span className="flex items-center gap-1"><Mail className="w-3.5 h-3.5"/> {user.email}</span>
+                          {user.phone && user.phone !== 'N/A' && (
+                            <span className="flex items-center gap-1"><Phone className="w-3.5 h-3.5"/> {user.phone}</span>
+                          )}
+                          <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5"/> Joined: {user.joined}</span>
+                        </div>
                       </div>
 
                       <div className="flex items-center gap-3">
+                        {user.cv_url && (
+                          <a
+                            href={user.cv_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-3 py-1 bg-teal-50 hover:bg-teal-100 text-teal-700 border border-teal-200 rounded font-mono text-[10px] font-bold flex items-center gap-1 transition"
+                          >
+                            <FileText className="w-3 h-3" />
+                            View CV
+                          </a>
+                        )}
                         <button
                           onClick={() => {
                             const newStatus = user.status === 'Active' ? 'Suspended' : 'Active';
                             setUserAccounts(userAccounts.map((u) => (u.id === user.id ? { ...u, status: newStatus } : u)));
                             triggerToast(`User ${user.id} status changed to ${newStatus}`);
                           }}
-                          className={`px-3 py-1 rounded font-mono text-xs font-bold ${
+                          className={`px-3 py-1 rounded font-mono text-[10px] font-bold ${
                             user.status === 'Active' ? 'bg-ok/10 text-ok' : 'bg-danger/10 text-danger'
                           }`}
                         >

@@ -114,49 +114,69 @@ export async function submitEmployerLead(data: {
 }
 
 export async function saveCandidateProfile(profileData: any) {
-  const newProfile = {
-    ...profileData,
-    updated_at: new Date().toISOString()
-  };
-  
-  const client = getSupabase();
-  if (client) {
-    const { data: inserted, error } = await client
-      .from('candidate_profiles')
-      .upsert([
-        {
-          email: profileData.email,
-          full_name: profileData.fullName,
-          phone: profileData.phone,
-          national_id: profileData.nationalId,
-          address: profileData.address,
-          district: profileData.district,
-          city: profileData.city,
-          state: profileData.state,
-          zip_code: profileData.zipCode,
-          education: profileData.education,
-          current_company: profileData.currentCompany,
-          current_role: profileData.currentRole,
-          experience_years: profileData.experienceYears,
-          expected_ctc: profileData.expectedCtc,
-          notice_period: profileData.noticePeriod,
-          skills: profileData.skills,
-          confidential_search: profileData.confidentialSearch,
-          updated_at: newProfile.updated_at
-        }
-      ], { onConflict: 'email' })
-      .select();
-      
-    if (!error) {
-      return inserted;
+  if (typeof window !== 'undefined') {
+    const res = await fetch('/api/candidate-register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(profileData)
+    });
+    if (!res.ok) {
+      throw new Error('Failed to save candidate profile');
     }
-    throw error;
+    return await res.json();
+  } else {
+    // server-side execution if needed
+    const newProfile = {
+      ...profileData,
+      updated_at: new Date().toISOString()
+    };
+    
+    const client = getSupabase();
+    if (client) {
+      const { data: inserted, error } = await client
+        .from('candidate_profiles')
+        .upsert([
+          {
+            email: profileData.email,
+            full_name: profileData.fullName,
+            phone: profileData.phone,
+            national_id: profileData.nationalId,
+            address: profileData.address,
+            district: profileData.district,
+            city: profileData.city,
+            state: profileData.state,
+            zip_code: profileData.zipCode,
+            education: profileData.education,
+            current_company: profileData.currentCompany,
+            current_role: profileData.currentRole,
+            experience_years: profileData.experienceYears,
+            expected_ctc: profileData.expectedCtc,
+            notice_period: profileData.noticePeriod,
+            skills: profileData.skills,
+            confidential_search: profileData.confidentialSearch,
+            updated_at: newProfile.updated_at
+          }
+        ], { onConflict: 'email' })
+        .select();
+        
+      if (!error) {
+        return inserted;
+      }
+      throw error;
+    }
+    throw new Error('Supabase client not initialized');
   }
-
-  throw new Error('Supabase client not initialized');
 }
 
 export async function getCandidateProfiles() {
+  if (typeof window !== 'undefined') {
+    const res = await fetch('/api/candidates');
+    if (!res.ok) {
+      throw new Error('Failed to fetch candidate profiles');
+    }
+    return await res.json();
+  }
+
   const client = getSupabase();
   if (client) {
     const { data, error } = await client
