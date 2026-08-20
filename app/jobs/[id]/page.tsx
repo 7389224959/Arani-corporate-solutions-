@@ -120,7 +120,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
 
   const handleFinalSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!consentData || !consentContact) return;
+    if (!consentData || !consentContact || !job) return;
 
     const utm = getUtmParams();
     trackPixelEvent('SubmitApplication', {
@@ -149,20 +149,37 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
       console.warn('Failed to submit application to Supabase', err);
     }
 
-    
-
     setSubmitted(true);
   };
+
+  if (!job) {
+    return (
+      <div className="min-h-screen bg-paper text-ink-900 flex flex-col font-sans">
+        <header className="sticky top-0 z-40 bg-surface/95 backdrop-blur-md border-b border-line shadow-xs">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <Link href="/" className="flex items-center gap-2">
+              <AraniLogo className="h-9" variant="dark" />
+            </Link>
+          </div>
+        </header>
+        <main className="max-w-xl mx-auto px-4 py-16 text-center space-y-4">
+          <h1 className="text-2xl font-bold font-display text-ink-900">Job Listing Not Found</h1>
+          <p className="text-sm text-slate">The requested job posting could not be found or may have expired.</p>
+          <Link href="/jobs" className="inline-flex items-center gap-2 px-4 py-2 bg-teal-500 text-white rounded font-medium text-sm">
+            <ArrowLeft className="w-4 h-4" /> Return to Live Job Board
+          </Link>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-paper text-ink-900 flex flex-col font-sans">
       {/* Inject JobPosting JSON-LD for Google for Jobs */}
-      {job && (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(generateJobPostingSchema(job)) }}
-        />
-      )}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(generateJobPostingSchema(job)) }}
+      />
 
       {/* Top Header */}
       <header className="sticky top-0 z-40 bg-surface/95 backdrop-blur-md border-b border-line shadow-xs">
