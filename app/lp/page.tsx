@@ -277,7 +277,7 @@ export default function LandingPage() {
         {/* Process Step Summary */}
         <div className="bg-surface border border-line rounded-xl p-6 md:p-8 space-y-6 shadow-xs">
           <h3 className="font-display font-bold text-lg text-ink-900 text-center">
-            How Arani Helps You Get Hired in 3 Simple Steps
+            How Aranii Helps You Get Hired in 3 Simple Steps
           </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

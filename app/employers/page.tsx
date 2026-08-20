@@ -119,7 +119,7 @@ export default function EmployersPage() {
             </h1>
 
             <p className="text-slate-300 text-base md:text-lg max-w-2xl leading-relaxed">
-              Arani Corporate Solutions connects premier banks, NBFCs, and enterprise MNCs with pre-screened, interview-ready talent. Success-fee model — no shortlist, no invoice.
+              Aranii Corporate Solutions connects premier banks, NBFCs, and enterprise MNCs with pre-screened, interview-ready talent. Success-fee model — no shortlist, no invoice.
             </p>
 
             {/* SLA Badges Grid */}
@@ -245,7 +245,7 @@ export default function EmployersPage() {
                 <CheckCircle2 className="w-12 h-12 text-teal-600 mx-auto" />
                 <h4 className="font-display font-bold text-xl text-ink-900">Intake Received!</h4>
                 <p className="text-xs text-slate max-w-xs mx-auto">
-                  An Account Lead from Arani Corporate Solutions will review your requirement and reach out to <strong>{formData.email}</strong> within 2 hours.
+                  An Account Lead from Aranii Corporate Solutions will review your requirement and reach out to <strong>{formData.email}</strong> within 2 hours.
                 </p>
                 <button
                   onClick={() => setSubmitted(false)}
@@ -269,7 +269,7 @@ export default function EmployersPage() {
             5 Tailored Solutions for Corporate Hiring Teams
           </h2>
           <p className="text-slate text-sm">
-            From single executive searches to 200+ branch hiring drives, Arani delivers high retention and complete regulatory compliance.
+            From single executive searches to 200+ branch hiring drives, Aranii delivers high retention and complete regulatory compliance.
           </p>
         </div>
 

@@ -198,14 +198,14 @@ export default function CandidateDashboardPage() {
   const [messages, setMessages] = useState([
     {
       id: 'M-1',
-      sender: 'Arani Senior Banking Recruiter',
+      sender: 'Aranii Senior Banking Recruiter',
       subject: 'Interview Schedule Confirmation for Senior Credit Risk Analyst (ACS-8042)',
       time: 'Today • 09:15 AM',
       body: 'Hi Rahul, your profile snapshot has passed preliminary screening with Tier-1 Private Bank. We have scheduled your first technical discussion for Wednesday, Aug 5 at 2:00 PM IST via Video Conference.'
     },
     {
       id: 'M-2',
-      sender: 'Arani Talent Desk',
+      sender: 'Aranii Talent Desk',
       subject: 'Profile Verification Completed',
       time: 'Yesterday • 02:15 PM',
       body: 'Your National ID (ABCDE1234F) and resume credentials have been successfully verified. Your candidate profile is now active in our priority recruiter pool.'

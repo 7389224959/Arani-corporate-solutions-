@@ -118,7 +118,7 @@ export default function InsightsPage() {
               Banking Market Reports &amp; HR Advisory Insights
             </h1>
             <p className="text-slate-300 text-sm md:text-base leading-relaxed">
-              In-depth salary benchmarks, digital underwriting career guides, and candidate screening methodologies published directly by Arani Corporate Solutions recruiters.
+              In-depth salary benchmarks, digital underwriting career guides, and candidate screening methodologies published directly by Aranii Corporate Solutions recruiters.
             </p>
           </div>
         </div>
@@ -295,7 +295,7 @@ export default function InsightsPage() {
           {newsletterSubscribed && (
             <div className="fixed bottom-6 right-6 bg-ok text-surface p-4 rounded-lg shadow-lg font-mono text-xs flex items-center gap-2 z-50 animate-bounce">
               <CheckCircle2 className="w-5 h-5" />
-              <span>Subscribed successfully! Welcome to Arani Insights.</span>
+              <span>Subscribed successfully! Welcome to Aranii Insights.</span>
             </div>
           )}
         </div>
@@ -365,7 +365,7 @@ export default function InsightsPage() {
                 </ul>
 
                 <p>
-                  For corporate clients, Arani Corporate Solutions provides pre-screened talent shortlists within 72 hours, backed by a 90-day replacement guarantee.
+                  For corporate clients, Aranii Corporate Solutions provides pre-screened talent shortlists within 72 hours, backed by a 90-day replacement guarantee.
                 </p>
               </div>
 

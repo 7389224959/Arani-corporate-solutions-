@@ -61,7 +61,7 @@ const HERO_CAROUSEL_SLIDES = [
     image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1920&q=80',
     badge: 'Trusted Recruitment & Placement Consultancy',
     headline: 'Connecting Talent With Opportunity',
-    subheadline: 'Arani Corporate Solutions helps job seekers secure opportunities with leading companies while helping businesses hire qualified professionals across multiple industries.',
+    subheadline: 'Aranii Corporate Solutions helps job seekers secure opportunities with leading companies while helping businesses hire qualified professionals across multiple industries.',
     tag: 'Corporate Headquarters'
   },
   {
@@ -542,7 +542,7 @@ export default function HomePage() {
             <div className="max-w-7xl mx-auto flex items-center justify-between text-xs">
               <span className="font-mono text-ink-900 font-bold flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-teal-500 animate-ping" />
-                Arani Corporate Solutions: 2,400+ Verified Openings Active Today
+                Aranii Corporate Solutions: 2,400+ Verified Openings Active Today
               </span>
               <div className="flex items-center gap-3">
                 <button
@@ -849,7 +849,7 @@ export default function HomePage() {
                 <div className="relative mx-auto max-w-md lg:max-w-none rounded-2xl overflow-hidden shadow-2xl border-4 border-surface bg-ink-950 group">
                   <Image
                     src={directorData.photoUrl}
-                    alt={`${directorData.name} - ${directorData.title} of Arani Corporate Solutions`}
+                    alt={`${directorData.name} - ${directorData.title} of Aranii Corporate Solutions`}
                     width={600}
                     height={750}
                     className="w-full h-[400px] sm:h-[460px] object-cover object-center transform group-hover:scale-105 transition-transform duration-700"
@@ -876,7 +876,7 @@ export default function HomePage() {
                 
                 {/* Caption below photo */}
                 <p className="text-[11px] font-mono text-slate text-center mt-2.5">
-                  {directorData.badgeText || `📷 Director ${directorData.name} at Arani Corporate Solutions Head Office Desk`}
+                  {directorData.badgeText || `📷 Director ${directorData.name} at Aranii Corporate Solutions Head Office Desk`}
                 </p>
               </div>
 
@@ -922,7 +922,7 @@ export default function HomePage() {
                       {directorData.signatureName || directorData.name}
                     </span>
                     <span className="font-mono text-[11px] text-muted font-bold">
-                      {directorData.signatureTitle || `${directorData.title}, Arani Corporate Solutions`}
+                      {directorData.signatureTitle || `${directorData.title}, Aranii Corporate Solutions`}
                     </span>
                   </div>
 
@@ -1193,7 +1193,7 @@ export default function HomePage() {
                 {"// VERIFIED VACANCIES"}
               </span>
               <h2 className="text-3xl font-display font-bold text-ink-950">
-                Live Openings on Arani
+                Live Openings on Aranii
               </h2>
             </div>
 
@@ -1393,7 +1393,7 @@ export default function HomePage() {
                 The HR Department You Don&apos;t Have to Build.
               </h2>
               <p className="text-slate-300 text-base leading-relaxed">
-                Whether scaling a branch network or filling executive leadership roles, Arani Corporate Solutions provides end-to-end recruitment, contract staffing, and background verification.
+                Whether scaling a branch network or filling executive leadership roles, Aranii Corporate Solutions provides end-to-end recruitment, contract staffing, and background verification.
               </p>
 
               {/* Animated Counters Grid */}
@@ -1572,7 +1572,7 @@ export default function HomePage() {
                   {"// CASE STUDY VIDEO"}
                 </span>
                 <h3 className="font-display font-bold text-xl text-surface mt-3">
-                  How Arani Placed 1,200+ Branch Officers
+                  How Aranii Placed 1,200+ Branch Officers
                 </h3>
                 <p className="text-xs text-slate-300 mt-2">
                   Watch our documentary on banking workforce expansion across tier-1 and tier-2 cities.
@@ -1748,13 +1748,13 @@ export default function HomePage() {
             
             <div className="space-y-6">
               <span className="font-mono text-xs font-bold text-teal-400 bg-ink-800 px-3 py-1 rounded">
-                {"// START WITH ARANI TODAY"}
+                {"// START WITH ARANII TODAY"}
               </span>
               <h2 className="text-3xl md:text-4xl font-display font-bold leading-tight">
                 Your Next Career or Your Next Hire is 72 Hours Away.
               </h2>
               <p className="text-slate-300 text-sm">
-                Join thousands of banking candidates and hundreds of enterprise employers powered by Arani Corporate Solutions.
+                Join thousands of banking candidates and hundreds of enterprise employers powered by Aranii Corporate Solutions.
               </p>
 
               <div className="flex flex-wrap items-center gap-4">
@@ -1803,7 +1803,7 @@ export default function HomePage() {
               ) : (
                 <div className="p-3 bg-teal-500/20 border border-teal-400/40 rounded text-xs text-teal-300 font-mono font-bold flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4" />
-                  Successfully subscribed! Welcome to Arani Intelligence.
+                  Successfully subscribed! Welcome to Aranii Intelligence.
                 </div>
               )}
             </div>
@@ -1822,7 +1822,7 @@ export default function HomePage() {
             <div className="lg:col-span-2 space-y-4">
               <AraniLogo variant="light" size="md" />
               <p className="text-slate-400 leading-relaxed max-w-sm">
-                Arani Corporate Solutions is a premier recruitment consultancy and HR advisory firm connecting talent with leading financial institutions and enterprise corporations.
+                Aranii Corporate Solutions is a premier recruitment consultancy and HR advisory firm connecting talent with leading financial institutions and enterprise corporations.
               </p>
               <div className="font-mono text-[11px] text-teal-400 font-bold tracking-widest">
                 TAGLINE: GROW WITH THE OPPORTUNITY
@@ -1852,16 +1852,16 @@ export default function HomePage() {
             <div>
               <h4 className="font-mono text-xs uppercase font-bold text-surface mb-3">Contact HQ</h4>
               <p className="text-slate-400 leading-relaxed mb-2">
-                Arani Corporate Towers, BKC Commercial Complex, Mumbai - 400051
+                Aranii Corporate Towers, BKC Commercial Complex, Mumbai - 400051
               </p>
-              <p className="text-teal-400 font-mono font-bold">+91 (0) 800-ARANI-HR</p>
+              <p className="text-teal-400 font-mono font-bold">+91 (0) 800-ARANII-HR</p>
             </div>
 
           </div>
 
           <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-slate-500 font-mono text-[11px]">
             <div>
-              © {new Date().getFullYear()} Arani Corporate Solutions. All rights reserved.
+              © {new Date().getFullYear()} Aranii Corporate Solutions. All rights reserved.
             </div>
             <div className="flex items-center gap-4">
               <a href="#" className="hover:text-slate-300">Privacy Policy</a>
@@ -1919,7 +1919,7 @@ export default function HomePage() {
               <X className="w-5 h-5" />
             </button>
             <h3 className="font-display font-bold text-xl mb-4">
-              Case Study: Arani Banking Placement Drive
+              Case Study: Aranii Banking Placement Drive
             </h3>
             <div className="aspect-video bg-ink-950 rounded-xl flex items-center justify-center text-surface relative overflow-hidden">
               <Image

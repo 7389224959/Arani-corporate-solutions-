@@ -186,7 +186,7 @@ export const RoleChoiceModal: React.FC<RoleChoiceModalProps> = ({ isOpen, onClos
 
             {/* Staff Admin Link Footer */}
             <div className="bg-paper border-t border-line px-4 sm:px-6 py-3 flex items-center justify-between text-xs font-mono shrink-0">
-              <span className="text-slate text-[11px] sm:text-xs">Are you Arani Staff?</span>
+              <span className="text-slate text-[11px] sm:text-xs">Are you Aranii Staff?</span>
               <a
                 href="/admin"
                 className="text-teal-600 font-bold hover:underline flex items-center gap-1 bg-surface px-2.5 py-1 rounded border border-line hover:border-teal-400 transition text-[11px] sm:text-xs"

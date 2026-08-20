@@ -61,11 +61,11 @@ export default function ClientReelWizard({ settings, onClose }: { settings: any,
       }
 
       const clientContext = {
-        business_name: settings?.companyName || 'Arani Corporate Solutions',
+        business_name: settings?.companyName || 'Aranii Corporate Solutions',
         category: 'Corporate Staffing & Banking Recruitment',
         services: 'Executive Search, Bulk Hiring, Branch Operations Recruitment',
         offer: '72-Hour Candidate Shortlist SLA',
-        owner_name: 'Arani Corporate Solutions'
+        owner_name: 'Aranii Corporate Solutions'
       };
 
       const data = await generateClientReelScript(clientContext, reelCategory, finalPrompt, template);
@@ -422,7 +422,7 @@ export default function ClientReelWizard({ settings, onClose }: { settings: any,
             
             {step > 1 && (
               <div className="absolute bottom-4 left-0 right-0 text-center text-white/80 text-xs font-semibold">
-                {settings?.companyName || 'Arani Corporate Solutions'}
+                {settings?.companyName || 'Aranii Corporate Solutions'}
               </div>
             )}
 

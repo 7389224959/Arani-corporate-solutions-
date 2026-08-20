@@ -1,4 +1,4 @@
-// Meta Pixel & Conversions API Tracking Helper + UTM Manager for Arani Corporate Solutions
+// Meta Pixel & Conversions API Tracking Helper + UTM Manager for Aranii Corporate Solutions
 
 export interface UtmParams {
   utm_source?: string;

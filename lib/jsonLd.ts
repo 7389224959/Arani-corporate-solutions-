@@ -19,7 +19,7 @@ export function generateJobPostingSchema(job: Job) {
     `.trim(),
     identifier: {
       '@type': 'PropertyValue',
-      name: 'Arani Corporate Solutions',
+      name: 'Aranii Corporate Solutions',
       value: job.id
     },
     datePosted: '2026-08-01',
@@ -28,8 +28,8 @@ export function generateJobPostingSchema(job: Job) {
     hiringOrganization: {
       '@type': 'Organization',
       name: job.isConfidential ? 'Top Tier Bank / Enterprise Firm' : job.companyName,
-      sameAs: 'https://aranicorporate.com',
-      logo: 'https://aranicorporate.com/arani-logo.png'
+      sameAs: 'https://araniicorporate.com',
+      logo: 'https://araniicorporate.com/aranii-logo.png'
     },
     jobLocation: {
       '@type': 'Place',
@@ -58,26 +58,26 @@ export function generateOrganizationSchema() {
   return {
     '@context': 'https://schema.org',
     '@type': 'RecruitmentAgency',
-    name: 'Arani Corporate Solutions',
-    alternateName: 'Arani Job Consultancy & HR Services',
-    url: 'https://aranicorporate.com',
-    logo: 'https://aranicorporate.com/arani-logo.png',
+    name: 'Aranii Corporate Solutions',
+    alternateName: 'Aranii Job Consultancy & HR Services',
+    url: 'https://araniicorporate.com',
+    logo: 'https://araniicorporate.com/aranii-logo.png',
     description: 'Premier recruitment consultancy specializing in banking jobs, corporate placements, executive search, background verification, and HR advisory.',
     slogan: 'GROW WITH THE OPPORTUNITY',
     telephone: '+91-1800-419-8282',
-    email: 'contact@aranicorporate.com',
+    email: 'contact@araniicorporate.com',
     address: {
       '@type': 'PostalAddress',
-      streetAddress: 'Arani Towers, BKC Financial Hub',
+      streetAddress: 'Aranii Towers, BKC Financial Hub',
       addressLocality: 'Mumbai',
       addressRegion: 'Maharashtra',
       postalCode: '400051',
       addressCountry: 'IN'
     },
     sameAs: [
-      'https://www.facebook.com/aranicorporatesolutions',
-      'https://www.linkedin.com/company/arani-corporate-solutions',
-      'https://www.instagram.com/aranicorporate'
+      'https://www.facebook.com/araniicorporatesolutions',
+      'https://www.linkedin.com/company/aranii-corporate-solutions',
+      'https://www.instagram.com/araniicorporate'
     ]
   };
 }
@@ -99,15 +99,15 @@ export function generateArticleSchema(article: Article) {
       jobTitle: 'Banking Talent Consultant',
       worksFor: {
         '@type': 'Organization',
-        name: 'Arani Corporate Solutions'
+        name: 'Aranii Corporate Solutions'
       }
     },
     publisher: {
       '@type': 'Organization',
-      name: 'Arani Corporate Solutions',
+      name: 'Aranii Corporate Solutions',
       logo: {
         '@type': 'ImageObject',
-        url: 'https://aranicorporate.com/arani-logo.png'
+        url: 'https://araniicorporate.com/aranii-logo.png'
       }
     }
   };

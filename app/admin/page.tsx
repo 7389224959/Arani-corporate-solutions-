@@ -226,7 +226,7 @@ export default function AdminPage() {
       sessionStorage.setItem('arani_admin_authenticated', 'true');
       sessionStorage.setItem('arani_admin_role', adminRole);
       setIsLoggingIn(false);
-      triggerToast(`Authenticated as ${adminRole}. Welcome to Arani CMS.`);
+      triggerToast(`Authenticated as ${adminRole}. Welcome to Aranii CMS.`);
     }, 500);
   };
 
@@ -237,7 +237,7 @@ export default function AdminPage() {
     setIsAuthenticated(true);
     sessionStorage.setItem('arani_admin_authenticated', 'true');
     sessionStorage.setItem('arani_admin_role', role);
-    triggerToast(`Authenticated as ${role}. Welcome to Arani CMS.`);
+    triggerToast(`Authenticated as ${role}. Welcome to Aranii CMS.`);
   };
 
   const handleAdminLogout = () => {
@@ -286,7 +286,7 @@ export default function AdminPage() {
       id: 'h1',
       headline: 'Scaling Tech Ecosystems with Elite Engineering Leadership',
       highlightText: 'Elite Engineering',
-      subtext: 'Arani connects visionary founders with the top 1% of technical talent in India.',
+      subtext: 'Aranii connects visionary founders with the top 1% of technical talent in India.',
       ctaText: 'Hire Talent',
       ctaUrl: '/employers',
       secondaryCtaText: 'Explore Roles',
@@ -424,16 +424,16 @@ export default function AdminPage() {
 
   // Settings & Audit Log State
   const [siteSettings, setSiteSettings] = useState({
-    companyName: 'Arani Corporate Solutions',
+    companyName: 'Aranii Corporate Solutions',
     phone: '+91 98765 00000',
-    email: 'contact@aranicorporate.com',
+    email: 'contact@araniicorporate.com',
     address: 'Suite 402, Financial Centre, BKC, Mumbai - 400051',
     workingHours: 'Sun–Thu 9:00–18:00',
     currency: 'INR (₹)',
     metaPixelId: '123456789098765',
     metaCapiEnabled: true,
     maintenanceMode: false,
-    emailTemplateAppReceived: 'Dear {candidate_name}, Your application for {job_title} at Arani Corporate Solutions has been received. Our team will review your profile within 48 hours.',
+    emailTemplateAppReceived: 'Dear {candidate_name}, Your application for {job_title} at Aranii Corporate Solutions has been received. Our team will review your profile within 48 hours.',
     emailTemplateInterview: 'Dear {candidate_name}, You have been shortlisted for an interview for {job_title}. Details: {interview_date}.'
   });
 
@@ -753,7 +753,7 @@ export default function AdminPage() {
                 Admin Staff Gateway
               </h1>
               <p className="text-xs text-slate-400 leading-relaxed">
-                Sign in with your corporate Arani credentials to access content management, applicant inbox, and employer CRM.
+                Sign in with your corporate Aranii credentials to access content management, applicant inbox, and employer CRM.
               </p>
             </div>
 
@@ -854,13 +854,13 @@ export default function AdminPage() {
             </div>
 
             <div className="text-[10px] text-slate-500 text-center font-mono pt-2">
-              Protected by Arani Security Guard. Sessions recorded in Audit Log.
+              Protected by Aranii Security Guard. Sessions recorded in Audit Log.
             </div>
           </div>
         </main>
 
         <footer className="border-t border-ink-800 py-3 text-center text-[11px] font-mono text-slate-400">
-          © 2026 Arani Corporate Solutions — Internal Staff System
+          © 2026 Aranii Corporate Solutions — Internal Staff System
         </footer>
       </div>
     );
@@ -927,7 +927,7 @@ export default function AdminPage() {
             <div className="bg-surface border border-line rounded-lg p-4 shadow-xs space-y-2">
               <div className="pb-3 border-b border-line mb-3">
                 <p className="text-[10px] font-mono text-slate uppercase font-bold tracking-widest">Admin Control Panel</p>
-                <h2 className="font-display font-bold text-sm text-ink-900">Arani Operations Hub</h2>
+                <h2 className="font-display font-bold text-sm text-ink-900">Aranii Operations Hub</h2>
               </div>
 
               <nav className="space-y-1">
@@ -1941,7 +1941,7 @@ export default function AdminPage() {
                             category: 'Article',
                             readTime: '5 min read',
                             date: 'Aug 02, 2026',
-                            author: 'Arani Editorial Team',
+                            author: 'Aranii Editorial Team',
                             summary: 'Summary of career insight or corporate hiring market trends...',
                             image: 'https://picsum.photos/seed/newart/800/450'
                           };

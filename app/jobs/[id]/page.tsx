@@ -365,7 +365,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                 <ShieldCheck className="w-6 h-6 text-teal-600 shrink-0 mt-0.5" />
                 <div className="space-y-1">
                   <h4 className="font-display font-bold text-sm text-teal-900">
-                    Arani Candidate Placement Promise
+                    Aranii Candidate Placement Promise
                   </h4>
                   <p className="text-xs text-slate">
                     This position is 100% free for all applicants. Your details are pre-screened directly with official hiring leads.
@@ -586,7 +586,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                             className="mt-0.5 w-4 h-4 text-teal-600 rounded border-line"
                           />
                           <span>
-                            I authorize Arani Corporate Solutions to store and process my profile, resume, and ID details for banking pre-screening.
+                            I authorize Aranii Corporate Solutions to store and process my profile, resume, and ID details for banking pre-screening.
                           </span>
                         </label>
 
@@ -635,7 +635,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                     Application ID: <strong className="font-mono text-teal-700">APP-1025</strong>
                   </p>
                   <p className="text-xs text-slate max-w-xs mx-auto">
-                    Thank you, <strong>{fullName}</strong>. Your profile snapshot and responses have been routed to Arani&apos;s banking recruitment desk for {job.companyName}.
+                    Thank you, <strong>{fullName}</strong>. Your profile snapshot and responses have been routed to Aranii&apos;s banking recruitment desk for {job.companyName}.
                   </p>
 
                   <div className="pt-2">

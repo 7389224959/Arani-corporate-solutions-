@@ -152,7 +152,7 @@ export const JobQuickModal: React.FC<JobQuickModalProps> = ({ job, onClose, onAp
                   Candidate Guarantee &amp; Privacy
                 </div>
                 <p className="text-xs text-slate">
-                  This role is 100% free for candidates. Arani Corporate Solutions handles all initial screening with strict confidentiality.
+                  This role is 100% free for candidates. Aranii Corporate Solutions handles all initial screening with strict confidentiality.
                 </p>
               </div>
 

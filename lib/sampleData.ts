@@ -14,11 +14,11 @@ export const DEFAULT_DIRECTOR_DATA: DirectorData = {
   name: 'Ashutosh Raj Choure',
   title: 'Managing Director & Founder',
   photoUrl: 'https://images.unsplash.com/photo-1556157382-97eda2d62296?auto=format&fit=crop&w=800&q=80',
-  badgeText: '📷 Director Ashutosh Raj Choure at Arani Corporate Solutions Head Office Desk',
+  badgeText: '📷 Director Ashutosh Raj Choure at Aranii Corporate Solutions Head Office Desk',
   experienceTag: 'Director',
-  bio: 'Under the leadership of Director Ashutosh Raj Choure, Arani Corporate Solutions has established itself as a premier recruitment, staffing, and placement consultancy. He is dedicated to connecting ambitious job seekers with leading banking and corporate opportunities while providing employers with top-tier, screened talent.',
+  bio: 'Under the leadership of Director Ashutosh Raj Choure, Aranii Corporate Solutions has established itself as a premier recruitment, staffing, and placement consultancy. He is dedicated to connecting ambitious job seekers with leading banking and corporate opportunities while providing employers with top-tier, screened talent.',
   signatureName: 'Ashutosh Raj Choure',
-  signatureTitle: 'Managing Director, Arani Corporate Solutions',
+  signatureTitle: 'Managing Director, Aranii Corporate Solutions',
   highlights: [
     { title: 'Industry Experience', subtitle: '15+ Years in Banking & Corporate Staffing' },
     { title: 'Successful Placements', subtitle: '12,000+ Candidates Hired Nationally' },
@@ -44,7 +44,7 @@ export const DEFAULT_CAROUSEL_SLIDES: CarouselSlideData[] = [
     image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1920&q=80',
     badge: 'Trusted Recruitment & Placement Consultancy',
     headline: 'Connecting Talent With Opportunity',
-    subheadline: 'Arani Corporate Solutions helps job seekers secure opportunities with leading companies while helping businesses hire qualified professionals across multiple industries.',
+    subheadline: 'Aranii Corporate Solutions helps job seekers secure opportunities with leading companies while helping businesses hire qualified professionals across multiple industries.',
     tag: 'Corporate Headquarters'
   },
   {
@@ -273,14 +273,14 @@ export const SAMPLE_ARTICLES: Article[] = [
     category: 'Article',
     readTime: '6 min read',
     date: 'Aug 01, 2026',
-    author: 'Arani Research Team',
+    author: 'Aranii Research Team',
     summary: 'Discover the top skills tier-1 banks are screening for in 2026, from automated credit risk models to personalized wealth advisory frameworks.',
     image: 'https://picsum.photos/seed/banking2026/800/450',
     isFeatured: true
   },
   {
     id: 'art-2',
-    title: 'How HR Directors Shortlist Talent in 72 Hours: The Arani Screening Methodology',
+    title: 'How HR Directors Shortlist Talent in 72 Hours: The Aranii Screening Methodology',
     category: 'Guide',
     readTime: '4 min read',
     date: 'Jul 28, 2026',
@@ -304,7 +304,7 @@ export const SAMPLE_ARTICLES: Article[] = [
     category: 'Video',
     readTime: '12 min video',
     date: 'Jul 15, 2026',
-    author: 'Arani Corporate Media',
+    author: 'Aranii Corporate Media',
     summary: 'Industry leaders discuss flexible workforce strategies, payroll outsourcing, and compliance risk mitigation.',
     image: 'https://picsum.photos/seed/executivevideo/600/350'
   }
@@ -317,7 +317,7 @@ export const SAMPLE_TESTIMONIALS: Testimonial[] = [
     role: 'Senior Credit Risk Analyst',
     company: 'Placed at HDFC Bank',
     avatar: 'https://picsum.photos/seed/ananya/120/120',
-    quote: 'Arani Corporate Solutions transformed my job search. Their banking consultants guided me through interview rounds and secured a 42% salary uplift in less than two weeks.',
+    quote: 'Aranii Corporate Solutions transformed my job search. Their banking consultants guided me through interview rounds and secured a 42% salary uplift in less than two weeks.',
     type: 'candidate',
     metric: '+42% Salary Uplift',
     rating: 5
@@ -328,7 +328,7 @@ export const SAMPLE_TESTIMONIALS: Testimonial[] = [
     role: 'VP – Human Resources',
     company: 'Kotak Financial Services',
     avatar: 'https://picsum.photos/seed/vikram/120/120',
-    quote: 'When we needed 15 pre-screened branch operations officers across Maharashtra, Arani delivered shortlisted candidates in 48 hours. 100% compliance and zero hassle.',
+    quote: 'When we needed 15 pre-screened branch operations officers across Maharashtra, Aranii delivered shortlisted candidates in 48 hours. 100% compliance and zero hassle.',
     type: 'employer',
     metric: '15 Positions Filled in 5 Days',
     rating: 5
@@ -339,7 +339,7 @@ export const SAMPLE_TESTIMONIALS: Testimonial[] = [
     role: 'Branch Operations Lead',
     company: 'Placed at ICICI Bank',
     avatar: 'https://picsum.photos/seed/rohan/120/120',
-    quote: 'As a candidate, you pay ₹0. The team at Arani verified my profile, coached me on branch audit standards, and arranged my direct interview smoothly.',
+    quote: 'As a candidate, you pay ₹0. The team at Aranii verified my profile, coached me on branch audit standards, and arranged my direct interview smoothly.',
     type: 'candidate',
     metric: 'Landed Dream Role',
     rating: 5
@@ -350,7 +350,7 @@ export const SAMPLE_TESTIMONIALS: Testimonial[] = [
     role: 'Head of Talent Acquisition',
     company: 'Enterprise Technology Corp',
     avatar: 'https://picsum.photos/seed/deepika/120/120',
-    quote: 'Arani is the most reliable recruitment partner we have worked with. Their 90-day placement guarantee and thorough background checks give us complete peace of mind.',
+    quote: 'Aranii is the most reliable recruitment partner we have worked with. Their 90-day placement guarantee and thorough background checks give us complete peace of mind.',
     type: 'employer',
     metric: '96% Retention Rate',
     rating: 5
@@ -360,7 +360,7 @@ export const SAMPLE_TESTIMONIALS: Testimonial[] = [
 export const SAMPLE_FAQS: FAQ[] = [
   {
     id: 'faq-c1',
-    question: 'Is Arani Corporate Solutions completely free for job seekers?',
+    question: 'Is Aranii Corporate Solutions completely free for job seekers?',
     answer: 'Yes! Our placement and career consultation services are 100% free for all candidates. We never charge candidates any registration, processing, or placement fees.',
     category: 'candidate'
   },
@@ -396,7 +396,7 @@ export const SAMPLE_FAQS: FAQ[] = [
   },
   {
     id: 'faq-e1',
-    question: 'How quickly can Arani provide a shortlisted pool of candidates?',
+    question: 'How quickly can Aranii provide a shortlisted pool of candidates?',
     answer: 'For standard banking and corporate roles, our dedicated talent sourcing team provides a vetted, interview-ready shortlist of qualified candidates within 72 hours of receiving your requirement.',
     category: 'employer'
   },
