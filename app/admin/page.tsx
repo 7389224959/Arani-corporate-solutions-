@@ -95,9 +95,9 @@ export interface EmployerLead {
   email: string;
   phone: string;
   requiredRole: string;
-  headcount: number;
+  headcount: number | string;
   estimatedValue: string;
-  stage: 'New Lead' | 'Contacted' | 'Proposal Sent' | 'Won / Active' | 'Closed';
+  stage: 'New Lead' | 'Contacted' | 'Proposal Sent' | 'Won / Active' | 'Closed' | string;
   source: string;
   utmCampaign?: string;
   notes: string[];
@@ -450,6 +450,12 @@ export default function AdminPage() {
   const [editingJob, setEditingJob] = useState<Job | null>(null);
   const [isAddingJob, setIsAddingJob] = useState(false);
   const [isAddingLead, setIsAddingLead] = useState(false);
+  const [isSavingLead, setIsSavingLead] = useState(false);
+  const [leadsLoading, setLeadsLoading] = useState(false);
+  const [leadFilterStage, setLeadFilterStage] = useState<string>('All');
+  const [leadSearchTerm, setLeadSearchTerm] = useState<string>('');
+  const [isDeletingLeadId, setIsDeletingLeadId] = useState<string | null>(null);
+  const [newLeadNoteInput, setNewLeadNoteInput] = useState<string>('');
   const [isAddingHero, setIsAddingHero] = useState(false);
   const [isAddingArticle, setIsAddingArticle] = useState(false);
 
@@ -461,7 +467,7 @@ export default function AdminPage() {
         
         // Fetch Job Applications
         // Fetch Site Settings
-        const { getSiteSettings, getJobsList } = await import('@/lib/supabase-cms');
+        const { getSiteSettings, getJobsList, getEmployerLeads } = await import('@/lib/supabase-cms');
         const settings = await getSiteSettings();
         if (settings) {
           setSiteSettings(prev => ({ ...prev, ...settings }));
@@ -484,6 +490,18 @@ export default function AdminPage() {
           console.warn('Failed to load jobs from Supabase:', jobErr);
         } finally {
           setJobsLoading(false);
+        }
+
+        // Fetch Employer CRM Leads from Supabase
+        try {
+          const dbLeads = await getEmployerLeads();
+          if (dbLeads && Array.isArray(dbLeads) && dbLeads.length > 0) {
+            setLeads(dbLeads);
+          }
+        } catch (leadErr) {
+          console.warn('Failed to load employer leads from Supabase:', leadErr);
+        } finally {
+          setLeadsLoading(false);
         }
 
         const dbApps = await getJobApplications();
@@ -572,6 +590,90 @@ export default function AdminPage() {
     
     fetchSupabaseData();
   }, []);
+
+  // Employer CRM Handlers
+  const refreshEmployerLeads = async () => {
+    setLeadsLoading(true);
+    try {
+      const { getEmployerLeads } = await import('@/lib/supabase-cms');
+      const dbLeads = await getEmployerLeads();
+      if (dbLeads && Array.isArray(dbLeads) && dbLeads.length > 0) {
+        setLeads(dbLeads);
+        triggerToast('Employer CRM leads synced with Supabase!');
+      } else {
+        triggerToast('Supabase employer leads checked (up to date).');
+      }
+    } catch (err: any) {
+      console.error('Failed to sync leads from Supabase:', err);
+      triggerToast(`Failed to sync leads: ${err.message}`);
+    } finally {
+      setLeadsLoading(false);
+    }
+  };
+
+  const handleDeleteLead = async (leadId: string, companyName?: string) => {
+    if (!window.confirm(`Are you sure you want to permanently delete the lead for "${companyName || leadId}"? This will remove the record from Supabase.`)) {
+      return;
+    }
+    setIsDeletingLeadId(leadId);
+    try {
+      const { deleteEmployerLead } = await import('@/lib/supabase-cms');
+      await deleteEmployerLead(leadId);
+      setLeads(prev => prev.filter(l => l.id !== leadId));
+      if (selectedLead?.id === leadId) {
+        setSelectedLead(null);
+      }
+      triggerToast(`Lead for "${companyName || leadId}" deleted from Supabase!`);
+    } catch (err: any) {
+      console.error('Failed to delete lead from Supabase:', err);
+      triggerToast(`Error deleting lead: ${err.message}`);
+    } finally {
+      setIsDeletingLeadId(null);
+    }
+  };
+
+  const handleUpdateLeadStage = async (lead: EmployerLead, newStage: string) => {
+    const updatedLead: EmployerLead = {
+      ...lead,
+      stage: newStage
+    };
+    setLeads(prev => prev.map(l => l.id === lead.id ? updatedLead : l));
+    if (selectedLead?.id === lead.id) {
+      setSelectedLead(updatedLead);
+    }
+    try {
+      const { updateEmployerLead } = await import('@/lib/supabase-cms');
+      await updateEmployerLead(updatedLead);
+      triggerToast(`Lead stage updated to "${newStage}" in Supabase!`);
+    } catch (err: any) {
+      console.error('Failed to update lead stage in Supabase:', err);
+      triggerToast(`Error updating lead: ${err.message}`);
+    }
+  };
+
+  const handleAddLeadNote = async (lead: EmployerLead, newNote: string) => {
+    if (!newNote.trim()) return;
+    const timestamp = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const formattedNote = `${newNote.trim()} (${timestamp})`;
+    const updatedNotes = [...(lead.notes || []), formattedNote];
+    const updatedLead: EmployerLead = {
+      ...lead,
+      notes: updatedNotes
+    };
+    setLeads(prev => prev.map(l => l.id === lead.id ? updatedLead : l));
+    if (selectedLead?.id === lead.id) {
+      setSelectedLead(updatedLead);
+    }
+    setNewLeadNoteInput('');
+    try {
+      const { updateEmployerLead } = await import('@/lib/supabase-cms');
+      await updateEmployerLead(updatedLead);
+      triggerToast('Note saved directly to Supabase database!');
+    } catch (err: any) {
+      console.error('Failed to save note in Supabase:', err);
+      triggerToast(`Error saving note: ${err.message}`);
+    }
+  };
 
   // Helper trigger notification
   const triggerToast = (msg: string) => {
@@ -2210,67 +2312,284 @@ export default function AdminPage() {
             )}
 
             {/* 5. EMPLOYER CRM TAB */}
-            {activeTab === 'crm' && (
-              <div className="bg-surface border border-line rounded-lg p-6 shadow-xs space-y-6">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-line">
-                  <div>
-                    <h3 className="font-display font-bold text-xl text-ink-900">Employer Lead Pipeline CRM</h3>
-                    <p className="text-xs text-slate">Manage corporate recruitment service inquiries and contract staffing proposals.</p>
-                  </div>
+            {activeTab === 'crm' && (() => {
+              const filteredLeads = leads.filter((lead) => {
+                const matchesStage = leadFilterStage === 'All' || lead.stage === leadFilterStage;
+                const searchLower = leadSearchTerm.toLowerCase();
+                const matchesSearch =
+                  !leadSearchTerm ||
+                  (lead.companyName && lead.companyName.toLowerCase().includes(searchLower)) ||
+                  (lead.contactName && lead.contactName.toLowerCase().includes(searchLower)) ||
+                  (lead.email && lead.email.toLowerCase().includes(searchLower)) ||
+                  (lead.phone && lead.phone.toLowerCase().includes(searchLower)) ||
+                  (lead.requiredRole && lead.requiredRole.toLowerCase().includes(searchLower)) ||
+                  (lead.id && lead.id.toLowerCase().includes(searchLower));
+                return matchesStage && matchesSearch;
+              });
 
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => exportToCSV('employer_crm_leads', leads)}
-                      className="px-3 py-2 bg-surface border border-line hover:bg-paper text-slate font-mono text-xs font-bold rounded flex items-center gap-1.5"
-                    >
-                      <Download className="w-4 h-4 text-teal-600" />
-                      Export CRM CSV
-                    </button>
-                    <button
-                      onClick={() => setIsAddingLead(true)}
-                      className="px-4 py-2 bg-teal-600 text-surface font-bold text-xs uppercase rounded hover:bg-teal-500 transition flex items-center gap-1.5"
-                    >
-                      <Plus className="w-4 h-4" />
-                      Add Lead
-                    </button>
-                  </div>
-                </div>
+              const countNew = leads.filter(l => l.stage === 'New Lead' || l.stage === 'New').length;
+              const countContacted = leads.filter(l => l.stage === 'Contacted').length;
+              const countProposal = leads.filter(l => l.stage === 'Proposal Sent').length;
+              const countWon = leads.filter(l => l.stage === 'Won / Active' || l.stage === 'Contract Signed').length;
 
-                {/* Leads Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {leads.map((lead) => (
-                    <div key={lead.id} className="bg-paper border border-line rounded-lg p-4 space-y-3 font-sans relative">
-                      <div className="flex items-center justify-between">
-                        <span className="font-mono text-xs font-bold text-teal-700">{lead.id}</span>
-                        <span className="px-2 py-0.5 bg-amber-100 text-amber-800 text-[10px] font-mono font-bold rounded">
-                          {lead.stage}
+              const getStageBadgeClass = (stage: string) => {
+                switch (stage) {
+                  case 'New Lead':
+                  case 'New':
+                    return 'bg-blue-50 text-blue-700 border-blue-200';
+                  case 'Contacted':
+                    return 'bg-amber-50 text-amber-700 border-amber-200';
+                  case 'Proposal Sent':
+                    return 'bg-purple-50 text-purple-700 border-purple-200';
+                  case 'Won / Active':
+                  case 'Contract Signed':
+                    return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+                  case 'Closed':
+                    return 'bg-slate-100 text-slate-700 border-slate-300';
+                  default:
+                    return 'bg-teal-50 text-teal-700 border-teal-200';
+                }
+              };
+
+              return (
+                <div className="bg-surface border border-line rounded-lg p-6 shadow-xs space-y-6">
+                  {/* Top Bar Header */}
+                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-line">
+                    <div>
+                      <div className="flex items-center gap-2.5">
+                        <h3 className="font-display font-bold text-xl text-ink-900">Employer Lead Pipeline CRM</h3>
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                          Supabase DB Connected
                         </span>
                       </div>
-
-                      <div>
-                        <h4 className="font-display font-bold text-base text-ink-900">{lead.companyName}</h4>
-                        <p className="text-xs text-slate">{lead.contactName} ({lead.email})</p>
-                      </div>
-
-                      <div className="p-2 bg-surface border border-line rounded text-xs space-y-1">
-                        <p className="font-bold text-ink-900">{lead.requiredRole}</p>
-                        <p className="text-teal-700 font-mono font-bold">{lead.estimatedValue}</p>
-                      </div>
-
-                      <div className="flex items-center justify-between text-[11px] font-mono text-muted pt-1">
-                        <span>Source: {lead.source}</span>
-                        <button
-                          onClick={() => setSelectedLead(lead)}
-                          className="text-teal-700 underline font-bold"
-                        >
-                          Details &rarr;
-                        </button>
-                      </div>
+                      <p className="text-xs text-slate mt-0.5">
+                        Manage corporate client hiring inquiries, contract staffing leads, and recruitment SLAs. All changes sync with Supabase table <code className="text-teal-700 font-mono">employer_leads</code>.
+                      </p>
                     </div>
-                  ))}
+
+                    <div className="flex items-center flex-wrap gap-2">
+                      <button
+                        onClick={refreshEmployerLeads}
+                        disabled={leadsLoading}
+                        title="Sync latest leads from Supabase"
+                        className="px-3 py-2 bg-surface border border-line hover:bg-paper text-slate hover:text-ink-900 font-mono text-xs font-bold rounded flex items-center gap-1.5 transition disabled:opacity-50"
+                      >
+                        <RefreshCw className={`w-3.5 h-3.5 text-teal-600 ${leadsLoading ? 'animate-spin' : ''}`} />
+                        <span>{leadsLoading ? 'Syncing...' : 'Sync DB'}</span>
+                      </button>
+                      <button
+                        onClick={() => exportToCSV('employer_crm_leads', leads)}
+                        className="px-3 py-2 bg-surface border border-line hover:bg-paper text-slate hover:text-ink-900 font-mono text-xs font-bold rounded flex items-center gap-1.5 transition"
+                      >
+                        <Download className="w-3.5 h-3.5 text-teal-600" />
+                        Export CSV
+                      </button>
+                      <button
+                        onClick={() => setIsAddingLead(true)}
+                        className="px-4 py-2 bg-teal-600 hover:bg-teal-500 text-surface font-bold text-xs uppercase tracking-wider rounded transition flex items-center gap-1.5 shadow-xs"
+                      >
+                        <Plus className="w-4 h-4" />
+                        Add Lead
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* KPI Mini-Counters */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div className="p-3 bg-paper border border-line rounded-lg">
+                      <span className="text-[10px] font-mono uppercase font-bold text-slate block">Total Leads</span>
+                      <span className="text-xl font-display font-extrabold text-ink-900">{leads.length}</span>
+                    </div>
+                    <div className="p-3 bg-blue-50/50 border border-blue-200/60 rounded-lg">
+                      <span className="text-[10px] font-mono uppercase font-bold text-blue-700 block">New Intakes</span>
+                      <span className="text-xl font-display font-extrabold text-blue-900">{countNew}</span>
+                    </div>
+                    <div className="p-3 bg-amber-50/50 border border-amber-200/60 rounded-lg">
+                      <span className="text-[10px] font-mono uppercase font-bold text-amber-700 block">In Discussion</span>
+                      <span className="text-xl font-display font-extrabold text-amber-900">{countContacted + countProposal}</span>
+                    </div>
+                    <div className="p-3 bg-emerald-50/50 border border-emerald-200/60 rounded-lg">
+                      <span className="text-[10px] font-mono uppercase font-bold text-emerald-700 block">Won / Active</span>
+                      <span className="text-xl font-display font-extrabold text-emerald-900">{countWon}</span>
+                    </div>
+                  </div>
+
+                  {/* Search and Stage Filter Bar */}
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-1">
+                    <div className="relative flex-1 max-w-md">
+                      <Search className="w-3.5 h-3.5 text-slate absolute left-3 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="text"
+                        value={leadSearchTerm}
+                        onChange={(e) => setLeadSearchTerm(e.target.value)}
+                        placeholder="Search company, contact person, role, email..."
+                        className="w-full pl-9 pr-3 py-1.5 bg-paper border border-line rounded text-xs text-ink-900 placeholder:text-slate focus:outline-none focus:border-teal-500"
+                      />
+                      {leadSearchTerm && (
+                        <button
+                          onClick={() => setLeadSearchTerm('')}
+                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate hover:text-ink-900"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 font-mono text-xs">
+                      {['All', 'New Lead', 'Contacted', 'Proposal Sent', 'Won / Active', 'Closed'].map((stageName) => {
+                        const count = stageName === 'All' ? leads.length : leads.filter(l => l.stage === stageName || (stageName === 'New Lead' && l.stage === 'New')).length;
+                        const isSelected = leadFilterStage === stageName;
+                        return (
+                          <button
+                            key={stageName}
+                            onClick={() => setLeadFilterStage(stageName)}
+                            className={`px-2.5 py-1 rounded text-[11px] font-bold whitespace-nowrap transition border ${
+                              isSelected
+                                ? 'bg-teal-600 text-surface border-teal-600'
+                                : 'bg-paper text-slate hover:text-ink-900 border-line hover:bg-surface'
+                            }`}
+                          >
+                            {stageName} ({count})
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Leads Grid */}
+                  {filteredLeads.length === 0 ? (
+                    <div className="text-center py-12 border border-dashed border-line rounded-lg space-y-3">
+                      <Building2 className="w-10 h-10 text-slate mx-auto" />
+                      <div className="space-y-1">
+                        <h4 className="font-display font-bold text-base text-ink-900">No Employer Leads Found</h4>
+                        <p className="text-xs text-slate max-w-sm mx-auto">
+                          {leadSearchTerm || leadFilterStage !== 'All'
+                            ? 'No leads matched your filter criteria. Try clearing search filters.'
+                            : 'No corporate employer leads are currently in the database. Add your first lead to start tracking!'}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setLeadSearchTerm('');
+                          setLeadFilterStage('All');
+                          setIsAddingLead(true);
+                        }}
+                        className="px-4 py-2 bg-teal-600 text-surface font-bold text-xs uppercase rounded hover:bg-teal-500 transition inline-flex items-center gap-1.5"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        Add New Lead
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {filteredLeads.map((lead) => (
+                        <div
+                          key={lead.id}
+                          className="bg-paper border border-line hover:border-teal-500/40 rounded-lg p-4 space-y-3 font-sans relative flex flex-col justify-between transition shadow-xs"
+                        >
+                          <div className="space-y-3">
+                            {/* Card Header: ID & Stage Selector */}
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="font-mono text-[11px] font-bold text-teal-700 bg-teal-50 px-2 py-0.5 rounded border border-teal-200 truncate max-w-[120px]" title={lead.id}>
+                                {lead.id.length > 12 ? `${lead.id.slice(0, 8)}...` : lead.id}
+                              </span>
+
+                              {/* Stage Selector Dropdown connected to Supabase */}
+                              <select
+                                value={lead.stage}
+                                onChange={(e) => handleUpdateLeadStage(lead, e.target.value)}
+                                className={`px-2 py-0.5 text-[10px] font-mono font-bold rounded border cursor-pointer ${getStageBadgeClass(lead.stage)}`}
+                              >
+                                <option value="New Lead">New Lead</option>
+                                <option value="Contacted">Contacted</option>
+                                <option value="Proposal Sent">Proposal Sent</option>
+                                <option value="Won / Active">Won / Active</option>
+                                <option value="Closed">Closed</option>
+                              </select>
+                            </div>
+
+                            {/* Company & Contact Info */}
+                            <div>
+                              <h4 className="font-display font-bold text-base text-ink-900 leading-snug">{lead.companyName}</h4>
+                              <p className="text-xs text-slate mt-0.5">
+                                <strong>{lead.contactName}</strong>
+                              </p>
+                              <div className="flex items-center gap-3 text-[11px] text-slate mt-1 flex-wrap">
+                                <a href={`mailto:${lead.email}`} className="hover:text-teal-700 flex items-center gap-1">
+                                  <Mail className="w-3 h-3 text-slate" />
+                                  <span className="truncate max-w-[150px]">{lead.email}</span>
+                                </a>
+                                {lead.phone && (
+                                  <a href={`tel:${lead.phone}`} className="hover:text-teal-700 flex items-center gap-1">
+                                    <Phone className="w-3 h-3 text-slate" />
+                                    <span>{lead.phone}</span>
+                                  </a>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Requirement box */}
+                            <div className="p-2.5 bg-surface border border-line rounded text-xs space-y-1">
+                              <div className="flex items-center justify-between text-ink-900 font-bold">
+                                <span>{lead.requiredRole}</span>
+                                {lead.headcount && (
+                                  <span className="font-mono text-[10px] font-normal bg-teal-50 text-teal-800 px-1.5 py-0.2 rounded border border-teal-200">
+                                    {lead.headcount} Openings
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-teal-700 font-mono text-[11px] font-bold">{lead.estimatedValue}</p>
+                            </div>
+
+                            {/* Notes preview if any */}
+                            {lead.notes && lead.notes.length > 0 && (
+                              <div className="p-2 bg-paper/80 border border-line/60 rounded text-[11px] text-slate space-y-1">
+                                <span className="font-mono text-[9px] uppercase font-bold text-muted block">Latest Activity:</span>
+                                <p className="line-clamp-2 italic text-ink-800">
+                                  "{lead.notes[lead.notes.length - 1]}"
+                                </p>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Card Footer Actions */}
+                          <div className="pt-3 border-t border-line flex items-center justify-between text-[11px] font-mono text-muted gap-2">
+                            <span className="truncate max-w-[120px]" title={lead.source}>
+                              {lead.source}
+                            </span>
+
+                            <div className="flex items-center gap-1.5">
+                              <button
+                                onClick={() => setSelectedLead(lead)}
+                                className="px-2.5 py-1 bg-surface border border-line hover:bg-teal-50 hover:text-teal-700 hover:border-teal-300 rounded font-bold text-slate transition flex items-center gap-1"
+                              >
+                                <Eye className="w-3 h-3 text-teal-600" />
+                                <span>Inspect</span>
+                              </button>
+
+                              {/* Delete Lead Button */}
+                              <button
+                                onClick={() => handleDeleteLead(lead.id, lead.companyName)}
+                                disabled={isDeletingLeadId === lead.id}
+                                title="Delete Lead from Supabase"
+                                className="p-1 hover:bg-rose-50 text-slate hover:text-rose-600 rounded transition border border-transparent hover:border-rose-200 disabled:opacity-50"
+                              >
+                                {isDeletingLeadId === lead.id ? (
+                                  <RefreshCw className="w-3.5 h-3.5 animate-spin text-rose-600" />
+                                ) : (
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                )}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              </div>
-            )}
+              );
+            })()}
 
 
             {/* CANDIDATE PROFILES TAB */}
@@ -2935,6 +3254,374 @@ export default function AdminPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* CREATE NEW EMPLOYER LEAD MODAL */}
+      {isAddingLead && (
+        <div className="fixed inset-0 z-50 bg-ink-950/70 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-surface border border-line rounded-lg max-w-xl w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto font-sans">
+            <div className="flex items-center justify-between border-b border-line pb-3">
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-display font-bold text-xl text-ink-900">Add Corporate Employer Lead</h3>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    Supabase Synced
+                  </span>
+                </div>
+                <p className="text-xs text-slate mt-0.5">Saves and persists directly into Supabase database table <code className="text-teal-700 font-mono">employer_leads</code>.</p>
+              </div>
+              <button
+                onClick={() => setIsAddingLead(false)}
+                className="p-1 hover:bg-paper rounded text-slate hover:text-ink-900 transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                setIsSavingLead(true);
+                const form = e.currentTarget;
+                const formData = new FormData(form);
+
+                const newLeadId = `LEAD-${Date.now().toString().slice(-4)}`;
+                const initialNote = formData.get('initialNote') as string;
+                const notesList: string[] = initialNote && initialNote.trim()
+                  ? [`${initialNote.trim()} (${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })})`]
+                  : [`Lead logged via Admin CRM (${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })})`];
+
+                const leadPayload: EmployerLead = {
+                  id: newLeadId,
+                  companyName: formData.get('companyName') as string,
+                  contactName: formData.get('contactName') as string,
+                  email: formData.get('email') as string,
+                  phone: formData.get('phone') as string,
+                  requiredRole: formData.get('requiredRole') as string,
+                  headcount: (formData.get('headcount') as string) || '1-3',
+                  estimatedValue: (formData.get('estimatedValue') as string) || '₹2.5L Success Fee',
+                  stage: (formData.get('stage') as string) || 'New Lead',
+                  source: (formData.get('source') as string) || 'Direct Lead Entry',
+                  notes: notesList,
+                  createdAt: new Date().toISOString()
+                };
+
+                try {
+                  const { saveEmployerLead } = await import('@/lib/supabase-cms');
+                  await saveEmployerLead(leadPayload);
+                  setLeads(prev => [leadPayload, ...prev]);
+                  triggerToast(`New lead for "${leadPayload.companyName}" saved to Supabase!`);
+                  setIsAddingLead(false);
+                } catch (err: any) {
+                  console.error('Failed to save employer lead in Supabase:', err);
+                  triggerToast(`Error saving lead: ${err.message}`);
+                } finally {
+                  setIsSavingLead(false);
+                }
+              }}
+              className="space-y-4 text-xs"
+            >
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block font-mono text-muted uppercase font-bold mb-1">Company / Institution Name *</label>
+                  <input
+                    required
+                    name="companyName"
+                    type="text"
+                    placeholder="e.g. HDFC Securities, Axis Capital..."
+                    className="w-full px-3 py-2 bg-paper border border-line rounded text-ink-900 focus:outline-none focus:border-teal-500"
+                  />
+                </div>
+                <div>
+                  <label className="block font-mono text-muted uppercase font-bold mb-1">Contact Person Name *</label>
+                  <input
+                    required
+                    name="contactName"
+                    type="text"
+                    placeholder="e.g. Rajesh Sharma (Head of Talent)"
+                    className="w-full px-3 py-2 bg-paper border border-line rounded text-ink-900 focus:outline-none focus:border-teal-500"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block font-mono text-muted uppercase font-bold mb-1">Corporate Email Address *</label>
+                  <input
+                    required
+                    name="email"
+                    type="email"
+                    placeholder="e.g. rajesh@hdfcsec.com"
+                    className="w-full px-3 py-2 bg-paper border border-line rounded text-ink-900 focus:outline-none focus:border-teal-500"
+                  />
+                </div>
+                <div>
+                  <label className="block font-mono text-muted uppercase font-bold mb-1">Phone / Mobile Number *</label>
+                  <input
+                    required
+                    name="phone"
+                    type="tel"
+                    placeholder="e.g. +91 98765 43210"
+                    className="w-full px-3 py-2 bg-paper border border-line rounded text-ink-900 focus:outline-none focus:border-teal-500"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block font-mono text-muted uppercase font-bold mb-1">Roles / Positions Required *</label>
+                  <input
+                    required
+                    name="requiredRole"
+                    type="text"
+                    placeholder="e.g. 5x Branch Relationship Managers"
+                    className="w-full px-3 py-2 bg-paper border border-line rounded text-ink-900 focus:outline-none focus:border-teal-500"
+                  />
+                </div>
+                <div>
+                  <label className="block font-mono text-muted uppercase font-bold mb-1">Headcount Needed</label>
+                  <select
+                    name="headcount"
+                    defaultValue="1-3"
+                    className="w-full px-3 py-2 bg-paper border border-line rounded text-ink-900 focus:outline-none focus:border-teal-500"
+                  >
+                    <option value="1">1 Professional</option>
+                    <option value="2-4">2 - 4 Openings</option>
+                    <option value="5-10">5 - 10 Bulk Openings</option>
+                    <option value="15+">15+ Mass Hiring Drive</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label className="block font-mono text-muted uppercase font-bold mb-1">Estimated Value / SLA</label>
+                  <input
+                    name="estimatedValue"
+                    type="text"
+                    defaultValue="₹3.5L Success Fee (72-Hr SLA)"
+                    className="w-full px-3 py-2 bg-paper border border-line rounded text-ink-900 focus:outline-none focus:border-teal-500"
+                  />
+                </div>
+                <div>
+                  <label className="block font-mono text-muted uppercase font-bold mb-1">Initial Pipeline Stage</label>
+                  <select
+                    name="stage"
+                    defaultValue="New Lead"
+                    className="w-full px-3 py-2 bg-paper border border-line rounded text-ink-900 focus:outline-none focus:border-teal-500"
+                  >
+                    <option value="New Lead">New Lead</option>
+                    <option value="Contacted">Contacted</option>
+                    <option value="Proposal Sent">Proposal Sent</option>
+                    <option value="Won / Active">Won / Active</option>
+                    <option value="Closed">Closed</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block font-mono text-muted uppercase font-bold mb-1">Lead Source</label>
+                  <select
+                    name="source"
+                    defaultValue="Website Intake"
+                    className="w-full px-3 py-2 bg-paper border border-line rounded text-ink-900 focus:outline-none focus:border-teal-500"
+                  >
+                    <option value="Website Intake">Website Intake</option>
+                    <option value="LinkedIn Inbound">LinkedIn Inbound</option>
+                    <option value="Meta B2B Ad">Meta B2B Ad</option>
+                    <option value="Referral">Referral</option>
+                    <option value="Direct Call">Direct Call</option>
+                    <option value="Cold Outreach">Cold Outreach</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-mono text-muted uppercase font-bold mb-1">Initial Requirement Notes / SLA Details</label>
+                <textarea
+                  name="initialNote"
+                  rows={2}
+                  placeholder="e.g. Urgent hiring for Mumbai & Pune branches. Candidates must have NISM certification."
+                  className="w-full px-3 py-2 bg-paper border border-line rounded text-ink-900 focus:outline-none focus:border-teal-500"
+                />
+              </div>
+
+              <div className="pt-3 flex justify-end gap-2 border-t border-line">
+                <button
+                  type="button"
+                  onClick={() => setIsAddingLead(false)}
+                  className="px-4 py-2 bg-paper border border-line rounded text-slate hover:bg-surface font-bold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSavingLead}
+                  className="px-5 py-2 bg-teal-600 hover:bg-teal-500 text-surface font-bold uppercase tracking-wider rounded transition flex items-center gap-1.5 disabled:opacity-50"
+                >
+                  {isSavingLead && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
+                  <span>{isSavingLead ? 'Saving to Database...' : 'Save Lead to Supabase'}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* LEAD INSPECTOR & DETAILS MODAL */}
+      {selectedLead && (
+        <div className="fixed inset-0 z-50 bg-ink-950/70 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-surface border border-line rounded-lg max-w-2xl w-full p-6 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto font-sans">
+            {/* Header */}
+            <div className="flex items-start justify-between border-b border-line pb-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-xs text-teal-700 font-bold bg-teal-50 px-2 py-0.5 rounded border border-teal-200">
+                    {selectedLead.id}
+                  </span>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    Supabase Connected
+                  </span>
+                </div>
+                <h3 className="font-display font-bold text-2xl text-ink-900 mt-1">{selectedLead.companyName}</h3>
+                <p className="text-xs text-slate">Contact: {selectedLead.contactName}</p>
+              </div>
+              <button
+                onClick={() => setSelectedLead(null)}
+                className="p-1 hover:bg-paper rounded text-slate hover:text-ink-900 transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Quick Action & Stage Header */}
+            <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-paper border border-line rounded-lg">
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-xs font-bold text-slate">Pipeline Stage:</span>
+                <select
+                  value={selectedLead.stage}
+                  onChange={(e) => handleUpdateLeadStage(selectedLead, e.target.value)}
+                  className="px-3 py-1.5 bg-surface border border-teal-300 rounded font-mono text-xs font-bold text-teal-800 cursor-pointer shadow-2xs"
+                >
+                  <option value="New Lead">New Lead</option>
+                  <option value="Contacted">Contacted</option>
+                  <option value="Proposal Sent">Proposal Sent</option>
+                  <option value="Won / Active">Won / Active</option>
+                  <option value="Closed">Closed</option>
+                </select>
+              </div>
+
+              <div className="flex items-center gap-2">
+                {selectedLead.email && (
+                  <a
+                    href={`mailto:${selectedLead.email}`}
+                    className="px-3 py-1.5 bg-teal-600 hover:bg-teal-500 text-surface rounded text-xs font-bold transition flex items-center gap-1.5"
+                  >
+                    <Mail className="w-3.5 h-3.5" />
+                    <span>Email Contact</span>
+                  </a>
+                )}
+                {selectedLead.phone && (
+                  <a
+                    href={`tel:${selectedLead.phone}`}
+                    className="px-3 py-1.5 bg-surface border border-line hover:bg-paper text-ink-900 rounded text-xs font-bold transition flex items-center gap-1.5"
+                  >
+                    <Phone className="w-3.5 h-3.5 text-teal-600" />
+                    <span>Call Phone</span>
+                  </a>
+                )}
+              </div>
+            </div>
+
+            {/* 2-Column Info Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+              <div className="p-3 bg-paper border border-line rounded-lg space-y-1.5">
+                <span className="font-mono text-[10px] text-muted uppercase font-bold block">Company &amp; Contact</span>
+                <p className="font-bold text-ink-900 text-sm">{selectedLead.companyName}</p>
+                <p className="text-slate">Person: <strong>{selectedLead.contactName}</strong></p>
+                <p className="text-slate font-mono">Email: {selectedLead.email}</p>
+                <p className="text-slate font-mono">Phone: {selectedLead.phone}</p>
+              </div>
+
+              <div className="p-3 bg-paper border border-line rounded-lg space-y-1.5">
+                <span className="font-mono text-[10px] text-muted uppercase font-bold block">Hiring Requirements &amp; SLA</span>
+                <p className="font-bold text-ink-900">{selectedLead.requiredRole}</p>
+                <p className="text-slate">Headcount Needed: <strong>{selectedLead.headcount || '1-3'} Openings</strong></p>
+                <p className="text-teal-700 font-mono font-bold">Estimated Value: {selectedLead.estimatedValue}</p>
+                <p className="text-slate text-[11px]">Source: {selectedLead.source} • Created: {new Date(selectedLead.createdAt).toLocaleDateString()}</p>
+              </div>
+            </div>
+
+            {/* Lead Notes & Activity Timeline */}
+            <div className="space-y-3">
+              <h4 className="font-display font-bold text-sm text-ink-900 flex items-center gap-1.5">
+                <MessageSquare className="w-4 h-4 text-teal-600" />
+                <span>Negotiation Notes &amp; Activity Log</span>
+              </h4>
+
+              <div className="space-y-2 max-h-40 overflow-y-auto p-3 bg-paper border border-line rounded-lg text-xs">
+                {selectedLead.notes && selectedLead.notes.length > 0 ? (
+                  selectedLead.notes.map((note, idx) => (
+                    <div key={idx} className="flex items-start gap-2 text-ink-800 pb-1.5 border-b border-line/50 last:border-0">
+                      <span className="text-teal-600 font-bold">•</span>
+                      <p className="flex-1">{note}</p>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-slate italic">No activity notes recorded yet.</p>
+                )}
+              </div>
+
+              {/* Add Note Input */}
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={newLeadNoteInput}
+                  onChange={(e) => setNewLeadNoteInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleAddLeadNote(selectedLead, newLeadNoteInput);
+                    }
+                  }}
+                  placeholder="Add meeting note, call outcome, or salary agreement..."
+                  className="flex-1 px-3 py-2 bg-paper border border-line rounded text-xs text-ink-900 focus:outline-none focus:border-teal-500"
+                />
+                <button
+                  type="button"
+                  onClick={() => handleAddLeadNote(selectedLead, newLeadNoteInput)}
+                  className="px-4 py-2 bg-teal-600 hover:bg-teal-500 text-surface text-xs font-bold rounded transition flex items-center gap-1"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Add Note</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Actions Footer */}
+            <div className="flex items-center justify-between pt-4 border-t border-line">
+              <button
+                type="button"
+                onClick={() => handleDeleteLead(selectedLead.id, selectedLead.companyName)}
+                disabled={isDeletingLeadId === selectedLead.id}
+                className="px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded text-xs font-bold transition flex items-center gap-1.5 disabled:opacity-50"
+              >
+                {isDeletingLeadId === selectedLead.id ? (
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Trash2 className="w-3.5 h-3.5" />
+                )}
+                <span>Delete Lead</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setSelectedLead(null)}
+                className="px-5 py-2 bg-paper border border-line hover:bg-surface text-ink-900 rounded text-xs font-bold transition"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}

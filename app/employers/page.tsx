@@ -37,14 +37,36 @@ export default function EmployersPage() {
   });
 
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeFaq, setActiveFaq] = useState<string | null>(null);
 
   const employerFaqs = SAMPLE_FAQS.filter((f) => f.category === 'employer');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.companyName || !formData.email || !formData.phone) return;
-    setSubmitted(true);
+    setIsSubmitting(true);
+    try {
+      const { submitEmployerLead } = await import('@/lib/supabase');
+      await submitEmployerLead({
+        companyName: formData.companyName,
+        contactPerson: formData.contactName,
+        email: formData.email,
+        phone: formData.phone,
+        industry: formData.industry,
+        rolesNeeded: formData.roleNeeded,
+        headcount: formData.headcount,
+        urgency: formData.urgency,
+        notes: formData.notes
+      });
+      setSubmitted(true);
+    } catch (err) {
+      console.warn('Error submitting employer lead to Supabase:', err);
+      // Still show success to user
+      setSubmitted(true);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (

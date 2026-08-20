@@ -80,6 +80,22 @@ export async function submitEmployerLead(data: {
   urgency: string;
   notes?: string;
 }) {
+  if (typeof window !== 'undefined') {
+    try {
+      const res = await fetch('/api/employer-leads', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (res.ok) {
+        const json = await res.json();
+        return json.lead;
+      }
+    } catch (e) {
+      console.warn('Direct fetch to /api/employer-leads failed, trying client:', e);
+    }
+  }
+
   const client = getSupabase();
   const timestamp = new Date().toISOString();
 
