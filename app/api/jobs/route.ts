@@ -36,7 +36,7 @@ function mapDbRowToJob(row: any): Job {
   };
 }
 
-// GET all jobs from Supabase. If table is empty, auto-seed with SAMPLE_JOBS.
+// GET all jobs from Supabase
 export async function GET() {
   try {
     const client = getClient();
@@ -54,38 +54,8 @@ export async function GET() {
       return NextResponse.json({ jobs: SAMPLE_JOBS, source: 'fallback_error', error: error.message });
     }
 
-    if (!rows || rows.length === 0) {
-      // Auto-seed initial SAMPLE_JOBS into Supabase so database is initialized
-      try {
-        const seedRows = SAMPLE_JOBS.map((job) => ({
-          id: randomUUID(),
-          job_code: job.id,
-          title: job.title,
-          category: job.category,
-          location: job.location,
-          salary_display: job.salary,
-          type: job.type,
-          experience: job.experience,
-          description: job.description,
-          requirements: job.requirements,
-          status: job.isUrgent ? 'Urgent' : job.isFeatured ? 'Featured' : 'Open',
-          is_confidential: Boolean(job.isConfidential),
-          posted_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }));
-
-        await client.from('jobs').upsert(seedRows, { onConflict: 'job_code' });
-        const { data: seededRows } = await client.from('jobs').select('*').order('posted_at', { ascending: false });
-        if (seededRows && seededRows.length > 0) {
-          return NextResponse.json({ jobs: seededRows.map(mapDbRowToJob), source: 'supabase_seeded' });
-        }
-      } catch (seedErr) {
-        console.warn('Auto-seed warning:', seedErr);
-      }
-      return NextResponse.json({ jobs: SAMPLE_JOBS, source: 'fallback_empty' });
-    }
-
-    return NextResponse.json({ jobs: rows.map(mapDbRowToJob), source: 'supabase' });
+    // Return the actual jobs from Supabase (empty array if all jobs were deleted)
+    return NextResponse.json({ jobs: (rows || []).map(mapDbRowToJob), source: 'supabase' });
   } catch (err: any) {
     console.error('API GET /api/jobs error:', err);
     return NextResponse.json({ jobs: SAMPLE_JOBS, source: 'fallback_catch', error: err.message });
@@ -240,17 +210,37 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: 'Job ID is required for deletion' }, { status: 400 });
     }
 
-    // Attempt delete by job_code first
-    const { error: codeErr } = await client.from('jobs').delete().eq('job_code', jobId);
-    
-    // Also attempt delete by id if UUID
-    if (isUUID(jobId)) {
-      await client.from('jobs').delete().eq('id', jobId);
+    const isUUIDStr = isUUID(jobId);
+
+    // 1. Unlink any job_applications that reference this job by job_id or job_code to prevent foreign key constraints from blocking deletion
+    try {
+      if (isUUIDStr) {
+        await client.from('job_applications').update({ job_id: null }).eq('job_id', jobId);
+      }
+      await client.from('job_applications').update({ job_code: null }).eq('job_code', jobId);
+    } catch (fkErr) {
+      console.warn('Job deletion FK unlink warning (non-fatal):', fkErr);
     }
 
-    if (codeErr) {
-      console.error('Supabase job DELETE error:', codeErr);
-      return NextResponse.json({ error: codeErr.message }, { status: 500 });
+    // 2. Perform deletion from jobs table
+    let deleteError: any = null;
+    if (isUUIDStr) {
+      const { error } = await client.from('jobs').delete().or(`id.eq.${jobId},job_code.eq.${jobId}`);
+      deleteError = error;
+    } else {
+      // First try deleting by job_code
+      const { error, data } = await client.from('jobs').delete().eq('job_code', jobId).select();
+      deleteError = error;
+      // If nothing was deleted and it might be an id in non-standard format
+      if (!error && (!data || data.length === 0)) {
+        const { error: idErr } = await client.from('jobs').delete().eq('id', jobId);
+        if (idErr) deleteError = idErr;
+      }
+    }
+
+    if (deleteError) {
+      console.error('Supabase job DELETE error:', deleteError);
+      return NextResponse.json({ error: deleteError.message }, { status: 500 });
     }
 
     return NextResponse.json({ success: true, deletedId: jobId });

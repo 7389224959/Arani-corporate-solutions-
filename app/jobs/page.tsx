@@ -34,7 +34,7 @@ export default function JobsPage() {
     async function loadJobs() {
       try {
         const data = await getJobsList();
-        if (data && data.length > 0) {
+        if (data !== null && Array.isArray(data)) {
           setJobs(data);
         }
       } catch (err) {

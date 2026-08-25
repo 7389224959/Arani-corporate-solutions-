@@ -102,8 +102,14 @@ export async function deleteJob(jobId: string) {
 
   const client = getSupabase();
   if (client) {
-    const { error } = await client.from('jobs').delete().eq('job_code', jobId);
-    if (error) throw error;
+    const isUUID = (str: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(str);
+    if (isUUID(jobId)) {
+      const { error } = await client.from('jobs').delete().or(`id.eq.${jobId},job_code.eq.${jobId}`);
+      if (error) throw error;
+    } else {
+      const { error } = await client.from('jobs').delete().eq('job_code', jobId);
+      if (error) throw error;
+    }
     return { success: true };
   }
 }

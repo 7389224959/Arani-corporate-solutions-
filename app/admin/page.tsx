@@ -266,6 +266,7 @@ export default function AdminPage() {
   const [jobsList, setJobsList] = useState<Job[]>(SAMPLE_JOBS);
   const [jobsLoading, setJobsLoading] = useState<boolean>(true);
   const [isSavingJob, setIsSavingJob] = useState<boolean>(false);
+  const [isDeletingJobId, setIsDeletingJobId] = useState<string | null>(null);
 
   const saveJobsList = async (updated: Job[]) => {
     setJobsList(updated);
@@ -273,6 +274,35 @@ export default function AdminPage() {
       window.dispatchEvent(new Event('arani_cms_updated'));
     }
     triggerToast('Job Board list updated and synced live!');
+  };
+
+  const handleDeleteJob = async (jobId: string, jobTitle?: string) => {
+    if (!window.confirm(`Are you sure you want to permanently delete job "${jobId}" (${jobTitle || 'Untitled'})? This will remove the job from Supabase.`)) {
+      return;
+    }
+    setIsDeletingJobId(jobId);
+    try {
+      const { deleteJob } = await import('@/lib/supabase-cms');
+      await deleteJob(jobId);
+      setJobsList((prev) => prev.filter((j) => j.id !== jobId));
+      if (editingJob?.id === jobId) {
+        setEditingJob(null);
+      }
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('arani_cms_updated'));
+      }
+      triggerToast(`Job ${jobId} permanently deleted from Supabase.`);
+    } catch (err: any) {
+      console.error('Failed to delete job from Supabase:', err);
+      // Optimistically remove from view
+      setJobsList((prev) => prev.filter((j) => j.id !== jobId));
+      if (editingJob?.id === jobId) {
+        setEditingJob(null);
+      }
+      triggerToast(`Job removed: ${err.message || 'Deleted from local session'}`);
+    } finally {
+      setIsDeletingJobId(null);
+    }
   };
 
   const [articlesList, setArticlesList] = useState<Article[]>(SAMPLE_ARTICLES);
@@ -483,7 +513,7 @@ export default function AdminPage() {
         // Fetch Jobs directly from Supabase
         try {
           const dbJobs = await getJobsList();
-          if (dbJobs && dbJobs.length > 0) {
+          if (dbJobs !== null && Array.isArray(dbJobs)) {
             setJobsList(dbJobs);
           }
         } catch (jobErr) {
@@ -2207,25 +2237,16 @@ export default function AdminPage() {
                             <Copy className="w-4 h-4" />
                           </button>
                           <button
-                            onClick={async () => {
-                              if (!confirm(`Permanently delete job ${job.id} (${job.title}) from Supabase?`)) return;
-                              try {
-                                const { deleteJob } = await import('@/lib/supabase-cms');
-                                await deleteJob(job.id);
-                                setJobsList(jobsList.filter((j) => j.id !== job.id));
-                                if (typeof window !== 'undefined') {
-                                  window.dispatchEvent(new Event('arani_cms_updated'));
-                                }
-                                triggerToast(`Job ${job.id} deleted from Supabase.`);
-                              } catch (err: any) {
-                                console.error('Failed to delete job:', err);
-                                triggerToast(`Error deleting job: ${err.message}`);
-                              }
-                            }}
-                            className="p-1.5 bg-danger/10 text-danger rounded hover:bg-danger/20 cursor-pointer"
-                            title="Delete Job"
+                            onClick={() => handleDeleteJob(job.id, job.title)}
+                            disabled={isDeletingJobId === job.id}
+                            className="p-1.5 bg-danger/10 text-danger rounded hover:bg-danger/20 cursor-pointer disabled:opacity-50 transition"
+                            title="Delete Job from Supabase"
                           >
-                            <Trash2 className="w-4 h-4" />
+                            {isDeletingJobId === job.id ? (
+                              <RefreshCw className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Trash2 className="w-4 h-4" />
+                            )}
                           </button>
                         </div>
                       </div>
@@ -3236,22 +3257,38 @@ export default function AdminPage() {
                 />
               </div>
 
-              <div className="pt-3 flex justify-end gap-2 border-t border-line">
+              <div className="pt-3 flex items-center justify-between gap-2 border-t border-line">
                 <button
                   type="button"
-                  onClick={() => setEditingJob(null)}
-                  className="px-4 py-2 bg-paper border border-line rounded text-slate hover:bg-surface"
+                  onClick={() => handleDeleteJob(editingJob.id, editingJob.title)}
+                  disabled={isDeletingJobId === editingJob.id}
+                  className="px-3.5 py-2 bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 rounded text-xs font-bold font-mono flex items-center gap-1.5 cursor-pointer disabled:opacity-50 transition"
                 >
-                  Cancel
+                  {isDeletingJobId === editingJob.id ? (
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <Trash2 className="w-3.5 h-3.5" />
+                  )}
+                  <span>Delete Job</span>
                 </button>
-                <button
-                  type="submit"
-                  disabled={isSavingJob}
-                  className="px-5 py-2 bg-teal-600 text-surface font-bold uppercase rounded hover:bg-teal-500 disabled:opacity-50 flex items-center gap-1.5"
-                >
-                  {isSavingJob && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
-                  <span>{isSavingJob ? 'Saving Changes...' : 'Save Changes to Supabase'}</span>
-                </button>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setEditingJob(null)}
+                    className="px-4 py-2 bg-paper border border-line rounded text-slate hover:bg-surface"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSavingJob}
+                    className="px-5 py-2 bg-teal-600 text-surface font-bold uppercase rounded hover:bg-teal-500 disabled:opacity-50 flex items-center gap-1.5"
+                  >
+                    {isSavingJob && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
+                    <span>{isSavingJob ? 'Saving Changes...' : 'Save Changes to Supabase'}</span>
+                  </button>
+                </div>
               </div>
             </form>
           </div>

@@ -141,7 +141,7 @@ export default function HomePage() {
         }
         
         const jobs = await getJobsList();
-        if (jobs && jobs.length > 0) {
+        if (jobs !== null && Array.isArray(jobs)) {
           setJobsList(jobs);
         }
       } catch (err) {
