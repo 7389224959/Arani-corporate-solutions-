@@ -13,40 +13,33 @@ interface RoleChoiceModalProps {
 export const RoleChoiceModal: React.FC<RoleChoiceModalProps> = ({ isOpen, onClose, onSelectRole }) => {
   const router = useRouter();
   const [step, setStep] = useState<'choice' | 'candidate-signup'>('choice');
-  const [formData, setFormData] = useState({ name: '', email: '', phone: '', cv: null as File | null });
+  const [formData, setFormData] = useState({ name: '', email: '', phone: '' });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!isOpen) return null;
 
   const handleClose = () => {
     setStep('choice');
-    setFormData({ name: '', email: '', phone: '', cv: null });
+    setFormData({ name: '', email: '', phone: '' });
     onClose();
   };
 
   const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    let finalResumeUrl = null;
+    setIsSubmitting(true);
     
     // Save to Supabase
     try {
-      const { saveCandidateProfile, uploadToSupabaseStorage } = await import('@/lib/supabase');
-
-      if (formData.cv) {
-        const url = await uploadToSupabaseStorage('counselling_resumes', formData.cv, 'resumes');
-        if (url) {
-          finalResumeUrl = url;
-        }
-      }
+      const { saveCandidateProfile } = await import('@/lib/supabase');
 
       await saveCandidateProfile({
         fullName: formData.name,
         email: formData.email,
         phone: formData.phone,
-        resume_url: finalResumeUrl,
-        cv_url: finalResumeUrl,
-        resumeUrl: finalResumeUrl,
-        // Default empty values for the other required fields by saveCandidateProfile
+        resume_url: null,
+        cv_url: null,
+        resumeUrl: null,
+        // Default empty values for candidate profile
         nationalId: '',
         address: '',
         district: '',
@@ -72,12 +65,13 @@ export const RoleChoiceModal: React.FC<RoleChoiceModalProps> = ({ isOpen, onClos
         name: formData.name,
         email: formData.email,
         phone: formData.phone,
-        resume_url: finalResumeUrl,
-        cv_url: finalResumeUrl,
-        status: 'Active'
+        status: 'Active',
+        wizardStep: 1
       }));
     }
 
+    setIsSubmitting(false);
+    handleClose();
     router.push('/candidate/dashboard');
   };
 
@@ -275,33 +269,24 @@ export const RoleChoiceModal: React.FC<RoleChoiceModalProps> = ({ isOpen, onClos
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-bold text-ink-900 mb-1">Upload CV / Resume *</label>
-                <div className="border-2 border-dashed border-line rounded-lg p-4 sm:p-6 text-center hover:bg-paper transition cursor-pointer">
-                  <input
-                    required
-                    type="file"
-                    className="hidden"
-                    id="cv-upload"
-                    accept=".pdf,.doc,.docx"
-                    onChange={(e) => setFormData({ ...formData, cv: e.target.files?.[0] || null })}
-                  />
-                  <label htmlFor="cv-upload" className="cursor-pointer flex flex-col items-center">
-                    <Upload className="w-5 h-5 sm:w-6 sm:h-6 text-slate-400 mb-2" />
-                    <span className="text-xs sm:text-sm font-bold text-ink-900">
-                      {formData.cv ? formData.cv.name : 'Click to upload your CV'}
-                    </span>
-                    <span className="text-[10px] sm:text-xs text-slate mt-1">PDF, DOC, DOCX (Max 5MB)</span>
-                  </label>
-                </div>
+              <div className="p-3 bg-teal-50 border border-teal-100 rounded-lg flex items-start gap-2.5">
+                <CheckCircle2 className="w-4 h-4 text-teal-600 shrink-0 mt-0.5" />
+                <p className="text-xs text-teal-900">
+                  <span className="font-bold">Fast Registration:</span> No CV required to start! You can build your profile and add or upload your CV in the guided candidate wizard anytime.
+                </p>
               </div>
 
               <div className="pt-2">
                 <button
                   type="submit"
-                  className="w-full bg-teal-500 hover:bg-teal-600 text-surface font-bold py-2.5 sm:py-3 rounded-md transition-colors text-sm"
+                  disabled={isSubmitting}
+                  className="w-full bg-teal-500 hover:bg-teal-600 disabled:opacity-50 text-surface font-bold py-2.5 sm:py-3 rounded-md transition-colors text-sm flex items-center justify-center gap-2 shadow-xs"
                 >
-                  Create Account & Continue
+                  {isSubmitting ? (
+                    <span>Setting up Profile...</span>
+                  ) : (
+                    <span>Create Account &amp; Go to Dashboard</span>
+                  )}
                 </button>
               </div>
               <p className="text-[10px] text-center text-slate mt-2">

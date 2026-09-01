@@ -1,56 +1,61 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { AraniLogo } from '@/components/AraniLogo';
-import { SAMPLE_JOBS } from '@/lib/sampleData';
+import { SAMPLE_JOBS, Job } from '@/lib/sampleData';
+import { JobQuickModal } from '@/components/JobQuickModal';
+import { getJobsList } from '@/lib/supabase-cms';
 import {
   User,
   FileText,
   Briefcase,
-  Bookmark,
-  Bell,
-  Settings,
-  CheckCircle2,
-  Clock,
   Upload,
   Sparkles,
-  ShieldCheck,
+  CheckCircle2,
   Building2,
   MapPin,
   DollarSign,
-  Send,
-  MessageSquare,
-  AlertCircle,
-  FileSpreadsheet,
-  Calendar,
+  ArrowRight,
+  ArrowLeft,
+  Search,
+  Filter,
+  RefreshCw,
+  X,
+  Target,
+  Zap,
+  Bookmark,
   Check,
-  ChevronRight
+  Clock,
+  ShieldCheck,
+  ChevronRight,
+  FileSpreadsheet
 } from 'lucide-react';
 
-export default function CandidateDashboardPage() {
-  const [activeTab, setActiveTab] = useState<'available' | 'overview' | 'applications' | 'profile' | 'saved' | 'alerts' | 'messages'>('available');
+interface RecommendedJob extends Job {
+  matchScore: number;
+  matchReasons: string[];
+}
 
-  // Candidate Profile State with detailed Phase 3 fields
+export default function CandidateDashboardPage() {
+  const [wizardStep, setWizardStep] = useState<1 | 2>(1); // 1 = Profile Builder, 2 = Jobs For You
+  const [showApplicationsModal, setShowApplicationsModal] = useState(false);
+
+  // Candidate Profile State
   const [profile, setProfile] = useState(() => {
-    let defaultProfile = {
-      fullName: 'Rahul Sharma',
-      email: 'rahul.sharma@example.com',
-      phone: '+91 98765 43210',
-      nationalId: 'ABCDE1234F',
-      address: 'Flat 402, Sunshine Heights, Powai',
-      district: 'Mumbai Suburban',
+    const defaultProfile = {
+      fullName: '',
+      email: '',
+      phone: '',
       city: 'Mumbai',
-      state: 'Maharashtra',
-      zipCode: '400076',
-      education: 'MBA Finance, Mumbai University (2022)',
-      currentCompany: 'Private Sector Bank',
-      currentRole: 'Assistant Credit Analyst',
-      experienceYears: '3 Years',
-      expectedCtc: '₹14,00,000 / yr ($3.5k/mo)',
+      education: 'Graduate / Post-Graduate',
+      currentCompany: 'Banking / Corporate Firm',
+      currentRole: 'Credit Analyst / Banking Officer',
+      experienceYears: '1-3 Years',
+      expectedCtc: '₹6,00,000 - ₹12,00,000 / yr',
       noticePeriod: '30 Days',
-      skills: 'Credit Risk Analysis, Financial Modeling, CIBIL Verification, Commercial Underwriting, RBI Compliance',
-      confidentialSearch: true
+      skills: 'Banking Operations, Credit Analysis, Customer Relationship, KYC & Compliance, Financial Evaluation',
+      preferredLocation: 'Mumbai / Hybrid'
     };
 
     if (typeof window !== 'undefined') {
@@ -62,776 +67,930 @@ export default function CandidateDashboardPage() {
           if (parsed.email) defaultProfile.email = parsed.email;
           if (parsed.phone) defaultProfile.phone = parsed.phone;
         }
+
+        const savedProfile = localStorage.getItem('arani_candidate_profile');
+        if (savedProfile) {
+          const parsedSaved = JSON.parse(savedProfile);
+          return { ...defaultProfile, ...parsedSaved };
+        }
       } catch (e) {
-        console.warn('Could not parse registration data from local storage', e);
-      }
-      
-      const saved = null;
-      if (saved) {
-        try { return JSON.parse(saved); } catch (e) {}
+        console.warn('Could not parse registration data', e);
       }
     }
     return defaultProfile;
   });
 
-  const [resumeUploaded, setResumeUploaded] = useState('Rahul_Sharma_Banking_CV_2026.pdf');
-  const [savedSuccess, setSavedSuccess] = useState(false);
+  const [resumeUploaded, setResumeUploaded] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [allJobs, setAllJobs] = useState<Job[]>(SAMPLE_JOBS);
+  const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+  const [appliedJobIds, setAppliedJobIds] = useState<string[]>([]);
+  const [savedJobIds, setSavedJobIds] = useState<string[]>([]);
+  const [isAiMatching, setIsAiMatching] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  const handleProfileSave = async (e: React.FormEvent) => {
+  // Manual search & filters
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [activeSubTab, setActiveSubTab] = useState<'ai' | 'all'>('ai');
+
+  // Load jobs from Supabase CMS if available
+  useEffect(() => {
+    async function loadCmsJobs() {
+      try {
+        const jobs = await getJobsList();
+        if (jobs && Array.isArray(jobs) && jobs.length > 0) {
+          setAllJobs(jobs);
+        }
+      } catch (err) {
+        console.warn('Using default job data', err);
+      }
+    }
+    loadCmsJobs();
+
+    // Check if user already had previous session
+    if (typeof window !== 'undefined') {
+      try {
+        const savedApps = localStorage.getItem('arani_applied_jobs');
+        if (savedApps) setAppliedJobIds(JSON.parse(savedApps));
+      } catch (e) {
+        // ignore
+      }
+    }
+  }, []);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3500);
+  };
+
+  // Compute AI Job Matches based on profile skills & experience
+  const computeAiRecommendations = (): RecommendedJob[] => {
+    const skillsLower = (profile.skills || '').toLowerCase();
+    const roleLower = (profile.currentRole || '').toLowerCase();
+    const expLower = (profile.experienceYears || '').toLowerCase();
+
+    return allJobs.map((job) => {
+      let score = 78;
+      const reasons: string[] = [];
+
+      if (job.category === 'Banking' && (roleLower.includes('bank') || roleLower.includes('credit') || skillsLower.includes('credit') || skillsLower.includes('bank'))) {
+        score += 16;
+        reasons.push('Matches your Banking & Credit domain experience');
+      } else if (job.category === 'Finance' && (skillsLower.includes('financial') || skillsLower.includes('kyc') || skillsLower.includes('eval'))) {
+        score += 14;
+        reasons.push('Fits your Financial operations & Compliance skillset');
+      } else if (job.category === 'Corporate' || job.category === 'Operations') {
+        score += 10;
+        reasons.push('Matches Corporate & Operational workflow skills');
+      }
+
+      if (job.location.toLowerCase().includes((profile.city || 'mumbai').toLowerCase())) {
+        score += 5;
+        reasons.push(`Direct opening in ${profile.city || 'your preferred city'}`);
+      }
+
+      if (job.experience.includes('1') || expLower.includes('1') || expLower.includes('3')) {
+        score += 4;
+        reasons.push('Matches your experience tier');
+      }
+
+      if (reasons.length === 0) {
+        reasons.push('Verified enterprise opening matching your qualifications');
+      }
+
+      const boundedScore = Math.min(Math.max(score, 82), 98);
+
+      return {
+        ...job,
+        matchScore: boundedScore,
+        matchReasons: reasons.slice(0, 2)
+      };
+    }).sort((a, b) => b.matchScore - a.matchScore);
+  };
+
+  const recommendedJobs = computeAiRecommendations();
+
+  // Handle Resume Upload
+  const handleResumeUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setResumeUploaded(file.name);
+
+      try {
+        const { uploadToSupabaseStorage } = await import('@/lib/supabase');
+        await uploadToSupabaseStorage('counselling_resumes', file, 'candidate_resumes');
+        showToast(`CV "${file.name}" uploaded successfully!`);
+      } catch (err) {
+        showToast(`CV "${file.name}" attached to your profile!`);
+      }
+    }
+  };
+
+  // Handle Step 1 Submission -> Step 2
+  const handleProceedToJobs = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Attempt Supabase save first
+    setIsSaving(true);
+
     try {
       const { saveCandidateProfile } = await import('@/lib/supabase');
-      await saveCandidateProfile(profile);
+      await saveCandidateProfile({
+        ...profile,
+        resumeUrl: resumeUploaded
+      });
     } catch (err) {
-      console.warn('Failed to save candidate profile to Supabase', err);
+      console.warn('Could not save candidate to Supabase', err);
     }
-
-    // Fallback/Demo local storage
-    if (typeof window !== 'undefined') {
-      
-
-      const savedUsersStr = '[]';
-      try {
-        let savedUsers = JSON.parse(savedUsersStr);
-        const existingIdx = savedUsers.findIndex((u: any) => u.email === profile.email);
-        if (existingIdx >= 0) {
-          savedUsers[existingIdx] = { ...savedUsers[existingIdx], name: profile.fullName };
-        } else {
-          savedUsers.unshift({
-            id: `USR-${Date.now().toString().slice(-3)}`,
-            name: profile.fullName,
-            email: profile.email,
-            role: 'Candidate',
-            status: 'Active',
-            verified: false,
-            joined: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
-          });
-        }
-        
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    setSavedSuccess(true);
-    setTimeout(() => setSavedSuccess(false), 3000);
-  };
-
-  const handleResumeUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setResumeUploaded(e.target.files[0].name);
-    }
-  };
-
-  // Applications with timelines & timestamps
-  const [applications, setApplications] = useState<{ id: string; jobId: string; title: string; company: string; appliedDate: string; status: string; stepIndex: number; timeline: { title: string; date: string; completed: boolean }[] }[]>(() => {
-    const initial = [
-      {
-        id: 'APP-1024',
-        jobId: 'ACS-8042',
-        title: 'Senior Credit Risk Analyst',
-        company: 'Tier-1 Private Bank',
-        appliedDate: 'Aug 01, 2026 • 10:30 AM',
-        status: 'Screening Passed',
-        stepIndex: 2,
-        timeline: [
-          { title: 'Application Submitted', date: 'Aug 01, 2026 • 10:30 AM', completed: true },
-          { title: 'Profile & National ID Verified', date: 'Aug 01, 2026 • 02:15 PM', completed: true },
-          { title: 'Screening Passed — Recruiter Shortlisted', date: 'Aug 02, 2026 • 09:00 AM', completed: true },
-          { title: 'Technical Interview Round', date: 'Scheduled for Aug 05, 2026', completed: false },
-          { title: 'Final Offer & Placement', date: 'Pending Interview', completed: false }
-        ]
-      },
-      {
-        id: 'APP-0988',
-        jobId: 'ACS-8043',
-        title: 'Branch Operations Officer',
-        company: 'Leading National Bank',
-        appliedDate: 'Jul 24, 2026 • 04:45 PM',
-        status: 'Interview Scheduled',
-        stepIndex: 3,
-        timeline: [
-          { title: 'Application Submitted', date: 'Jul 24, 2026 • 04:45 PM', completed: true },
-          { title: 'Profile & National ID Verified', date: 'Jul 25, 2026 • 11:00 AM', completed: true },
-          { title: 'Screening Passed', date: 'Jul 26, 2026 • 03:20 PM', completed: true },
-          { title: 'Branch Ops Interview Scheduled', date: 'Aug 04, 2026 • 02:00 PM', completed: true },
-          { title: 'Final Offer & Placement', date: 'Pending', completed: false }
-        ]
-      }
-    ];
 
     if (typeof window !== 'undefined') {
-      const savedAppsStr = null;
-      if (savedAppsStr) {
-        try {
-          const parsed = JSON.parse(savedAppsStr);
-          const mapped = parsed.map((app: any) => ({
-            id: app.id,
-            jobId: app.jobId,
-            title: app.jobTitle,
-            company: app.company,
-            appliedDate: app.appliedDate,
-            status: app.status,
-            stepIndex: 1, // Start at 1
-            timeline: [
-              { title: 'Application Submitted', date: app.appliedDate, completed: true },
-              { title: 'Profile & National ID Verified', date: 'Pending', completed: false },
-              { title: 'Screening Passed — Recruiter Shortlisted', date: 'Pending', completed: false },
-              { title: 'Technical Interview Round', date: 'Pending', completed: false },
-              { title: 'Final Offer & Placement', date: 'Pending', completed: false }
-            ]
-          }));
-          return [...mapped, ...initial];
-        } catch (e) {
-          console.error(e);
-        }
-      }
+      localStorage.setItem('arani_candidate_profile', JSON.stringify(profile));
+      localStorage.setItem('arani_role_registration', JSON.stringify({
+        role: 'Candidate',
+        name: profile.fullName,
+        email: profile.email,
+        phone: profile.phone,
+        resume_url: resumeUploaded,
+        status: 'Active'
+      }));
     }
-    return initial;
+
+    setIsSaving(false);
+    setWizardStep(2);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    showToast('Profile saved! Generating your AI job recommendations...');
+  };
+
+  // Re-run AI Matching
+  const triggerAiReMatch = () => {
+    setIsAiMatching(true);
+    setTimeout(() => {
+      setIsAiMatching(false);
+      showToast('AI recommendations refreshed for your latest profile!');
+    }, 800);
+  };
+
+  // Apply to Job
+  const handleApplyJob = (job: Job) => {
+    if (appliedJobIds.includes(job.id)) {
+      showToast(`You have already applied for ${job.title}.`);
+      return;
+    }
+
+    const updated = [job.id, ...appliedJobIds];
+    setAppliedJobIds(updated);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('arani_applied_jobs', JSON.stringify(updated));
+    }
+    showToast(`Application submitted for ${job.title}! Recruiter will review shortly.`);
+  };
+
+  // Toggle Save Job
+  const toggleSaveJob = (jobId: string) => {
+    if (savedJobIds.includes(jobId)) {
+      setSavedJobIds(savedJobIds.filter((id) => id !== jobId));
+      showToast('Removed from saved list');
+    } else {
+      setSavedJobIds([jobId, ...savedJobIds]);
+      showToast('Job saved to your bookmarks!');
+    }
+  };
+
+  // Filtered manual jobs
+  const filteredJobs = allJobs.filter((job) => {
+    const matchesCategory = selectedCategory === 'All' || job.category === selectedCategory;
+    const q = searchQuery.toLowerCase().trim();
+    const matchesSearch =
+      q === '' ||
+      job.title.toLowerCase().includes(q) ||
+      job.companyName.toLowerCase().includes(q) ||
+      job.location.toLowerCase().includes(q) ||
+      job.requirements.some((r) => r.toLowerCase().includes(q));
+
+    return matchesCategory && matchesSearch;
   });
-
-  // Saved Jobs
-  const [savedJobs, setSavedJobs] = useState(SAMPLE_JOBS.slice(0, 3));
-
-  // Messages State
-  const [messages, setMessages] = useState([
-    {
-      id: 'M-1',
-      sender: 'Aranii Senior Banking Recruiter',
-      subject: 'Interview Schedule Confirmation for Senior Credit Risk Analyst (ACS-8042)',
-      time: 'Today • 09:15 AM',
-      body: 'Hi Rahul, your profile snapshot has passed preliminary screening with Tier-1 Private Bank. We have scheduled your first technical discussion for Wednesday, Aug 5 at 2:00 PM IST via Video Conference.'
-    },
-    {
-      id: 'M-2',
-      sender: 'Aranii Talent Desk',
-      subject: 'Profile Verification Completed',
-      time: 'Yesterday • 02:15 PM',
-      body: 'Your National ID (ABCDE1234F) and resume credentials have been successfully verified. Your candidate profile is now active in our priority recruiter pool.'
-    }
-  ]);
 
   return (
     <div className="min-h-screen bg-paper text-ink-900 flex flex-col font-sans">
-      {/* Header */}
+      {/* Toast Alert */}
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 z-50 bg-ink-900 text-surface px-4 py-3 rounded-lg shadow-xl border border-teal-500/50 flex items-center gap-3 animate-fadeIn max-w-md">
+          <CheckCircle2 className="w-5 h-5 text-teal-400 shrink-0" />
+          <span className="text-xs font-mono font-medium">{toastMessage}</span>
+          <button onClick={() => setToastMessage(null)} className="text-slate hover:text-surface ml-auto">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      {/* Clean Top Navigation Bar */}
       <header className="sticky top-0 z-40 bg-surface/95 backdrop-blur-md border-b border-line shadow-xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <AraniLogo className="h-9" variant="dark" />
           </Link>
 
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 text-xs font-mono text-slate">
-              <span className="w-2 h-2 rounded-full bg-ok" />
-              <span className="hidden sm:inline">Verified Candidate Account</span>
+          <div className="flex items-center gap-3">
+            {appliedJobIds.length > 0 && (
+              <button
+                onClick={() => setShowApplicationsModal(true)}
+                className="px-3 py-1.5 bg-teal-50 hover:bg-teal-100/80 text-teal-800 border border-teal-200 text-xs font-mono font-bold rounded-lg transition flex items-center gap-1.5"
+              >
+                <Briefcase className="w-3.5 h-3.5 text-teal-600" />
+                <span>My Applications ({appliedJobIds.length})</span>
+              </button>
+            )}
+
+            <div className="flex items-center gap-2 text-xs font-mono text-slate bg-slate-50 px-3 py-1.5 rounded-full border border-line">
+              <span className="w-2 h-2 rounded-full bg-ok animate-pulse" />
+              <span className="font-bold text-ink-900 truncate max-w-[120px] sm:max-w-none">
+                {profile.fullName || 'Candidate'}
+              </span>
             </div>
-            <Link
-              href="/jobs"
-              className="px-3.5 py-1.5 bg-teal-500 hover:bg-teal-600 text-surface text-xs font-bold uppercase rounded transition shadow-xs flex items-center gap-1"
-            >
-              <Briefcase className="w-3.5 h-3.5" />
-              Browse Openings
-            </Link>
           </div>
         </div>
       </header>
 
-      {/* Main Layout */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Left Sidebar Navigation (3 Cols) */}
-          <aside className="lg:col-span-3 space-y-4">
-            <div className="bg-surface border border-line rounded-lg p-5 shadow-xs space-y-6 sticky top-24">
-              {/* Profile Card Header */}
-              <div className="flex items-center gap-3 pb-4 border-b border-line">
-                <div className="w-12 h-12 rounded-full bg-teal-100 text-teal-700 font-display font-bold text-lg flex items-center justify-center border-2 border-teal-500 shrink-0">
-                  RS
-                </div>
-                <div className="overflow-hidden">
-                  <h3 className="font-display font-bold text-base text-ink-900 truncate">
-                    {profile.fullName}
-                  </h3>
-                  <p className="text-xs text-slate font-mono truncate">{profile.email}</p>
-                  <span className="inline-block font-mono text-[10px] text-teal-700 font-bold bg-teal-50 px-2 py-0.5 rounded mt-1">
-                    ID: {profile.nationalId}
-                  </span>
-                </div>
-              </div>
-
-              {/* Navigation List */}
-              <nav className="space-y-1">
-                <button
-                  onClick={() => setActiveTab('available')}
-                  className={`w-full text-left px-3 py-2.5 rounded text-xs font-mono font-bold uppercase tracking-wider transition flex items-center gap-2.5 ${
-                    activeTab === 'available'
-                      ? 'bg-teal-50 text-teal-700 border-l-2 border-teal-500'
-                      : 'text-slate hover:bg-paper'
-                  }`}
-                >
-                  <Briefcase className="w-4 h-4 text-teal-600" />
-                  Available Jobs
-                </button>
-
-                <button
-                  onClick={() => setActiveTab('overview')}
-                  className={`w-full text-left px-3 py-2.5 rounded text-xs font-mono font-bold uppercase tracking-wider transition flex items-center gap-2.5 ${
-                    activeTab === 'overview'
-                      ? 'bg-teal-50 text-teal-700 border-l-2 border-teal-500'
-                      : 'text-slate hover:bg-paper'
-                  }`}
-                >
-                  <User className="w-4 h-4 text-teal-600" />
-                  Overview
-                </button>
-
-                <button
-                  onClick={() => setActiveTab('applications')}
-                  className={`w-full text-left px-3 py-2.5 rounded text-xs font-mono font-bold uppercase tracking-wider transition flex items-center justify-between ${
-                    activeTab === 'applications'
-                      ? 'bg-teal-50 text-teal-700 border-l-2 border-teal-500'
-                      : 'text-slate hover:bg-paper'
-                  }`}
-                >
-                  <span className="flex items-center gap-2.5">
-                    <Briefcase className="w-4 h-4 text-teal-600" />
-                    My Applications
-                  </span>
-                  <span className="bg-teal-200 text-teal-900 font-bold px-2 py-0.5 rounded text-[10px]">
-                    {applications.length}
-                  </span>
-                </button>
-
-                <button
-                  onClick={() => setActiveTab('profile')}
-                  className={`w-full text-left px-3 py-2.5 rounded text-xs font-mono font-bold uppercase tracking-wider transition flex items-center gap-2.5 ${
-                    activeTab === 'profile'
-                      ? 'bg-teal-50 text-teal-700 border-l-2 border-teal-500'
-                      : 'text-slate hover:bg-paper'
-                  }`}
-                >
-                  <FileText className="w-4 h-4 text-teal-600" />
-                  Profile Builder
-                </button>
-
-                <button
-                  onClick={() => setActiveTab('saved')}
-                  className={`w-full text-left px-3 py-2.5 rounded text-xs font-mono font-bold uppercase tracking-wider transition flex items-center justify-between ${
-                    activeTab === 'saved'
-                      ? 'bg-teal-50 text-teal-700 border-l-2 border-teal-500'
-                      : 'text-slate hover:bg-paper'
-                  }`}
-                >
-                  <span className="flex items-center gap-2.5">
-                    <Bookmark className="w-4 h-4 text-teal-600" />
-                    Saved Openings
-                  </span>
-                  <span className="bg-slate-200 text-slate font-bold px-2 py-0.5 rounded text-[10px]">
-                    {savedJobs.length}
-                  </span>
-                </button>
-
-                <button
-                  onClick={() => setActiveTab('messages')}
-                  className={`w-full text-left px-3 py-2.5 rounded text-xs font-mono font-bold uppercase tracking-wider transition flex items-center justify-between ${
-                    activeTab === 'messages'
-                      ? 'bg-teal-50 text-teal-700 border-l-2 border-teal-500'
-                      : 'text-slate hover:bg-paper'
-                  }`}
-                >
-                  <span className="flex items-center gap-2.5">
-                    <MessageSquare className="w-4 h-4 text-teal-600" />
-                    Recruiter Inbox
-                  </span>
-                  <span className="bg-teal-500 text-surface font-bold px-1.5 py-0.5 rounded text-[10px]">
-                    {messages.length}
-                  </span>
-                </button>
-              </nav>
-
-              <div className="pt-4 border-t border-line text-xs font-mono text-slate space-y-2">
-                <div className="flex items-center justify-between">
-                  <span>Candidate Status:</span>
-                  <span className="font-bold text-ok">Active Vetted</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span>Placement Fee:</span>
-                  <span className="font-bold text-teal-600">₹0 (100% Free)</span>
-                </div>
-              </div>
+      {/* Main Container */}
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 py-8 flex-1 w-full space-y-6">
+        
+        {/* WIZARD STEPPER BAR */}
+        <div className="bg-surface border border-line rounded-2xl p-5 shadow-xs">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-teal-50 border border-teal-200 text-teal-800 text-[11px] font-mono font-bold uppercase">
+                <Sparkles className="w-3.5 h-3.5 text-teal-600" />
+                AI Job Finder Wizard
+              </span>
+              <h1 className="text-xl sm:text-2xl font-display font-extrabold text-ink-950 mt-1">
+                {wizardStep === 1 ? 'Step 1: Build Your Profile' : 'Step 2: Jobs Recommended For You'}
+              </h1>
             </div>
-          </aside>
 
-          {/* Main Dashboard Panel (9 Cols) */}
-          <main className="lg:col-span-9 space-y-6">
-            {/* AVAILABLE JOBS TAB */}
-            {activeTab === 'available' && (
-              <div className="bg-surface border border-line rounded-lg p-6 shadow-xs space-y-4">
-                <h3 className="font-display font-bold text-xl text-ink-900">Available Jobs for You</h3>
-                <div className="space-y-3">
-                  {SAMPLE_JOBS.map((job) => (
-                    <div key={job.id} className="p-4 bg-paper border border-line rounded-lg flex items-center justify-between">
-                      <div>
-                        <span className="font-mono text-xs text-teal-600 font-bold bg-teal-50 px-2 py-0.5 rounded">
-                          {job.id}
-                        </span>
-                        <h4 className="font-display font-bold text-base text-ink-900 mt-1">{job.title}</h4>
-                        <p className="text-xs text-slate">{job.companyName} • {job.location} • {job.salary}</p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => {
-                            if (!savedJobs.find(j => j.id === job.id)) {
-                                setSavedJobs([...savedJobs, job]);
-                            }
-                          }}
-                          className={`px-4 py-2 border text-xs font-bold uppercase rounded transition ${savedJobs.find(j => j.id === job.id) ? 'bg-teal-50 border-teal-500 text-teal-700' : 'bg-paper border-teal-500 text-teal-600 hover:bg-teal-50'}`}
-                        >
-                          {savedJobs.find(j => j.id === job.id) ? 'Saved' : 'Save'}
-                        </button>
-                        <Link
-                          href={`/jobs/${job.id}`}
-                          className="px-4 py-2 bg-teal-500 text-surface text-xs font-bold uppercase rounded hover:bg-teal-600 transition"
-                        >
-                          Apply Now
-                        </Link>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+            <div className="text-right font-mono text-xs">
+              <span className="font-bold text-teal-600">Step {wizardStep}</span>
+              <span className="text-slate"> / 2</span>
+            </div>
+          </div>
+
+          {/* Visual 2-Step Progress Indicator */}
+          <div className="grid grid-cols-2 gap-3 pt-2">
+            <button
+              onClick={() => setWizardStep(1)}
+              className={`p-3 rounded-xl border-2 transition text-left flex items-center gap-3 ${
+                wizardStep === 1
+                  ? 'bg-teal-50/80 border-teal-500 shadow-xs'
+                  : 'bg-surface border-line text-slate hover:border-teal-300'
+              }`}
+            >
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs shrink-0 ${
+                wizardStep === 1 ? 'bg-teal-500 text-surface' : 'bg-teal-100 text-teal-800'
+              }`}>
+                {wizardStep === 2 ? <Check className="w-4 h-4" /> : '1'}
               </div>
-            )}
+              <div className="overflow-hidden">
+                <div className="font-bold text-ink-950 text-xs sm:text-sm truncate">1. Profile &amp; CV</div>
+                <div className="text-[11px] text-slate truncate">Enter details &amp; optional CV</div>
+              </div>
+            </button>
 
-            {/* OVERVIEW TAB */}
-            {activeTab === 'overview' && (
-              <div className="space-y-6">
-                {/* Top Metrics Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="bg-surface border border-line rounded-lg p-5 shadow-xs space-y-2">
-                    <span className="text-xs font-mono text-muted uppercase">Active Applications</span>
-                    <div className="text-3xl font-display font-bold text-ink-900">
-                      {applications.length}
+            <button
+              onClick={() => setWizardStep(2)}
+              className={`p-3 rounded-xl border-2 transition text-left flex items-center gap-3 ${
+                wizardStep === 2
+                  ? 'bg-teal-50/80 border-teal-500 shadow-xs'
+                  : 'bg-surface border-line text-slate hover:border-teal-300'
+              }`}
+            >
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs shrink-0 ${
+                wizardStep === 2 ? 'bg-teal-500 text-surface' : 'bg-slate-100 text-slate-600'
+              }`}>
+                2
+              </div>
+              <div className="overflow-hidden">
+                <div className="font-bold text-ink-950 text-xs sm:text-sm truncate">2. Jobs For You</div>
+                <div className="text-[11px] text-slate truncate">AI Matches &amp; 1-Click Apply</div>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        {/* ============================================================ */}
+        {/* STEP 1: PROFILE BUILDER & CV CAPTURE                         */}
+        {/* ============================================================ */}
+        {wizardStep === 1 && (
+          <div className="bg-surface border border-line rounded-2xl p-6 sm:p-8 shadow-card space-y-6 animate-fadeIn">
+            <div>
+              <h2 className="text-lg sm:text-xl font-display font-bold text-ink-950">
+                Fill Your Details for AI Job Auto-Matching
+              </h2>
+              <p className="text-xs sm:text-sm text-slate mt-1">
+                Enter your work background and preferences below. You can also attach your CV if available.
+              </p>
+            </div>
+
+            <form onSubmit={handleProceedToJobs} className="space-y-6">
+              
+              {/* Optional CV Upload Box */}
+              <div className="p-4 sm:p-5 bg-gradient-to-r from-teal-50/60 to-surface border-2 border-dashed border-teal-300 rounded-xl space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-teal-500 text-surface flex items-center justify-center shrink-0 shadow-xs">
+                      <FileSpreadsheet className="w-5 h-5" />
                     </div>
-                    <span className="text-xs text-ok font-mono font-medium flex items-center gap-1">
-                      <Check className="w-3.5 h-3.5" /> 1 Interview Scheduled
-                    </span>
+                    <div>
+                      <div className="font-display font-bold text-sm text-ink-950 flex items-center gap-2">
+                        Upload Your CV / Resume (Optional)
+                      </div>
+                      <p className="text-xs text-slate mt-0.5">
+                        Have a resume ready? Upload it to boost recruiter shortlists. Don&apos;t have one? Simply fill the fields below!
+                      </p>
+                    </div>
                   </div>
 
-                  <div className="bg-surface border border-line rounded-lg p-5 shadow-xs space-y-2">
-                    <span className="text-xs font-mono text-muted uppercase">Profile Completeness</span>
-                    <div className="text-3xl font-display font-bold text-teal-600">95%</div>
-                    <span className="text-xs text-teal-700 font-mono flex items-center gap-1">
-                      <ShieldCheck className="w-3.5 h-3.5" /> National ID &amp; Resume Verified
-                    </span>
-                  </div>
-
-                  <div className="bg-surface border border-line rounded-lg p-5 shadow-xs space-y-2">
-                    <span className="text-xs font-mono text-muted uppercase">Recruiter Views</span>
-                    <div className="text-3xl font-display font-bold text-ink-900">18</div>
-                    <span className="text-xs text-teal-600 font-mono">+6 views this week</span>
-                  </div>
+                  <label className="px-4 py-2 bg-teal-500 hover:bg-teal-600 text-surface font-mono font-bold text-xs uppercase tracking-wider rounded-lg cursor-pointer transition shadow-xs flex items-center justify-center gap-2 shrink-0">
+                    <Upload className="w-4 h-4" />
+                    <span>{resumeUploaded ? 'Change CV' : 'Upload CV'}</span>
+                    <input
+                      type="file"
+                      accept=".pdf,.doc,.docx"
+                      onChange={handleResumeUpload}
+                      className="hidden"
+                    />
+                  </label>
                 </div>
 
-                {/* Application Stage Tracker */}
-                <div className="bg-surface border border-line rounded-lg p-6 shadow-xs space-y-6">
-                  <div className="flex items-center justify-between pb-3 border-b border-line">
-                    <h3 className="font-display font-bold text-lg text-ink-900 flex items-center gap-2">
-                      <Clock className="w-5 h-5 text-teal-600" />
-                      Live Application Stage Timelines
-                    </h3>
+                {resumeUploaded && (
+                  <div className="p-2.5 bg-surface border border-teal-200 rounded-lg flex items-center justify-between text-xs font-mono">
+                    <div className="flex items-center gap-2 text-teal-900 font-bold truncate">
+                      <CheckCircle2 className="w-4 h-4 text-teal-600 shrink-0" />
+                      <span className="truncate">Attached: {resumeUploaded}</span>
+                    </div>
                     <button
-                      onClick={() => setActiveTab('applications')}
-                      className="text-xs font-mono text-teal-600 hover:underline font-bold"
+                      type="button"
+                      onClick={() => setResumeUploaded(null)}
+                      className="text-slate hover:text-red-500 text-[11px]"
                     >
-                      View All Details →
+                      Remove
                     </button>
                   </div>
+                )}
+              </div>
 
-                  <div className="space-y-6">
-                    {applications.map((app) => (
-                      <div key={app.id} className="p-5 bg-paper border border-line rounded-lg space-y-4">
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <span className="font-mono text-xs text-teal-600 font-bold bg-teal-50 px-2 py-0.5 rounded border border-teal-100">
-                                {app.jobId}
-                              </span>
-                              <span className="text-xs text-slate font-mono">{app.appliedDate}</span>
-                            </div>
-                            <h4 className="font-display font-bold text-base text-ink-900 mt-1">
-                              {app.title}
-                            </h4>
-                            <p className="text-xs text-slate font-medium">{app.company}</p>
-                          </div>
-                          <span className="px-3 py-1 bg-teal-500 text-surface text-xs font-bold uppercase rounded self-start sm:self-center">
-                            {app.status}
-                          </span>
-                        </div>
+              {/* 1. Basic Details */}
+              <div className="space-y-4">
+                <h3 className="text-xs font-mono font-bold uppercase text-teal-800 tracking-wider flex items-center gap-1.5 border-b border-line pb-2">
+                  <User className="w-4 h-4 text-teal-600" />
+                  <span>1. Contact &amp; Location Details</span>
+                </h3>
 
-                        {/* Progress Stepper */}
-                        <div className="grid grid-cols-5 gap-2 pt-2 text-[10px] font-mono text-center">
-                          <div className="space-y-1">
-                            <div className="h-2 bg-teal-500 rounded-full" />
-                            <span className="font-bold text-teal-700">Applied</span>
-                          </div>
-                          <div className="space-y-1">
-                            <div className={`h-2 rounded-full ${app.stepIndex >= 2 ? 'bg-teal-500' : 'bg-line'}`} />
-                            <span className={app.stepIndex >= 2 ? 'font-bold text-teal-700' : 'text-muted'}>
-                              Screening
-                            </span>
-                          </div>
-                          <div className="space-y-1">
-                            <div className={`h-2 rounded-full ${app.stepIndex >= 3 ? 'bg-teal-500' : 'bg-line'}`} />
-                            <span className={app.stepIndex >= 3 ? 'font-bold text-teal-700' : 'text-muted'}>
-                              Interview
-                            </span>
-                          </div>
-                          <div className="space-y-1">
-                            <div className={`h-2 rounded-full ${app.stepIndex >= 4 ? 'bg-teal-500' : 'bg-line'}`} />
-                            <span className="text-muted">Offer</span>
-                          </div>
-                          <div className="space-y-1">
-                            <div className={`h-2 rounded-full ${app.stepIndex >= 5 ? 'bg-teal-500' : 'bg-line'}`} />
-                            <span className="text-muted">Hired</span>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-ink-900 mb-1">Full Name *</label>
+                    <input
+                      type="text"
+                      required
+                      value={profile.fullName}
+                      onChange={(e) => setProfile({ ...profile, fullName: e.target.value })}
+                      placeholder="e.g. Rahul Sharma"
+                      className="w-full px-3 py-2 bg-paper border border-line rounded-lg text-xs text-ink-900 focus:outline-none focus:border-teal-500 font-medium"
+                    />
                   </div>
-                </div>
 
-                {/* Recommended Jobs */}
-                <div className="bg-surface border border-line rounded-lg p-6 shadow-xs space-y-4">
-                  <h3 className="font-display font-bold text-lg text-ink-900 flex items-center gap-2">
-                    <Sparkles className="w-5 h-5 text-teal-600" />
-                    Recommended Banking Openings for Rahul
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {SAMPLE_JOBS.slice(2, 4).map((job) => (
-                      <div key={job.id} className="p-4 bg-paper border border-line rounded-lg space-y-2">
-                        <div className="flex justify-between items-start">
-                          <span className="font-mono text-xs text-teal-600 font-bold bg-teal-50 px-2 py-0.5 rounded">
-                            {job.id}
-                          </span>
-                          <span className="text-xs font-mono font-bold text-teal-700">{job.salary}</span>
-                        </div>
-                        <h4 className="font-display font-bold text-sm text-ink-900">{job.title}</h4>
-                        <p className="text-xs text-slate">{job.companyName} • {job.location}</p>
-                        <Link
-                          href={`/jobs/${job.id}`}
-                          className="inline-block mt-2 text-xs font-bold text-teal-600 hover:underline"
-                        >
-                          View &amp; Apply →
-                        </Link>
-                      </div>
-                    ))}
+                  <div>
+                    <label className="block text-xs font-bold text-ink-900 mb-1">Email Address *</label>
+                    <input
+                      type="email"
+                      required
+                      value={profile.email}
+                      onChange={(e) => setProfile({ ...profile, email: e.target.value })}
+                      placeholder="e.g. rahul@example.com"
+                      className="w-full px-3 py-2 bg-paper border border-line rounded-lg text-xs text-ink-900 focus:outline-none focus:border-teal-500 font-medium"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-ink-900 mb-1">Mobile Phone Number *</label>
+                    <input
+                      type="tel"
+                      required
+                      value={profile.phone}
+                      onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
+                      placeholder="e.g. +91 98765 43210"
+                      className="w-full px-3 py-2 bg-paper border border-line rounded-lg text-xs text-ink-900 focus:outline-none focus:border-teal-500 font-medium"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-ink-900 mb-1">Current City *</label>
+                    <input
+                      type="text"
+                      required
+                      value={profile.city}
+                      onChange={(e) => setProfile({ ...profile, city: e.target.value })}
+                      placeholder="e.g. Mumbai / Delhi NCR / Pune"
+                      className="w-full px-3 py-2 bg-paper border border-line rounded-lg text-xs text-ink-900 focus:outline-none focus:border-teal-500 font-medium"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-ink-900 mb-1">Highest Qualification *</label>
+                    <input
+                      type="text"
+                      required
+                      value={profile.education}
+                      onChange={(e) => setProfile({ ...profile, education: e.target.value })}
+                      placeholder="e.g. MBA / B.Com / B.Tech / Any Graduate"
+                      className="w-full px-3 py-2 bg-paper border border-line rounded-lg text-xs text-ink-900 focus:outline-none focus:border-teal-500 font-medium"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-ink-900 mb-1">Preferred Location</label>
+                    <input
+                      type="text"
+                      value={profile.preferredLocation}
+                      onChange={(e) => setProfile({ ...profile, preferredLocation: e.target.value })}
+                      placeholder="e.g. Mumbai / Hybrid / Remote"
+                      className="w-full px-3 py-2 bg-paper border border-line rounded-lg text-xs text-ink-900 focus:outline-none focus:border-teal-500 font-medium"
+                    />
                   </div>
                 </div>
               </div>
-            )}
 
-            {/* MY APPLICATIONS TAB */}
-            {activeTab === 'applications' && (
-              <div className="bg-surface border border-line rounded-lg p-6 shadow-xs space-y-6">
-                <div className="pb-4 border-b border-line">
-                  <h3 className="font-display font-bold text-xl text-ink-900">
-                    Application History &amp; Timestamps
-                  </h3>
-                  <p className="text-xs text-slate mt-0.5">
-                    Track real-time status changes, interview invites, and recruiter feedback.
+              {/* 2. Professional Background */}
+              <div className="space-y-4">
+                <h3 className="text-xs font-mono font-bold uppercase text-teal-800 tracking-wider flex items-center gap-1.5 border-b border-line pb-2">
+                  <Briefcase className="w-4 h-4 text-teal-600" />
+                  <span>2. Experience &amp; Role Preferences</span>
+                </h3>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-ink-900 mb-1">Current / Target Role *</label>
+                    <input
+                      type="text"
+                      required
+                      value={profile.currentRole}
+                      onChange={(e) => setProfile({ ...profile, currentRole: e.target.value })}
+                      placeholder="e.g. Credit Analyst, Branch Executive"
+                      className="w-full px-3 py-2 bg-paper border border-line rounded-lg text-xs text-ink-900 focus:outline-none focus:border-teal-500 font-medium"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-ink-900 mb-1">Total Experience *</label>
+                    <select
+                      value={profile.experienceYears}
+                      onChange={(e) => setProfile({ ...profile, experienceYears: e.target.value })}
+                      className="w-full px-3 py-2 bg-paper border border-line rounded-lg text-xs text-ink-900 focus:outline-none focus:border-teal-500 font-medium cursor-pointer"
+                    >
+                      <option value="Fresher (0-1 Year)">Fresher (0-1 Year)</option>
+                      <option value="1-3 Years">1-3 Years</option>
+                      <option value="3-5 Years">3-5 Years</option>
+                      <option value="5-8 Years">5-8 Years</option>
+                      <option value="8+ Years (Senior / Leadership)">8+ Years (Senior / Leadership)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-ink-900 mb-1">Expected Salary / CTC *</label>
+                    <input
+                      type="text"
+                      required
+                      value={profile.expectedCtc}
+                      onChange={(e) => setProfile({ ...profile, expectedCtc: e.target.value })}
+                      placeholder="e.g. ₹8,00,000 / yr"
+                      className="w-full px-3 py-2 bg-paper border border-line rounded-lg text-xs text-ink-900 focus:outline-none focus:border-teal-500 font-medium"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-ink-900 mb-1">Current / Previous Company</label>
+                    <input
+                      type="text"
+                      value={profile.currentCompany}
+                      onChange={(e) => setProfile({ ...profile, currentCompany: e.target.value })}
+                      placeholder="e.g. HDFC, ICICI, Axis or Any Firm"
+                      className="w-full px-3 py-2 bg-paper border border-line rounded-lg text-xs text-ink-900 focus:outline-none focus:border-teal-500 font-medium"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-ink-900 mb-1">Notice Period *</label>
+                    <select
+                      value={profile.noticePeriod}
+                      onChange={(e) => setProfile({ ...profile, noticePeriod: e.target.value })}
+                      className="w-full px-3 py-2 bg-paper border border-line rounded-lg text-xs text-ink-900 focus:outline-none focus:border-teal-500 font-medium cursor-pointer"
+                    >
+                      <option value="Immediate Joiner">Immediate Joiner</option>
+                      <option value="15 Days">15 Days</option>
+                      <option value="30 Days">30 Days</option>
+                      <option value="60 Days">60 Days</option>
+                      <option value="90 Days">90 Days</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-ink-900 mb-1">
+                    Key Skills &amp; Domain Expertise (Comma Separated) *
+                  </label>
+                  <textarea
+                    rows={2}
+                    required
+                    value={profile.skills}
+                    onChange={(e) => setProfile({ ...profile, skills: e.target.value })}
+                    placeholder="e.g. Banking Operations, Credit Risk, KYC Verification, Customer Relationship, Financial Modeling"
+                    className="w-full px-3 py-2 bg-paper border border-line rounded-lg text-xs text-ink-900 focus:outline-none focus:border-teal-500 font-medium"
+                  />
+                </div>
+              </div>
+
+              {/* Action Button: Next to Jobs */}
+              <div className="pt-4 border-t border-line flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="flex items-center gap-2 text-xs text-slate">
+                  <ShieldCheck className="w-4 h-4 text-ok" />
+                  <span>100% Confidential &amp; Verified Recruiter Portal</span>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isSaving}
+                  className="w-full sm:w-auto px-8 py-3.5 bg-teal-500 hover:bg-teal-600 disabled:opacity-50 text-surface font-mono font-bold text-xs sm:text-sm uppercase tracking-wider rounded-xl transition shadow-md hover:shadow-lg flex items-center justify-center gap-2 group cursor-pointer"
+                >
+                  <span>{isSaving ? 'Saving Profile...' : 'Next: Find Recommended Jobs'}</span>
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+
+        {/* ============================================================ */}
+        {/* STEP 2: JOBS FOR YOU (AI RECOMMENDED & MANUAL EXPLORATION)   */}
+        {/* ============================================================ */}
+        {wizardStep === 2 && (
+          <div className="space-y-6 animate-fadeIn">
+            
+            {/* Top Match Summary & Controls */}
+            <div className="bg-gradient-to-r from-teal-900 to-ink-950 text-surface rounded-2xl p-6 shadow-card space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded bg-teal-500/20 border border-teal-400/30 text-teal-300 text-[11px] font-mono font-bold uppercase mb-2">
+                    <Sparkles className="w-3.5 h-3.5 text-teal-400" />
+                    AI Auto-Match Active
+                  </div>
+                  <h2 className="text-xl sm:text-2xl font-display font-extrabold text-surface">
+                    Recommended Openings for {profile.fullName || 'You'}
+                  </h2>
+                  <p className="text-xs text-slate-300 mt-1 max-w-2xl">
+                    Matched against your background: <span className="text-teal-300 font-bold">{profile.currentRole}</span> ({profile.experienceYears}) • Expected: <span className="text-teal-300 font-bold">{profile.expectedCtc}</span>
                   </p>
                 </div>
 
-                <div className="space-y-8">
-                  {applications.map((app) => (
-                    <div key={app.id} className="border border-line rounded-lg p-5 space-y-4 bg-paper">
-                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-line pb-3">
-                        <div>
-                          <span className="font-mono text-xs text-teal-600 font-bold bg-teal-50 px-2 py-0.5 rounded border border-teal-100">
-                            {app.jobId}
-                          </span>
-                          <h4 className="font-display font-bold text-lg text-ink-900 mt-1">{app.title}</h4>
-                          <p className="text-xs text-slate">{app.company}</p>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    onClick={triggerAiReMatch}
+                    disabled={isAiMatching}
+                    className="px-3.5 py-2 bg-surface/10 hover:bg-surface/20 text-surface border border-surface/20 rounded-lg text-xs font-mono font-bold transition flex items-center gap-2"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${isAiMatching ? 'animate-spin' : ''}`} />
+                    <span>{isAiMatching ? 'Matching...' : 'Re-Match AI'}</span>
+                  </button>
+
+                  <button
+                    onClick={() => setWizardStep(1)}
+                    className="px-3.5 py-2 bg-teal-500 hover:bg-teal-600 text-surface rounded-lg text-xs font-mono font-bold transition flex items-center gap-1.5"
+                  >
+                    <ArrowLeft className="w-3.5 h-3.5" />
+                    <span>Edit Profile</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Sub-Tabs: AI Recommended vs All Openings */}
+              <div className="flex items-center gap-2 pt-2 border-t border-surface/10">
+                <button
+                  onClick={() => setActiveSubTab('ai')}
+                  className={`px-4 py-2 rounded-lg font-mono text-xs font-bold transition flex items-center gap-2 ${
+                    activeSubTab === 'ai'
+                      ? 'bg-surface text-ink-950 shadow-xs'
+                      : 'text-slate-300 hover:text-surface'
+                  }`}
+                >
+                  <Target className="w-3.5 h-3.5 text-teal-600" />
+                  <span>AI Recommended ({recommendedJobs.length})</span>
+                </button>
+
+                <button
+                  onClick={() => setActiveSubTab('all')}
+                  className={`px-4 py-2 rounded-lg font-mono text-xs font-bold transition flex items-center gap-2 ${
+                    activeSubTab === 'all'
+                      ? 'bg-surface text-ink-950 shadow-xs'
+                      : 'text-slate-300 hover:text-surface'
+                  }`}
+                >
+                  <Search className="w-3.5 h-3.5 text-teal-600" />
+                  <span>Browse All Openings ({allJobs.length})</span>
+                </button>
+              </div>
+            </div>
+
+            {/* TAB 1: AI RECOMMENDED JOBS */}
+            {activeSubTab === 'ai' && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between text-xs font-mono text-slate">
+                  <span>Sorted by AI Relevance Score</span>
+                  <span>{recommendedJobs.length} Verified Openings</span>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4">
+                  {recommendedJobs.map((job) => {
+                    const isApplied = appliedJobIds.includes(job.id);
+                    const isSaved = savedJobIds.includes(job.id);
+
+                    return (
+                      <div
+                        key={job.id}
+                        className="bg-surface border border-line hover:border-teal-500/50 rounded-2xl p-5 sm:p-6 transition-all duration-200 shadow-xs hover:shadow-md space-y-4"
+                      >
+                        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-mono text-[10px] font-bold text-teal-800 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded">
+                                {job.category}
+                              </span>
+                              <span className="font-mono text-[10px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded flex items-center gap-1">
+                                <Sparkles className="w-3 h-3 text-emerald-600" />
+                                {job.matchScore}% Match
+                              </span>
+                              <span className="font-mono text-[10px] text-slate">ID: {job.id}</span>
+                            </div>
+
+                            <h3 className="text-base sm:text-lg font-display font-bold text-ink-950 pt-1">
+                              {job.title}
+                            </h3>
+
+                            <div className="flex items-center gap-4 text-xs text-slate flex-wrap pt-0.5">
+                              <span className="flex items-center gap-1 font-medium text-ink-900">
+                                <Building2 className="w-3.5 h-3.5 text-teal-600" />
+                                {job.companyName}
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                                {job.location}
+                              </span>
+                              <span className="flex items-center gap-1 font-bold text-teal-700">
+                                <DollarSign className="w-3.5 h-3.5" />
+                                {job.salary}
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <Briefcase className="w-3.5 h-3.5 text-slate-400" />
+                                {job.experience}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Quick Actions */}
+                          <div className="flex items-center gap-2 shrink-0 pt-2 sm:pt-0">
+                            <button
+                              onClick={() => toggleSaveJob(job.id)}
+                              className={`p-2 rounded-lg border transition ${
+                                isSaved
+                                  ? 'bg-teal-50 border-teal-300 text-teal-700'
+                                  : 'border-line text-slate hover:text-ink-900 bg-paper'
+                              }`}
+                              title="Bookmark Opening"
+                            >
+                              <Bookmark className="w-4 h-4" />
+                            </button>
+
+                            <button
+                              onClick={() => setSelectedJob(job)}
+                              className="px-3.5 py-2 bg-paper hover:bg-slate-100 text-ink-900 border border-line rounded-lg text-xs font-mono font-bold transition"
+                            >
+                              View Details
+                            </button>
+
+                            <button
+                              onClick={() => handleApplyJob(job)}
+                              disabled={isApplied}
+                              className={`px-4 py-2 rounded-lg text-xs font-mono font-bold transition shadow-xs flex items-center gap-1.5 ${
+                                isApplied
+                                  ? 'bg-ok/10 text-ok border border-ok/30 cursor-default'
+                                  : 'bg-teal-500 hover:bg-teal-600 text-surface'
+                              }`}
+                            >
+                              {isApplied ? (
+                                <>
+                                  <Check className="w-3.5 h-3.5" />
+                                  <span>Applied</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Zap className="w-3.5 h-3.5" />
+                                  <span>1-Click Apply</span>
+                                </>
+                              )}
+                            </button>
+                          </div>
                         </div>
-                        <div className="text-right">
-                          <span className="px-3 py-1 bg-teal-500 text-surface text-xs font-bold uppercase rounded">
-                            {app.status}
-                          </span>
-                          <span className="block text-[10px] font-mono text-slate mt-1">{app.appliedDate}</span>
+
+                        {/* Match Reasons */}
+                        <div className="p-3 bg-teal-50/50 border border-teal-100 rounded-xl space-y-1.5 text-xs">
+                          <div className="font-mono text-[11px] font-bold text-teal-900 flex items-center gap-1.5">
+                            <Sparkles className="w-3.5 h-3.5 text-teal-600" />
+                            Why you match this role:
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            {job.matchReasons.map((reason, i) => (
+                              <span key={i} className="inline-flex items-center gap-1 text-[11px] text-teal-800 bg-surface px-2 py-0.5 rounded border border-teal-200/60 font-medium">
+                                <Check className="w-3 h-3 text-teal-600" />
+                                {reason}
+                              </span>
+                            ))}
+                          </div>
                         </div>
                       </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
-                      {/* Detailed Timeline Events */}
-                      <div className="space-y-3 pt-2">
-                        <h5 className="font-mono text-xs uppercase font-bold text-slate">Audit Log &amp; Milestones</h5>
-                        <div className="space-y-2 border-l-2 border-teal-500 pl-4 text-xs font-mono">
-                          {app.timeline.map((item, idx) => (
-                            <div key={idx} className="relative">
-                              <span className={`w-2 h-2 rounded-full absolute -left-[21px] top-1 ${item.completed ? 'bg-teal-500' : 'bg-line'}`} />
-                              <div className={item.completed ? 'text-ink-900 font-bold' : 'text-slate'}>
-                                {item.title}
-                              </div>
-                              <span className="text-[10px] text-muted">{item.date}</span>
+            {/* TAB 2: MANUAL BROWSE & APPLY */}
+            {activeSubTab === 'all' && (
+              <div className="space-y-4">
+                {/* Search & Filter Bar */}
+                <div className="bg-surface border border-line rounded-xl p-4 shadow-xs space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
+                    <div className="sm:col-span-8 relative">
+                      <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+                      <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Search by title, skills, bank name or city..."
+                        className="w-full pl-9 pr-4 py-2 bg-paper border border-line rounded-lg text-xs text-ink-900 focus:outline-none focus:border-teal-500 font-medium"
+                      />
+                    </div>
+
+                    <div className="sm:col-span-4">
+                      <select
+                        value={selectedCategory}
+                        onChange={(e) => setSelectedCategory(e.target.value)}
+                        className="w-full px-3 py-2 bg-paper border border-line rounded-lg text-xs text-ink-900 focus:outline-none focus:border-teal-500 font-medium cursor-pointer"
+                      >
+                        <option value="All">All Sectors</option>
+                        <option value="Banking">Banking</option>
+                        <option value="Finance">Finance</option>
+                        <option value="Corporate">Corporate</option>
+                        <option value="Operations">Operations</option>
+                        <option value="IT & Fintech">IT &amp; Fintech</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Job Cards */}
+                <div className="grid grid-cols-1 gap-4">
+                  {filteredJobs.map((job) => {
+                    const isApplied = appliedJobIds.includes(job.id);
+                    const isSaved = savedJobIds.includes(job.id);
+
+                    return (
+                      <div
+                        key={job.id}
+                        className="bg-surface border border-line hover:border-teal-500/50 rounded-2xl p-5 sm:p-6 transition shadow-xs hover:shadow-md space-y-3"
+                      >
+                        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-mono text-[10px] font-bold text-teal-800 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded">
+                                {job.category}
+                              </span>
+                              <span className="font-mono text-[10px] text-slate">ID: {job.id}</span>
                             </div>
+
+                            <h3 className="text-base sm:text-lg font-display font-bold text-ink-950">
+                              {job.title}
+                            </h3>
+
+                            <div className="flex items-center gap-4 text-xs text-slate flex-wrap">
+                              <span className="font-medium text-ink-900">{job.companyName}</span>
+                              <span>• {job.location}</span>
+                              <span className="font-bold text-teal-700">• {job.salary}</span>
+                              <span>• {job.experience}</span>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2 shrink-0 pt-2 sm:pt-0">
+                            <button
+                              onClick={() => toggleSaveJob(job.id)}
+                              className={`p-2 rounded-lg border transition ${
+                                isSaved
+                                  ? 'bg-teal-50 border-teal-300 text-teal-700'
+                                  : 'border-line text-slate hover:text-ink-900 bg-paper'
+                              }`}
+                            >
+                              <Bookmark className="w-4 h-4" />
+                            </button>
+
+                            <button
+                              onClick={() => setSelectedJob(job)}
+                              className="px-3.5 py-2 bg-paper hover:bg-slate-100 text-ink-900 border border-line rounded-lg text-xs font-mono font-bold transition"
+                            >
+                              View
+                            </button>
+
+                            <button
+                              onClick={() => handleApplyJob(job)}
+                              disabled={isApplied}
+                              className={`px-4 py-2 rounded-lg text-xs font-mono font-bold transition shadow-xs flex items-center gap-1.5 ${
+                                isApplied
+                                  ? 'bg-ok/10 text-ok border border-ok/30 cursor-default'
+                                  : 'bg-teal-500 hover:bg-teal-600 text-surface'
+                              }`}
+                            >
+                              {isApplied ? 'Applied' : 'Apply Now'}
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Requirements snippet */}
+                        <div className="flex flex-wrap gap-1.5 pt-1">
+                          {job.requirements.slice(0, 3).map((req, i) => (
+                            <span key={i} className="text-[11px] bg-paper text-slate px-2 py-0.5 rounded border border-line">
+                              {req}
+                            </span>
                           ))}
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}
 
-            {/* PROFILE BUILDER TAB */}
-            {activeTab === 'profile' && (
-              <div className="bg-surface border border-line rounded-lg p-6 shadow-xs space-y-6">
-                <div className="flex items-center justify-between pb-4 border-b border-line">
-                  <div>
-                    <h3 className="font-display font-bold text-xl text-ink-900">
-                      Candidate Profile Builder &amp; Resume Capture
-                    </h3>
-                    <p className="text-xs text-slate mt-0.5">
-                      Required fields for bank pre-screening: National ID, Passport, residential address, and domain credentials.
-                    </p>
-                  </div>
-                  {savedSuccess && (
-                    <span className="text-xs font-mono text-ok font-bold bg-teal-50 px-3 py-1 rounded border border-teal-100">
-                      ✓ Changes Saved
-                    </span>
-                  )}
-                </div>
+          </div>
+        )}
+      </main>
 
-                <form onSubmit={handleProfileSave} className="space-y-6">
-                  {/* Resume Upload Section */}
-                  <div className="p-4 bg-teal-50 border border-teal-100 rounded-lg space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <FileSpreadsheet className="w-5 h-5 text-teal-600" />
-                        <div>
-                          <h4 className="font-display font-bold text-sm text-teal-900">Resume / CV Document</h4>
-                          <p className="text-xs text-slate">PDF or DOCX max 10MB</p>
-                        </div>
-                      </div>
-                      <label className="px-3 py-1.5 bg-teal-500 hover:bg-teal-600 text-surface font-mono font-bold text-xs uppercase rounded cursor-pointer transition">
-                        Upload New Resume
-                        <input type="file" accept=".pdf,.doc,.docx" onChange={handleResumeUpload} className="hidden" />
-                      </label>
-                    </div>
-                    {resumeUploaded && (
-                      <div className="text-xs font-mono text-ok font-bold">
-                        Current File: {resumeUploaded}
-                      </div>
-                    )}
-                  </div>
+      {/* Detail Modal for Selected Job */}
+      {selectedJob && (
+        <JobQuickModal
+          job={selectedJob}
+          onClose={() => setSelectedJob(null)}
+          onApplySuccess={() => {
+            handleApplyJob(selectedJob);
+            setSelectedJob(null);
+          }}
+        />
+      )}
 
-                  {/* Section 1: Personal Identification */}
-                  <div>
-                    <h4 className="font-mono text-xs font-bold uppercase text-teal-600 mb-3">{"// 1. Personal & Identification Data"}</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-xs font-mono text-slate mb-1">Full Legal Name *</label>
-                        <input
-                          type="text"
-                          required
-                          value={profile.fullName}
-                          onChange={(e) => setProfile({ ...profile, fullName: e.target.value })}
-                          className="w-full px-3 py-2 bg-paper border border-line rounded text-xs text-ink-900 focus:outline-none focus:border-teal-500"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-mono text-slate mb-1">National ID / PAN / Passport No. *</label>
-                        <input
-                          type="text"
-                          required
-                          value={profile.nationalId}
-                          onChange={(e) => setProfile({ ...profile, nationalId: e.target.value })}
-                          className="w-full px-3 py-2 bg-paper border border-line rounded text-xs text-ink-900 focus:outline-none focus:border-teal-500 uppercase font-mono"
-                        />
-                      </div>
-                    </div>
-                  </div>
+      {/* Applications Modal */}
+      {showApplicationsModal && (
+        <div className="fixed inset-0 z-50 bg-ink-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-surface border border-line rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-xl max-h-[85vh] overflow-y-auto animate-fadeIn">
+            <div className="flex items-center justify-between border-b border-line pb-3">
+              <h3 className="text-lg font-display font-bold text-ink-950 flex items-center gap-2">
+                <Briefcase className="w-5 h-5 text-teal-600" />
+                <span>My Submitted Applications</span>
+              </h3>
+              <button
+                onClick={() => setShowApplicationsModal(false)}
+                className="text-slate hover:text-ink-900 p-1 rounded-lg"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
 
-                  {/* Section 2: Contact & Detailed Residential Address */}
-                  <div>
-                    <h4 className="font-mono text-xs font-bold uppercase text-teal-600 mb-3">{"// 2. Contact & Residential Address"}</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-xs font-mono text-slate mb-1">Email Address *</label>
-                        <input
-                          type="email"
-                          required
-                          value={profile.email}
-                          onChange={(e) => setProfile({ ...profile, email: e.target.value })}
-                          className="w-full px-3 py-2 bg-paper border border-line rounded text-xs text-ink-900 focus:outline-none focus:border-teal-500"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-mono text-slate mb-1">Mobile Phone *</label>
-                        <input
-                          type="tel"
-                          required
-                          value={profile.phone}
-                          onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
-                          className="w-full px-3 py-2 bg-paper border border-line rounded text-xs text-ink-900 focus:outline-none focus:border-teal-500"
-                        />
-                      </div>
-                      <div className="md:col-span-2">
-                        <label className="block text-xs font-mono text-slate mb-1">Full Street Address *</label>
-                        <input
-                          type="text"
-                          required
-                          value={profile.address}
-                          onChange={(e) => setProfile({ ...profile, address: e.target.value })}
-                          className="w-full px-3 py-2 bg-paper border border-line rounded text-xs text-ink-900 focus:outline-none focus:border-teal-500"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-mono text-slate mb-1">District / Region *</label>
-                        <input
-                          type="text"
-                          required
-                          value={profile.district}
-                          onChange={(e) => setProfile({ ...profile, district: e.target.value })}
-                          className="w-full px-3 py-2 bg-paper border border-line rounded text-xs text-ink-900 focus:outline-none focus:border-teal-500"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-mono text-slate mb-1">City &amp; Zip Code *</label>
-                        <div className="flex gap-2">
-                          <input
-                            type="text"
-                            required
-                            value={profile.city}
-                            onChange={(e) => setProfile({ ...profile, city: e.target.value })}
-                            placeholder="City"
-                            className="w-2/3 px-3 py-2 bg-paper border border-line rounded text-xs text-ink-900 focus:outline-none focus:border-teal-500"
-                          />
-                          <input
-                            type="text"
-                            required
-                            value={profile.zipCode}
-                            onChange={(e) => setProfile({ ...profile, zipCode: e.target.value })}
-                            placeholder="ZIP"
-                            className="w-1/3 px-3 py-2 bg-paper border border-line rounded text-xs text-ink-900 focus:outline-none focus:border-teal-500 font-mono"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+            <div className="space-y-3">
+              {appliedJobIds.map((jobId) => {
+                const job = allJobs.find((j) => j.id === jobId);
+                if (!job) return null;
 
-                  {/* Section 3: Professional & Compensation Specs */}
-                  <div>
-                    <h4 className="font-mono text-xs font-bold uppercase text-teal-600 mb-3">{"// 3. Domain Specs & Notice Period"}</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                return (
+                  <div key={jobId} className="p-4 bg-paper border border-line rounded-xl space-y-2">
+                    <div className="flex items-start justify-between">
                       <div>
-                        <label className="block text-xs font-mono text-slate mb-1">Educational Degree *</label>
-                        <input
-                          type="text"
-                          required
-                          value={profile.education}
-                          onChange={(e) => setProfile({ ...profile, education: e.target.value })}
-                          className="w-full px-3 py-2 bg-paper border border-line rounded text-xs text-ink-900 focus:outline-none focus:border-teal-500"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-mono text-slate mb-1">Current Designation *</label>
-                        <input
-                          type="text"
-                          required
-                          value={profile.currentRole}
-                          onChange={(e) => setProfile({ ...profile, currentRole: e.target.value })}
-                          className="w-full px-3 py-2 bg-paper border border-line rounded text-xs text-ink-900 focus:outline-none focus:border-teal-500"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-mono text-slate mb-1">Expected Annual CTC *</label>
-                        <input
-                          type="text"
-                          required
-                          value={profile.expectedCtc}
-                          onChange={(e) => setProfile({ ...profile, expectedCtc: e.target.value })}
-                          className="w-full px-3 py-2 bg-paper border border-line rounded text-xs text-ink-900 focus:outline-none focus:border-teal-500"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-mono text-slate mb-1">Notice Period *</label>
-                        <input
-                          type="text"
-                          required
-                          value={profile.noticePeriod}
-                          onChange={(e) => setProfile({ ...profile, noticePeriod: e.target.value })}
-                          className="w-full px-3 py-2 bg-paper border border-line rounded text-xs text-ink-900 focus:outline-none focus:border-teal-500"
-                        />
-                      </div>
-                      <div className="md:col-span-2">
-                        <label className="block text-xs font-mono text-slate mb-1">Domain Skills &amp; Certifications</label>
-                        <textarea
-                          rows={2}
-                          value={profile.skills}
-                          onChange={(e) => setProfile({ ...profile, skills: e.target.value })}
-                          className="w-full px-3 py-2 bg-paper border border-line rounded text-xs text-ink-900 focus:outline-none focus:border-teal-500"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <button
-                    type="submit"
-                    className="px-6 py-2.5 bg-teal-500 hover:bg-teal-600 text-surface text-xs font-bold uppercase tracking-wider rounded shadow-xs transition"
-                  >
-                    Save &amp; Verify Updated Profile
-                  </button>
-                </form>
-              </div>
-            )}
-
-            {/* SAVED JOBS TAB */}
-            {activeTab === 'saved' && (
-              <div className="bg-surface border border-line rounded-lg p-6 shadow-xs space-y-4">
-                <h3 className="font-display font-bold text-xl text-ink-900">Saved Banking &amp; Corporate Openings</h3>
-                <div className="space-y-3">
-                  {savedJobs.map((job) => (
-                    <div key={job.id} className="p-4 bg-paper border border-line rounded-lg flex items-center justify-between">
-                      <div>
-                        <span className="font-mono text-xs text-teal-600 font-bold bg-teal-50 px-2 py-0.5 rounded">
-                          {job.id}
+                        <span className="font-mono text-[10px] font-bold text-teal-800 bg-teal-50 px-2 py-0.5 rounded border border-teal-200">
+                          {job.category}
                         </span>
-                        <h4 className="font-display font-bold text-base text-ink-900 mt-1">{job.title}</h4>
-                        <p className="text-xs text-slate">{job.companyName} • {job.location} • {job.salary}</p>
+                        <h4 className="font-bold text-ink-950 text-sm mt-1">{job.title}</h4>
+                        <p className="text-xs text-slate">{job.companyName} • {job.location}</p>
                       </div>
-                      <Link
-                        href={`/jobs/${job.id}`}
-                        className="px-4 py-2 bg-teal-500 text-surface text-xs font-bold uppercase rounded hover:bg-teal-600 transition"
-                      >
-                        Apply Now
-                      </Link>
+                      <span className="font-mono text-[10px] font-bold text-ok bg-ok/10 px-2 py-1 rounded border border-ok/20">
+                        Screening In Progress
+                      </span>
                     </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* RECRUITER INBOX TAB */}
-            {activeTab === 'messages' && (
-              <div className="bg-surface border border-line rounded-lg p-6 shadow-xs space-y-4">
-                <h3 className="font-display font-bold text-xl text-ink-900">Recruiter Messages</h3>
-                <div className="space-y-3">
-                  {messages.map((msg) => (
-                    <div key={msg.id} className="p-4 bg-paper border border-line rounded-lg space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="font-bold text-xs text-teal-700">{msg.sender}</span>
-                        <span className="text-[10px] font-mono text-slate">{msg.time}</span>
-                      </div>
-                      <h4 className="font-display font-bold text-sm text-ink-900">{msg.subject}</h4>
-                      <p className="text-xs text-slate leading-relaxed">{msg.body}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </main>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
