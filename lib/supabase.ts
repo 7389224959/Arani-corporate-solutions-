@@ -129,6 +129,21 @@ export async function submitEmployerLead(data: {
   throw new Error('Supabase client not initialized');
 }
 
+export async function loginCandidate(fullName: string, email: string) {
+  if (typeof window !== 'undefined') {
+    const res = await fetch('/api/candidate-login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fullName, email })
+    });
+    if (!res.ok) {
+      throw new Error('Failed to login candidate');
+    }
+    return await res.json();
+  }
+  return { success: true, profile: { fullName, email }, applications: [] };
+}
+
 export async function saveCandidateProfile(profileData: any) {
   if (typeof window !== 'undefined') {
     const res = await fetch('/api/candidate-register', {

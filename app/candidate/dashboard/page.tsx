@@ -6,6 +6,7 @@ import { AraniLogo } from '@/components/AraniLogo';
 import { SAMPLE_JOBS, Job } from '@/lib/sampleData';
 import { JobQuickModal } from '@/components/JobQuickModal';
 import { getJobsList } from '@/lib/supabase-cms';
+import { loginCandidate } from '@/lib/supabase';
 import {
   User,
   FileText,
@@ -29,7 +30,12 @@ import {
   Clock,
   ShieldCheck,
   ChevronRight,
-  FileSpreadsheet
+  FileSpreadsheet,
+  LogIn,
+  LogOut,
+  Mail,
+  Phone,
+  AlertCircle
 } from 'lucide-react';
 
 interface RecommendedJob extends Job {
@@ -40,6 +46,10 @@ interface RecommendedJob extends Job {
 export default function CandidateDashboardPage() {
   const [wizardStep, setWizardStep] = useState<1 | 2>(1); // 1 = Profile Builder, 2 = Jobs For You
   const [showApplicationsModal, setShowApplicationsModal] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [loginInputs, setLoginInputs] = useState({ fullName: '', email: '' });
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [loginErrorMessage, setLoginErrorMessage] = useState<string | null>(null);
 
   // Candidate Profile State
   const [profile, setProfile] = useState(() => {
@@ -122,6 +132,115 @@ export default function CandidateDashboardPage() {
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3500);
+  };
+
+  // Candidate Login Handler (Full Name & Email ID)
+  const handleCandidateLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!loginInputs.fullName.trim() || !loginInputs.email.trim()) {
+      setLoginErrorMessage('Please enter both your Full Name and Email Address.');
+      return;
+    }
+
+    setIsLoggingIn(true);
+    setLoginErrorMessage(null);
+
+    try {
+      const result = await loginCandidate(loginInputs.fullName.trim(), loginInputs.email.trim());
+
+      const candidateName = result?.profile?.fullName || loginInputs.fullName.trim();
+      const candidateEmail = result?.profile?.email || loginInputs.email.trim();
+      const candidatePhone = result?.profile?.phone || profile.phone || '';
+
+      const updatedProfile = {
+        ...profile,
+        ...(result?.profile || {}),
+        fullName: candidateName,
+        email: candidateEmail,
+        phone: candidatePhone
+      };
+
+      setProfile(updatedProfile);
+
+      if (result?.applications && Array.isArray(result.applications) && result.applications.length > 0) {
+        setAppliedJobIds(result.applications);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('arani_applied_jobs', JSON.stringify(result.applications));
+        }
+      }
+
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('arani_candidate_profile', JSON.stringify(updatedProfile));
+        localStorage.setItem(
+          'arani_role_registration',
+          JSON.stringify({
+            role: 'Candidate',
+            name: candidateName,
+            email: candidateEmail,
+            phone: candidatePhone,
+            status: 'Active',
+            wizardStep: 2
+          })
+        );
+      }
+
+      setIsLoggingIn(false);
+      setShowLoginModal(false);
+      setLoginInputs({ fullName: '', email: '' });
+      showToast(`Welcome, ${candidateName}! Your candidate profile and jobs are active.`);
+    } catch (err: any) {
+      console.warn('Login fallback:', err);
+      const updatedProfile = {
+        ...profile,
+        fullName: loginInputs.fullName.trim(),
+        email: loginInputs.email.trim()
+      };
+      setProfile(updatedProfile);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('arani_candidate_profile', JSON.stringify(updatedProfile));
+        localStorage.setItem(
+          'arani_role_registration',
+          JSON.stringify({
+            role: 'Candidate',
+            name: loginInputs.fullName.trim(),
+            email: loginInputs.email.trim(),
+            phone: profile.phone || '',
+            status: 'Active',
+            wizardStep: 1
+          })
+        );
+      }
+      setIsLoggingIn(false);
+      setShowLoginModal(false);
+      setLoginInputs({ fullName: '', email: '' });
+      showToast(`Logged in as ${loginInputs.fullName.trim()}!`);
+    }
+  };
+
+  const handleCandidateLogout = () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('arani_role_registration');
+      localStorage.removeItem('arani_candidate_profile');
+      localStorage.removeItem('arani_applied_jobs');
+    }
+    setProfile({
+      fullName: '',
+      email: '',
+      phone: '',
+      city: 'Mumbai',
+      education: 'Graduate / Post-Graduate',
+      currentCompany: 'Banking / Corporate Firm',
+      currentRole: 'Credit Analyst / Banking Officer',
+      experienceYears: '1-3 Years',
+      expectedCtc: '₹6,00,000 - ₹12,00,000 / yr',
+      noticePeriod: '30 Days',
+      skills: 'Banking Operations, Credit Analysis, Customer Relationship, KYC & Compliance, Financial Evaluation',
+      preferredLocation: 'Mumbai / Hybrid'
+    });
+    setAppliedJobIds([]);
+    setSavedJobIds([]);
+    setWizardStep(1);
+    showToast('Signed out of candidate session.');
   };
 
   // Compute AI Job Matches based on profile skills & experience
@@ -289,7 +408,7 @@ export default function CandidateDashboardPage() {
             <AraniLogo className="h-9" variant="dark" />
           </Link>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             {appliedJobIds.length > 0 && (
               <button
                 onClick={() => setShowApplicationsModal(true)}
@@ -300,18 +419,77 @@ export default function CandidateDashboardPage() {
               </button>
             )}
 
-            <div className="flex items-center gap-2 text-xs font-mono text-slate bg-slate-50 px-3 py-1.5 rounded-full border border-line">
-              <span className="w-2 h-2 rounded-full bg-ok animate-pulse" />
-              <span className="font-bold text-ink-900 truncate max-w-[120px] sm:max-w-none">
-                {profile.fullName || 'Candidate'}
-              </span>
-            </div>
+            {/* Candidate Login / Switch Account Button */}
+            <button
+              onClick={() => {
+                setLoginErrorMessage(null);
+                setLoginInputs({
+                  fullName: profile.fullName || '',
+                  email: profile.email || ''
+                });
+                setShowLoginModal(true);
+              }}
+              className="px-3 py-1.5 bg-teal-500 hover:bg-teal-600 text-surface text-xs font-mono font-bold rounded-lg transition flex items-center gap-1.5 shadow-xs"
+            >
+              <LogIn className="w-3.5 h-3.5" />
+              <span className="hidden xs:inline">Candidate Login</span>
+              <span className="xs:hidden">Login</span>
+            </button>
+
+            {profile.fullName ? (
+              <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-2 text-xs font-mono text-slate bg-slate-50 px-3 py-1.5 rounded-full border border-line">
+                  <span className="w-2 h-2 rounded-full bg-ok animate-pulse" />
+                  <span className="font-bold text-ink-900 truncate max-w-[100px] sm:max-w-[140px]">
+                    {profile.fullName}
+                  </span>
+                </div>
+                <button
+                  onClick={handleCandidateLogout}
+                  title="Sign Out"
+                  className="p-1.5 text-slate hover:text-red-600 rounded-lg hover:bg-red-50 transition"
+                  aria-label="Sign out"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
+            ) : null}
           </div>
         </div>
       </header>
 
       {/* Main Container */}
       <main className="max-w-4xl mx-auto px-4 sm:px-6 py-8 flex-1 w-full space-y-6">
+        
+        {/* Returning Candidate Quick Login Banner */}
+        {!profile.fullName && (
+          <div className="bg-gradient-to-r from-teal-50 via-teal-100/40 to-surface border border-teal-200 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-teal-500 text-surface flex items-center justify-center shrink-0">
+                <LogIn className="w-5 h-5" />
+              </div>
+              <div>
+                <h2 className="font-display font-bold text-sm text-ink-950">
+                  Returning Candidate? Login with Full Name &amp; Email ID
+                </h2>
+                <p className="text-xs text-slate mt-0.5">
+                  Restore your saved preferences, resume, submitted applications, and personalized AI job matches.
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => {
+                setLoginErrorMessage(null);
+                setLoginInputs({ fullName: '', email: '' });
+                setShowLoginModal(true);
+              }}
+              className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-surface font-bold text-xs rounded-lg transition shrink-0 flex items-center gap-1.5 shadow-xs"
+            >
+              <LogIn className="w-3.5 h-3.5" />
+              <span>Login Now</span>
+            </button>
+          </div>
+        )}
         
         {/* WIZARD STEPPER BAR */}
         <div className="bg-surface border border-line rounded-2xl p-5 shadow-xs">
@@ -935,6 +1113,102 @@ export default function CandidateDashboardPage() {
           </div>
         )}
       </main>
+
+      {/* Candidate Login Modal (Full Name & Email ID) */}
+      {showLoginModal && (
+        <div className="fixed inset-0 z-50 bg-ink-950/75 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn overflow-y-auto">
+          <div className="bg-surface border border-line rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl my-auto animate-fadeIn relative">
+            <button
+              onClick={() => setShowLoginModal(false)}
+              className="absolute top-4 right-4 p-1.5 rounded-lg text-slate hover:text-ink-900 hover:bg-paper transition"
+              aria-label="Close modal"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="text-center pt-2">
+              <div className="w-12 h-12 rounded-2xl bg-teal-100 text-teal-600 flex items-center justify-center mx-auto mb-3">
+                <LogIn className="w-6 h-6" />
+              </div>
+              <span className="font-mono text-[10px] uppercase tracking-widest text-teal-600 font-bold block mb-1">
+                {"// CANDIDATE PORTAL ACCESS"}
+              </span>
+              <h3 className="text-xl font-display font-bold text-ink-950">
+                Candidate Login
+              </h3>
+              <p className="text-xs text-slate mt-1 max-w-xs mx-auto">
+                Enter your Full Name and Email ID to load your profile, applications, and AI job recommendations.
+              </p>
+            </div>
+
+            {loginErrorMessage && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2 text-xs text-red-700">
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-red-600" />
+                <span>{loginErrorMessage}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleCandidateLogin} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-ink-900 mb-1">
+                  Full Name *
+                </label>
+                <div className="relative">
+                  <User className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
+                  <input
+                    required
+                    type="text"
+                    className="w-full pl-9 pr-3 py-2.5 border border-line rounded-lg focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-sm bg-surface text-ink-900"
+                    placeholder="e.g. Rahul Sharma"
+                    value={loginInputs.fullName}
+                    onChange={(e) => setLoginInputs({ ...loginInputs, fullName: e.target.value })}
+                    autoFocus
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-ink-900 mb-1">
+                  Email Address *
+                </label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
+                  <input
+                    required
+                    type="email"
+                    className="w-full pl-9 pr-3 py-2.5 border border-line rounded-lg focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-sm bg-surface text-ink-900"
+                    placeholder="e.g. rahul.sharma@example.com"
+                    value={loginInputs.email}
+                    onChange={(e) => setLoginInputs({ ...loginInputs, email: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div className="p-3 bg-teal-50 border border-teal-100 rounded-lg flex items-start gap-2 text-xs text-teal-900">
+                <ShieldCheck className="w-4 h-4 text-teal-600 shrink-0 mt-0.5" />
+                <span>
+                  No password required. Login instantly with your registered name &amp; email.
+                </span>
+              </div>
+
+              <button
+                type="submit"
+                disabled={isLoggingIn}
+                className="w-full bg-teal-500 hover:bg-teal-600 disabled:opacity-50 text-surface font-bold py-2.5 rounded-lg transition text-sm flex items-center justify-center gap-2 shadow-xs"
+              >
+                {isLoggingIn ? (
+                  <span>Logging in...</span>
+                ) : (
+                  <>
+                    <LogIn className="w-4 h-4" />
+                    <span>Login with Name &amp; Email</span>
+                  </>
+                )}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Detail Modal for Selected Job */}
       {selectedJob && (
