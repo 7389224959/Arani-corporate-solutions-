@@ -166,7 +166,7 @@ export default function JobsPage() {
                 Explore Verified Career Opportunities
               </h1>
               <p className="text-slate text-xs md:text-sm mt-1 max-w-xl">
-                100% free placement service for candidates. Direct pre-screening with top Indian banks &amp; MNC corporations.
+                Professional placement consultancy for candidates. Direct pre-screening with top Indian banks &amp; MNC corporations.
               </p>
             </div>
 

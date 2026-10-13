@@ -79,7 +79,7 @@ export const CounsellingModal: React.FC<CounsellingModalProps> = ({ isOpen, onCl
             <span className="font-mono text-[10px] sm:text-xs uppercase tracking-widest text-teal-400 font-bold block mb-1">
               {"// 1-ON-1 EXPERT CAREER GUIDANCE"}
             </span>
-            <h2 className="text-xl sm:text-2xl font-display font-bold">Get Free Job Counselling</h2>
+            <h2 className="text-xl sm:text-2xl font-display font-bold">Get Job Counselling</h2>
             <p className="text-xs text-slate-300 mt-1 max-w-sm mx-auto leading-relaxed">
               Speak with senior banking &amp; corporate hiring advisors. Get customized career guidance &amp; job interview support.
             </p>
@@ -99,7 +99,7 @@ export const CounsellingModal: React.FC<CounsellingModalProps> = ({ isOpen, onCl
                   BOOKING CONFIRMED
                 </span>
                 <h3 className="text-xl sm:text-2xl font-display font-bold text-ink-950 mt-2">
-                  Free Counselling Booked!
+                  Counselling Session Booked!
                 </h3>
               </div>
 
@@ -107,7 +107,7 @@ export const CounsellingModal: React.FC<CounsellingModalProps> = ({ isOpen, onCl
                 <p className="text-sm font-semibold text-teal-950 flex items-start gap-2">
                   <Sparkles className="w-5 h-5 text-teal-600 shrink-0 mt-0.5" />
                   <span>
-                    Your free counselling has been booked successfully. You will be called within 24 hours by one of our expert counsellors.
+                    Your career counselling session has been booked successfully. You will be called within 24 hours by one of our expert advisors.
                   </span>
                 </p>
               </div>
@@ -255,7 +255,7 @@ export const CounsellingModal: React.FC<CounsellingModalProps> = ({ isOpen, onCl
               {/* Trust Callout */}
               <div className="bg-teal-50/60 border border-teal-200/60 rounded-lg p-2.5 text-[11px] text-teal-900 flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-teal-600 shrink-0" />
-                <span>100% Free Service for Candidates. No hidden charges or placement fees.</span>
+                <span>Professional Career Guidance &amp; Placement Support from verified industry experts.</span>
               </div>
 
               {/* Submit Button */}

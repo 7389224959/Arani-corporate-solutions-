@@ -60,9 +60,9 @@ export const DEFAULT_CAROUSEL_SLIDES: CarouselSlideData[] = [
     id: 3,
     title: '1-on-1 Candidate Placement Session',
     image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=1920&q=80',
-    badge: '100% Free Placement Service For Job Seekers',
+    badge: 'Premier Placement & Career Consultancy',
     headline: 'Accelerate Your Career in Banking & Corporate',
-    subheadline: 'Access unadvertised vacancies in premier financial institutions with personalized resume guidance and zero candidate placement fees.',
+    subheadline: 'Access unadvertised vacancies in premier financial institutions with personalized resume guidance and expert placement consulting.',
     tag: 'Career Growth'
   },
   {
@@ -360,8 +360,8 @@ export const SAMPLE_TESTIMONIALS: Testimonial[] = [
 export const SAMPLE_FAQS: FAQ[] = [
   {
     id: 'faq-c1',
-    question: 'Is Aranii Corporate Solutions completely free for job seekers?',
-    answer: 'Yes! Our placement and career consultation services are 100% free for all candidates. We never charge candidates any registration, processing, or placement fees.',
+    question: 'How does the consultancy process work for job seekers?',
+    answer: 'Aranii Corporate Solutions provides professional end-to-end career consulting and corporate placement assistance. Our consultancy terms and guidance fees are fully transparent, with clear advisory support throughout your interview and placement journey.',
     category: 'candidate'
   },
   {

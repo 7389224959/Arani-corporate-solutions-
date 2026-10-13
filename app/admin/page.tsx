@@ -1039,6 +1039,33 @@ export default function AdminPage() {
                   </span>
                 </button>
 
+                <Link
+                  href="/admin/chat"
+                  className="w-full text-left px-3 py-2.5 rounded text-xs font-mono font-bold uppercase tracking-wider transition flex items-center justify-between text-teal-700 bg-teal-50/70 hover:bg-teal-100/80 border border-teal-200 shadow-xs"
+                >
+                  <span className="flex items-center gap-2.5">
+                    <MessageSquare className="w-4 h-4 text-teal-600" />
+                    <span>Chatbot Live Inbox</span>
+                  </span>
+                  <span className="bg-emerald-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded">
+                    WA + IG
+                  </span>
+                </Link>
+
+                <Link
+                  href="/mega-job-drive/admin"
+                  className="w-full text-left px-3 py-2.5 rounded text-xs font-mono font-bold uppercase tracking-wider transition flex items-center justify-between text-amber-800 bg-amber-50/70 hover:bg-amber-100/80 border border-amber-200 shadow-xs"
+                >
+                  <span className="flex items-center gap-2.5">
+                    <Briefcase className="w-4 h-4 text-amber-600" />
+                    <span>Mega Job Drive 2026</span>
+                  </span>
+                  <span className="bg-amber-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded">
+                    Drive Portal
+                  </span>
+                </Link>
+
+
 
                 <button
                   onClick={() => setActiveTab('candidates')}
@@ -2568,7 +2595,7 @@ export default function AdminPage() {
                               <div className="p-2 bg-paper/80 border border-line/60 rounded text-[11px] text-slate space-y-1">
                                 <span className="font-mono text-[9px] uppercase font-bold text-muted block">Latest Activity:</span>
                                 <p className="line-clamp-2 italic text-ink-800">
-                                  "{lead.notes[lead.notes.length - 1]}"
+                                  &quot;{lead.notes[lead.notes.length - 1]}&quot;
                                 </p>
                               </div>
                             )}

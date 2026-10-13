@@ -77,9 +77,9 @@ const HERO_CAROUSEL_SLIDES = [
     id: 3,
     title: '1-on-1 Candidate Placement Session',
     image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=1920&q=80',
-    badge: '100% Free Placement Service For Job Seekers',
+    badge: 'Premier Placement & Career Consultancy',
     headline: 'Accelerate Your Career in Banking & Corporate',
-    subheadline: 'Access unadvertised vacancies in premier financial institutions with personalized resume guidance and zero candidate placement fees.',
+    subheadline: 'Access unadvertised vacancies in premier financial institutions with personalized resume guidance and expert placement consulting.',
     tag: 'Career Growth'
   },
   {
@@ -163,9 +163,6 @@ export default function HomePage() {
   const [counsellingModalOpen, setCounsellingModalOpen] = useState(false);
   const [searchOverlayOpen, setSearchOverlayOpen] = useState(false);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
-
-  // Audience view selection tab (Looking for a Job vs Hiring Talent)
-  const [audienceView, setAudienceView] = useState<'seeker' | 'employer'>('seeker');
 
   // Hero Carousel State
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -377,7 +374,7 @@ export default function HomePage() {
                   onClick={() => setRoleModalOpen(true)}
                   className="w-full text-left p-2 bg-teal-500 text-surface rounded font-bold hover:bg-teal-600 transition"
                 >
-                  Create Free Profile →
+                  Create Candidate Profile →
                 </button>
               </div>
             </div>
@@ -505,7 +502,7 @@ export default function HomePage() {
                   }}
                   className="w-full mt-2 py-3 bg-teal-500 text-surface font-bold rounded shadow"
                 >
-                  Create Free Profile
+                  Create Candidate Profile
                 </button>
               </div>
             ) : (
@@ -551,48 +548,19 @@ export default function HomePage() {
                 >
                   Quick Search <Search className="w-3.5 h-3.5" />
                 </button>
-                <button
-                  onClick={() => setRoleModalOpen(true)}
+                <a
+                  href="/employers"
                   className="px-3 py-1 bg-ink-800 text-surface font-bold rounded text-[11px] hover:bg-ink-900"
                 >
                   Hire Talent (72h SLA)
-                </button>
+                </a>
               </div>
             </div>
           </div>
         )}
       </header>
 
-      {/* USER SELECTION TABS SECTION (Directly below Header, on White Canvas - matches Screenshot 2) */}
-      <div className="bg-surface border-b border-line py-3 px-4">
-        <div className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <button
-            onClick={() => setAudienceView('seeker')}
-            className={`w-full py-3 px-5 rounded-lg font-display text-sm sm:text-base font-extrabold transition-all duration-300 flex items-center justify-center gap-2.5 shadow-xs ${
-              audienceView === 'seeker'
-                ? 'bg-teal-600 hover:bg-teal-700 text-surface shadow-md ring-2 ring-teal-400/40'
-                : 'bg-surface text-ink-900 border border-line hover:border-teal-500 shadow-2xs hover:bg-paper'
-            }`}
-          >
-            <User className={`w-5 h-5 ${audienceView === 'seeker' ? 'text-surface' : 'text-teal-600'}`} />
-            <span>I'm Looking for a Job</span>
-          </button>
-
-          <button
-            onClick={() => setAudienceView('employer')}
-            className={`w-full py-3 px-5 rounded-lg font-display text-sm sm:text-base font-extrabold transition-all duration-300 flex items-center justify-center gap-2.5 shadow-xs ${
-              audienceView === 'employer'
-                ? 'bg-teal-600 hover:bg-teal-700 text-surface shadow-md ring-2 ring-teal-400/40'
-                : 'bg-surface text-ink-900 border border-line hover:border-teal-500 shadow-2xs hover:bg-paper'
-            }`}
-          >
-            <Building2 className={`w-5 h-5 ${audienceView === 'employer' ? 'text-surface' : 'text-teal-600'}`} />
-            <span>I'm Hiring Talent</span>
-          </button>
-        </div>
-      </div>
-
-      {/* MAIN HERO SLIDING IMAGE CAROUSEL BANNER SECTION (Matches Screenshot 2) */}
+      {/* MAIN HERO SLIDING IMAGE CAROUSEL BANNER SECTION */}
       <section
         id="hero-section"
         className="relative bg-ink-950 text-surface overflow-hidden min-h-[480px] sm:min-h-[520px] md:min-h-[580px] flex items-center"
@@ -644,7 +612,7 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-6 sm:px-12 relative z-10 py-12 md:py-16 w-full">
           <div className="max-w-2xl space-y-5 animate-fadeIn">
             
-            {/* Top Teal Pill Badge (Matches "WELCOME TO ARANI CORPORATE SOLUTIONS" in Screenshot 2) */}
+            {/* Top Teal Pill Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-md bg-teal-600 text-surface text-xs font-mono font-extrabold uppercase tracking-wider shadow-md">
               <Sparkles className="w-3.5 h-3.5" />
               <span>WELCOME TO ARANI CORPORATE SOLUTIONS</span>
@@ -652,51 +620,39 @@ export default function HomePage() {
 
             {/* Main Hero Headline */}
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-display font-extrabold text-surface tracking-tight leading-[1.12] drop-shadow-md">
-              {audienceView === 'seeker' ? (
-                <>Connecting Talent with Opportunities</>
-              ) : (
-                <>Connecting Enterprises with Top Talent</>
-              )}
+              Connecting Talent with Opportunities
             </h1>
 
             {/* Subheadline */}
             <p className="text-slate-100 text-sm sm:text-base md:text-lg leading-relaxed font-medium drop-shadow">
-              {audienceView === 'seeker'
-                ? 'Recruitment & Placement Consultancy for Top Companies & Job Seekers. Free service for candidates.'
-                : 'Premier HR, Staffing & Talent Sourcing Services. Shortlist qualified candidates in 72 hours.'}
+              Recruitment &amp; Placement Consultancy for Top Companies &amp; Job Seekers. Professional career consulting and verified corporate placements.
             </p>
 
-            {/* Primary Action Button (Matches "Explore Opportunities →" in Screenshot 2) */}
+            {/* Primary Action Buttons */}
             <div className="pt-2 flex flex-wrap items-center gap-4">
               <button
-                onClick={() => {
-                  if (audienceView === 'seeker') {
-                    setRoleModalOpen(true);
-                  } else {
-                    const el = document.getElementById('employer-spotlight');
-                    if (el) el.scrollIntoView({ behavior: 'smooth' });
-                    else setRoleModalOpen(true);
-                  }
-                }}
+                onClick={() => setRoleModalOpen(true)}
                 className="px-7 py-3.5 bg-teal-500 hover:bg-teal-600 text-surface font-extrabold text-sm sm:text-base rounded-md shadow-lg hover:shadow-teal-500/30 transition-all flex items-center gap-2 transform hover:-translate-y-0.5"
               >
-                <span>{audienceView === 'seeker' ? 'Get a Job Now' : 'Request Talent Shortlist'}</span>
+                <span>Get a Job Now</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
 
               <button
-                onClick={() => {
-                  if (audienceView === 'seeker') {
-                    setCounsellingModalOpen(true);
-                  } else {
-                    setRoleModalOpen(true);
-                  }
-                }}
+                onClick={() => setCounsellingModalOpen(true)}
                 className="px-6 py-3.5 bg-surface/10 hover:bg-surface/20 text-surface border border-surface/30 font-bold text-sm sm:text-base rounded-md backdrop-blur-md transition-all flex items-center gap-2 transform hover:-translate-y-0.5"
               >
-                <span>{audienceView === 'seeker' ? 'Get Free Job Counselling' : 'Schedule HR Call'}</span>
+                <span>Get Job Counselling</span>
                 <Phone className="w-4 h-4 text-teal-400" />
               </button>
+
+              <a
+                href="#employer-spotlight"
+                className="px-5 py-3.5 bg-surface/10 hover:bg-surface/20 text-surface border border-surface/30 font-bold text-sm sm:text-base rounded-md backdrop-blur-md transition-all flex items-center gap-2 transform hover:-translate-y-0.5"
+              >
+                <Building2 className="w-4 h-4 text-teal-400" />
+                <span>Hiring Talent?</span>
+              </a>
             </div>
 
           </div>
@@ -823,7 +779,7 @@ export default function HomePage() {
             {/* Bottom Link Bar */}
             <div className="pt-2 flex items-center justify-between text-xs font-mono text-slate border-t border-line/60">
               <span className="flex items-center gap-1.5 text-teal-700 font-bold">
-                ⚡ 100% Free Service For Job Candidates
+                ⚡ Professional Placement &amp; Career Consultancy
               </span>
               <a
                 href="#jobs-ledger"
@@ -967,11 +923,11 @@ export default function HomePage() {
                   Job Placement
                 </h3>
                 <p className="text-slate text-xs sm:text-sm leading-relaxed">
-                  Find verified opportunities from trusted employers with direct access to decision-makers and zero candidate fees.
+                  Find verified opportunities from trusted employers with direct access to decision-makers and expert consultancy guidance.
                 </p>
               </div>
               <div className="mt-6 pt-4 border-t border-line/60 flex items-center justify-between text-xs font-mono font-bold text-teal-600">
-                <span>Free For Candidates</span>
+                <span>Placement Advisory</span>
                 <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </div>
             </div>
@@ -1329,7 +1285,7 @@ export default function HomePage() {
             {howItWorksTab === 'candidate' ? (
               <>
                 {[
-                  { num: '01', title: 'Free Profile Setup', desc: 'Register in 2 minutes. Upload your resume, ID, and career preferences.' },
+                  { num: '01', title: 'Candidate Profile Setup', desc: 'Register in 2 minutes. Submit your profile, resume, and career preferences.' },
                   { num: '02', title: 'Verification & Match', desc: 'Our domain advisor reviews your credentials and matches top banking roles.' },
                   { num: '03', title: 'Direct Interviews', desc: 'Receive confirmed interview schedules directly with hiring managers.' },
                   { num: '04', title: 'Guaranteed Offer', desc: 'Secure your appointment letter with salary uplift consultation.' }
@@ -1765,13 +1721,13 @@ export default function HomePage() {
                   Candidate Registration
                   <ArrowUpRight className="w-4 h-4" />
                 </button>
-                <button
-                  onClick={() => setRoleModalOpen(true)}
+                <a
+                  href="/employers"
                   className="px-6 py-3 bg-surface hover:bg-paper text-ink-900 font-bold text-sm rounded-lg shadow transition flex items-center gap-2"
                 >
                   Employer Consultation
                   <Building2 className="w-4 h-4" />
-                </button>
+                </a>
               </div>
             </div>
 
@@ -1877,10 +1833,6 @@ export default function HomePage() {
       <RoleChoiceModal
         isOpen={roleModalOpen}
         onClose={() => setRoleModalOpen(false)}
-        onSelectRole={(role) => {
-          setRoleModalOpen(false);
-          alert(`Redirecting to ${role === 'candidate' ? 'Candidate Registration & Profile Builder' : 'Employer Requirement Intake'}...`);
-        }}
       />
 
       <CounsellingModal

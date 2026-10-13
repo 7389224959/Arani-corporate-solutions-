@@ -37,10 +37,10 @@ const CAMPAIGN_VARIANTS: Record<string, CampaignVariant> = {
     kicker: '// URGENT BANKING HIRING CAMPAIGN',
     title: 'Direct Walk-In & Interview Connect for ',
     highlightText: 'Branch Banking & Credit Roles',
-    subtitle: 'Free consultancy service for candidates. Get shortlisted for HDFC, ICICI, Kotak, and Axis Bank positions across India.',
+    subtitle: 'Premier consultancy service for candidates. Get shortlisted for HDFC, ICICI, Kotak, and Axis Bank positions across India.',
     categoryFilter: 'Banking',
     bulletPoints: [
-      '₹0 Candidate Fee Guaranteed',
+      'Verified Banking Positions',
       'Direct Recruiter Connect within 24 Hours',
       '42% Average Salary Uplift for Banking Professionals'
     ],
@@ -76,14 +76,14 @@ const CAMPAIGN_VARIANTS: Record<string, CampaignVariant> = {
     kicker: '// META AD CAMPAIGN LANDING PAGE',
     title: 'Get Hired into Premier ',
     highlightText: 'Banking & Corporate Roles',
-    subtitle: '100% Free service for candidates. Direct interviews with HDFC, ICICI, Kotak, and top enterprise corporations across India.',
+    subtitle: 'Professional consultancy service for candidates. Direct interviews with HDFC, ICICI, Kotak, and top enterprise corporations across India.',
     categoryFilter: 'All',
     bulletPoints: [
-      '₹0 Candidate Fee Guaranteed',
-      'Direct Bank Recruiter Connect',
+      'Direct Corporate & Bank Connect',
+      'Fast-track Pre-screening',
       '24h Profile Verification & Shortlisting'
     ],
-    ctaText: 'Register & Apply Free'
+    ctaText: 'Register & Apply'
   }
 };
 
@@ -148,14 +148,14 @@ export default function LandingPage() {
             <AraniLogo className="h-8 md:h-10" variant="dark" />
           </Link>
           <div className="flex items-center gap-3">
-            <span className="hidden sm:inline-block font-mono text-[11px] text-ok font-bold uppercase bg-ok/10 px-2.5 py-1 rounded border border-ok/20">
-              ✓ 100% Free for Candidates
+            <span className="hidden sm:inline-block font-mono text-[11px] text-teal-700 font-bold uppercase bg-teal-50 px-2.5 py-1 rounded border border-teal-200">
+              ✓ Verified Career Placement
             </span>
             <Link
               href="/candidate/dashboard"
               className="px-4 py-2 bg-teal-500 hover:bg-teal-600 text-surface text-xs font-mono font-bold uppercase rounded shadow-xs transition"
             >
-              Register Free
+              Candidate Portal
             </Link>
           </div>
         </div>
@@ -302,7 +302,7 @@ export default function LandingPage() {
                 STEP 03
               </span>
               <h4 className="font-display font-bold text-sm text-ink-900">Direct Bank Interview</h4>
-              <p className="text-xs text-slate">Get scheduled for direct interview rounds with hiring managers at zero cost.</p>
+              <p className="text-xs text-slate">Get scheduled for direct interview rounds with hiring managers with advisor support.</p>
             </div>
           </div>
         </div>
@@ -311,7 +311,7 @@ export default function LandingPage() {
       {/* Sticky Mobile Apply Bar */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-ink-950 border-t border-teal-500/30 p-3 z-40 flex items-center justify-between shadow-2xl">
         <div>
-          <p className="text-[11px] font-mono text-teal-300">100% Free Candidate Search</p>
+          <p className="text-[11px] font-mono text-teal-300">Verified Candidate Search</p>
           <p className="text-xs font-bold text-surface">2,400+ Open Banking Roles</p>
         </div>
         <Link

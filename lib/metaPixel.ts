@@ -81,9 +81,29 @@ export function getUtmParams(): UtmParams {
   return captureUtmParams();
 }
 
+const STANDARD_FB_EVENTS = new Set([
+  'PageView',
+  'ViewContent',
+  'Search',
+  'AddToCart',
+  'AddToWishlist',
+  'InitiateCheckout',
+  'AddPaymentInfo',
+  'Purchase',
+  'Lead',
+  'CompleteRegistration',
+  'Contact',
+  'CustomizeProduct',
+  'Donate',
+  'FindLocation',
+  'Schedule',
+  'StartTrial',
+  'SubmitApplication',
+  'Subscribe'
+]);
+
 /**
  * Track standard & custom Meta Pixel events
- * Standard events: PageView, ViewContent, Lead, CompleteRegistration, SubmitApplication, RequestQuote
  */
 export function trackPixelEvent(eventName: string, data: Record<string, any> = {}) {
   if (typeof window === 'undefined') return;
@@ -98,7 +118,11 @@ export function trackPixelEvent(eventName: string, data: Record<string, any> = {
   // 1. Call Meta Pixel window.fbq if initialized
   if ((window as any).fbq) {
     try {
-      (window as any).fbq('trackCustom', eventName, payload);
+      if (STANDARD_FB_EVENTS.has(eventName)) {
+        (window as any).fbq('track', eventName, payload);
+      } else {
+        (window as any).fbq('trackCustom', eventName, payload);
+      }
     } catch (e) {
       console.warn('Meta Pixel tracking error:', e);
     }
@@ -121,6 +145,48 @@ export function trackPixelEvent(eventName: string, data: Record<string, any> = {
 }
 
 /**
+ * Mega Job Drive Campaign Tracking Helpers
+ */
+export function trackMegaDriveLead(details: { role?: string; city?: string; experience?: string }) {
+  trackPixelEvent('Lead', {
+    content_name: 'Mega Banking Job Drive Registration',
+    content_category: 'Job Application',
+    target_role: details.role,
+    candidate_city: details.city,
+    candidate_experience: details.experience,
+    currency: 'INR'
+  });
+}
+
+export function trackMegaDriveInitiateCheckout(amount: number = 499, role?: string) {
+  trackPixelEvent('InitiateCheckout', {
+    content_name: 'Mega Job Drive Application Verification Fee',
+    content_category: 'Application Fee',
+    target_role: role,
+    value: amount,
+    currency: 'INR'
+  });
+}
+
+export function trackMegaDrivePurchase(amount: number = 499, token?: string, utr?: string) {
+  trackPixelEvent('Purchase', {
+    content_name: 'Mega Job Drive Verified Registration',
+    content_category: 'Application Fee',
+    value: amount,
+    currency: 'INR',
+    registration_token: token,
+    payment_utr: utr
+  });
+}
+
+export function trackMegaDriveAdmitCardDownload(token: string) {
+  trackPixelEvent('CompleteRegistration', {
+    content_name: 'Admit Card Issued & Downloaded',
+    registration_token: token
+  });
+}
+
+/**
  * Retrieve recent tracked pixel events for testing / admin audit
  */
 export function getPixelEventLogs() {
@@ -132,3 +198,4 @@ export function getPixelEventLogs() {
     return [];
   }
 }
+

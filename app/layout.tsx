@@ -1,5 +1,7 @@
 import type {Metadata} from 'next';
 import './globals.css';
+import { MetaPixel } from '@/components/MetaPixel';
+import { MegaDriveTopBanner } from '@/components/MegaDriveTopBanner';
 
 export const metadata: Metadata = {
   title: 'Aranii Corporate Solutions | Banking & Corporate Recruitment, HR Advisory',
@@ -13,8 +15,11 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
   return (
     <html lang="en">
       <body suppressHydrationWarning className="bg-paper text-ink-900 antialiased font-sans">
+        <MetaPixel />
+        <MegaDriveTopBanner />
         {children}
       </body>
     </html>
   );
 }
+

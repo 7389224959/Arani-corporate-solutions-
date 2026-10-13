@@ -1,12 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   X,
   UserCheck,
-  Building2,
-  ArrowUpRight,
+  ArrowRight,
   CheckCircle2,
   ArrowLeft,
   Mail,
@@ -15,7 +14,12 @@ import {
   LogIn,
   Sparkles,
   ShieldCheck,
-  AlertCircle
+  AlertCircle,
+  Briefcase,
+  Building2,
+  Award,
+  Zap,
+  Compass
 } from 'lucide-react';
 import { loginCandidate, saveCandidateProfile } from '@/lib/supabase';
 
@@ -43,6 +47,13 @@ export const RoleChoiceModal: React.FC<RoleChoiceModalProps> = ({
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      setStep(initialMode);
+      setErrorMessage(null);
+    }
+  }, [isOpen, initialMode]);
 
   if (!isOpen) return null;
 
@@ -216,151 +227,152 @@ export const RoleChoiceModal: React.FC<RoleChoiceModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink-950/75 backdrop-blur-xs p-3 sm:p-4 animate-fadeIn overflow-y-auto">
-      <div className="relative w-full max-w-xl bg-surface border border-line rounded-xl shadow-2xl my-auto max-h-[92vh] flex flex-col overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink-950/80 backdrop-blur-sm p-3 sm:p-4 animate-fadeIn overflow-y-auto">
+      <div className="relative w-full max-w-lg bg-surface border border-slate-200/80 dark:border-ink-700 rounded-2xl shadow-2xl my-auto max-h-[94vh] flex flex-col overflow-hidden">
         
-        {/* STEP 1: PORTAL SELECTION */}
+        {/* STEP 1: CANDIDATE PORTAL OVERVIEW (No employer section - 100% Candidate focused) */}
         {step === 'choice' && (
           <>
             {/* Header */}
-            <div className="bg-ink-900 text-surface p-5 sm:p-6 text-center relative shrink-0">
+            <div className="bg-gradient-to-br from-ink-950 via-ink-900 to-teal-950 text-surface p-6 sm:p-7 relative shrink-0 border-b border-teal-500/20">
               <button
                 onClick={handleClose}
-                className="absolute top-3.5 right-3.5 sm:top-4 sm:right-4 p-1.5 sm:p-2 rounded-lg bg-ink-800 text-slate hover:text-surface transition"
+                className="absolute top-4 right-4 p-2 rounded-xl bg-surface/10 hover:bg-surface/20 text-slate-300 hover:text-surface transition backdrop-blur-xs"
                 aria-label="Close"
               >
                 <X className="w-5 h-5" />
               </button>
-              <div className="mt-2">
-                <span className="font-mono text-[10px] sm:text-xs uppercase tracking-widest text-teal-400 font-bold block mb-1">
-                  {"// PORTAL ACCESS & LOGIN"}
-                </span>
-                <h2 className="text-xl sm:text-2xl font-display font-bold text-surface">
-                  Sign In or Register
-                </h2>
-                <p className="text-xs text-slate-300 mt-1 max-w-sm mx-auto">
-                  Access the Candidate Portal for job seekers or the Employer Portal for HR teams.
-                </p>
+
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-teal-500/20 border border-teal-400/40 text-teal-300 text-[10px] sm:text-xs font-mono font-bold uppercase tracking-wider mb-2.5">
+                <Sparkles className="w-3.5 h-3.5 text-teal-300" />
+                <span>Candidate Career Gateway • Professional Consultancy</span>
               </div>
+
+              <h2 className="text-2xl sm:text-3xl font-display font-extrabold text-surface tracking-tight leading-tight">
+                Candidate Portal
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-300 mt-1.5 leading-relaxed max-w-md">
+                Fast-track your job search with top private banks, NBFCs, and leading corporate enterprises across India.
+              </p>
             </div>
 
-            {/* Audience Choices */}
-            <div className="p-4 sm:p-6 grid grid-cols-1 sm:grid-cols-2 gap-4 overflow-y-auto">
-              {/* Candidate Path */}
-              <div className="group relative p-4 sm:p-5 bg-paper hover:bg-teal-50/40 border-2 border-line hover:border-teal-500 rounded-xl transition-all duration-300 flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="w-10 h-10 rounded-xl bg-teal-100 text-teal-600 flex items-center justify-center group-hover:scale-105 transition-transform">
-                      <UserCheck className="w-5 h-5" />
-                    </div>
-                    <span className="font-mono text-[10px] uppercase font-bold text-teal-700 bg-teal-100 px-2 py-0.5 rounded-full">
-                      For Job Seekers
-                    </span>
-                  </div>
-
-                  <h3 className="font-display font-bold text-ink-900 text-base sm:text-lg group-hover:text-teal-700 transition-colors">
-                    Candidate Portal
-                  </h3>
-                  <p className="text-xs text-slate mt-1 leading-relaxed">
-                    Land high-paying banking and corporate roles with verified placements.
-                  </p>
-
-                  <ul className="mt-3 space-y-1.5 text-xs text-slate">
-                    <li className="flex items-center gap-1.5">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-teal-500 shrink-0" />
-                      <span>Free profile &amp; AI job matching</span>
-                    </li>
-                    <li className="flex items-center gap-1.5">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-teal-500 shrink-0" />
-                      <span>1-click application tracking</span>
-                    </li>
-                  </ul>
+            {/* Portal Content Area */}
+            <div className="p-5 sm:p-6 space-y-4 overflow-y-auto bg-surface">
+              
+              {/* Value Highlights Pill Row */}
+              <div className="grid grid-cols-3 gap-2 py-1">
+                <div className="p-2.5 bg-paper rounded-xl border border-line text-center flex flex-col items-center justify-center">
+                  <Building2 className="w-4 h-4 text-teal-600 mb-1" />
+                  <span className="text-[11px] font-bold text-ink-900 leading-tight">Top Banks</span>
+                  <span className="text-[10px] text-slate-500 mt-0.5">Direct Placements</span>
                 </div>
-
-                {/* Candidate Action Buttons */}
-                <div className="mt-4 pt-3 border-t border-line space-y-2">
-                  <button
-                    onClick={() => {
-                      setErrorMessage(null);
-                      setStep('candidate-login');
-                    }}
-                    className="w-full bg-teal-500 hover:bg-teal-600 text-surface font-bold py-2 px-3 rounded-lg text-xs flex items-center justify-center gap-1.5 transition shadow-xs"
-                  >
-                    <LogIn className="w-3.5 h-3.5" />
-                    <span>Candidate Login (Name &amp; Email)</span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      setErrorMessage(null);
-                      setStep('candidate-signup');
-                    }}
-                    className="w-full bg-surface hover:bg-teal-50 text-teal-700 font-bold py-1.5 px-3 rounded-lg text-xs border border-teal-200 flex items-center justify-center gap-1 transition"
-                  >
-                    <span>New Candidate? Register Free</span>
-                  </button>
+                <div className="p-2.5 bg-paper rounded-xl border border-line text-center flex flex-col items-center justify-center">
+                  <Zap className="w-4 h-4 text-amber-500 mb-1" />
+                  <span className="text-[11px] font-bold text-ink-900 leading-tight">72h Shortlist</span>
+                  <span className="text-[10px] text-slate-500 mt-0.5">Priority Line</span>
+                </div>
+                <div className="p-2.5 bg-paper rounded-xl border border-line text-center flex flex-col items-center justify-center">
+                  <ShieldCheck className="w-4 h-4 text-teal-600 mb-1" />
+                  <span className="text-[11px] font-bold text-ink-900 leading-tight">Verified Roles</span>
+                  <span className="text-[10px] text-slate-500 mt-0.5">Top Enterprises</span>
                 </div>
               </div>
 
-              {/* Employer Path */}
-              <div
-                onClick={() => {
-                  if (onSelectRole) onSelectRole('employer');
-                  else router.push('/employers');
-                }}
-                className="group relative p-4 sm:p-5 bg-paper hover:bg-ink-900/5 border-2 border-line hover:border-ink-800 rounded-xl cursor-pointer transition-all duration-300 flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="w-10 h-10 rounded-xl bg-ink-800 text-surface flex items-center justify-center group-hover:scale-105 transition-transform">
-                      <Building2 className="w-5 h-5" />
+              {/* ⭐ PRIMARY STAR CTA: PREMIUM NEW CANDIDATE REGISTRATION BUTTON */}
+              <div className="pt-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setErrorMessage(null);
+                    setStep('candidate-signup');
+                  }}
+                  className="w-full text-left group relative overflow-hidden rounded-xl p-5 bg-gradient-to-r from-teal-600 via-teal-500 to-emerald-600 hover:from-teal-700 hover:via-teal-600 hover:to-emerald-700 text-surface shadow-lg hover:shadow-teal-500/25 transition-all duration-300 transform hover:-translate-y-0.5"
+                >
+                  {/* Subtle decorative glow overlay */}
+                  <div className="absolute -right-8 -bottom-8 w-32 h-32 rounded-full bg-surface/10 pointer-events-none blur-xl group-hover:scale-150 transition-transform duration-500" />
+                  
+                  <div className="relative z-10 flex items-center justify-between">
+                    <div className="space-y-1">
+                      <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-surface/20 text-[10px] font-mono font-extrabold uppercase tracking-wider text-surface">
+                        <Sparkles className="w-3 h-3 text-amber-300" />
+                        <span>Recommended for Job Seekers</span>
+                      </div>
+                      <h3 className="text-lg sm:text-xl font-display font-extrabold text-surface flex items-center gap-2">
+                        New Candidate Registration
+                      </h3>
+                      <p className="text-xs text-teal-100 max-w-xs sm:max-w-sm leading-relaxed">
+                        Create your profile in under 60 seconds. Get instantly matched with 2,400+ active corporate openings.
+                      </p>
                     </div>
-                    <span className="font-mono text-[10px] uppercase font-bold text-ink-800 bg-slate/10 px-2 py-0.5 rounded-full">
-                      For Employers &amp; HR
-                    </span>
+
+                    <div className="shrink-0 ml-3 w-11 h-11 rounded-xl bg-surface text-teal-700 flex items-center justify-center shadow-md group-hover:translate-x-1 group-hover:bg-teal-50 transition-all">
+                      <ArrowRight className="w-5 h-5 font-bold" />
+                    </div>
                   </div>
 
-                  <h3 className="font-display font-bold text-ink-900 text-base sm:text-lg group-hover:text-ink-800 transition-colors">
-                    Employer Portal
-                  </h3>
-                  <p className="text-xs text-slate mt-1 leading-relaxed">
-                    Source, screen, and hire pre-screened talent in 72 hours. Success-fee based with 90-day guarantee.
-                  </p>
+                  <div className="mt-3 pt-2.5 border-t border-surface/20 flex items-center gap-3 text-[11px] text-teal-50 font-medium">
+                    <span className="flex items-center gap-1">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-300 shrink-0" />
+                      No CV required upfront
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-300 shrink-0" />
+                      Instant application access
+                    </span>
+                  </div>
+                </button>
+              </div>
 
-                  <ul className="mt-3 space-y-1.5 text-xs text-slate">
-                    <li className="flex items-center gap-1.5">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-ink-700 shrink-0" />
-                      <span>Vetted candidate shortlist</span>
-                    </li>
-                    <li className="flex items-center gap-1.5">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-ink-700 shrink-0" />
-                      <span>End-to-end payroll &amp; verification</span>
-                    </li>
-                  </ul>
-                </div>
+              {/* SECONDARY ACTION: RETURNING CANDIDATE SIGN IN */}
+              <div className="pt-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setErrorMessage(null);
+                    setStep('candidate-login');
+                  }}
+                  className="w-full text-left p-4 rounded-xl border border-line bg-paper hover:bg-teal-50/40 hover:border-teal-400 transition-all duration-200 flex items-center justify-between group"
+                >
+                  <div className="flex items-center gap-3.5">
+                    <div className="w-10 h-10 rounded-lg bg-teal-100/80 text-teal-700 flex items-center justify-center group-hover:scale-105 transition-transform shrink-0">
+                      <LogIn className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <div className="text-sm font-display font-bold text-ink-900 group-hover:text-teal-700 transition-colors">
+                        Already Registered? Sign In
+                      </div>
+                      <div className="text-xs text-slate-500">
+                        Access saved applications and status via Name &amp; Email
+                      </div>
+                    </div>
+                  </div>
 
-                <div className="mt-4 pt-3 border-t border-line">
-                  <button
-                    onClick={() => {
-                      if (onSelectRole) onSelectRole('employer');
-                      else router.push('/employers');
-                    }}
-                    className="w-full bg-ink-900 hover:bg-ink-950 text-surface font-bold py-2 px-3 rounded-lg text-xs flex items-center justify-center gap-1.5 transition"
-                  >
-                    <span>Post Requirement (72h)</span>
-                    <ArrowUpRight className="w-3.5 h-3.5" />
-                  </button>
+                  <span className="text-xs font-bold text-teal-600 group-hover:text-teal-700 flex items-center gap-1 shrink-0 ml-2">
+                    Sign In
+                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                  </span>
+                </button>
+              </div>
+
+              {/* Trust Badge Guarantee */}
+              <div className="p-3 bg-teal-50/60 rounded-xl border border-teal-100 flex items-start gap-2.5 text-xs text-teal-950">
+                <ShieldCheck className="w-4 h-4 text-teal-600 shrink-0 mt-0.5" />
+                <div className="leading-snug">
+                  <span className="font-bold">Candidate Trust Guarantee:</span> Aranii Corporate Solutions provides transparent consultancy terms. Your personal contact details are strictly confidential and only shared with verified corporate interview panels.
                 </div>
               </div>
+
             </div>
 
-            {/* Staff Admin Link Footer */}
-            <div className="bg-paper border-t border-line px-4 sm:px-6 py-3 flex items-center justify-between text-xs font-mono shrink-0">
-              <span className="text-slate text-[11px] sm:text-xs">Are you Aranii Staff?</span>
+            {/* Modal Bottom Footer */}
+            <div className="bg-paper border-t border-line px-5 py-3 flex items-center justify-between text-xs shrink-0">
+              <span className="text-slate-500 text-[11px]">Need guidance? Call Career Counselling</span>
               <a
-                href="/admin"
-                className="text-teal-700 font-bold hover:underline flex items-center gap-1 bg-surface px-2.5 py-1 rounded border border-line hover:border-teal-400 transition text-[11px] sm:text-xs"
+                href="tel:+919425545374"
+                className="text-teal-700 font-bold hover:underline flex items-center gap-1 text-[11px]"
               >
-                <span>Staff Admin Gateway →</span>
+                <Phone className="w-3 h-3 text-teal-600" />
+                <span>+91 94255 45374</span>
               </a>
             </div>
           </>
@@ -370,21 +382,21 @@ export const RoleChoiceModal: React.FC<RoleChoiceModalProps> = ({
         {step === 'candidate-login' && (
           <>
             {/* Header */}
-            <div className="bg-ink-900 text-surface p-5 sm:p-6 relative shrink-0">
+            <div className="bg-gradient-to-br from-ink-950 via-ink-900 to-teal-950 text-surface p-5 sm:p-6 relative shrink-0 border-b border-teal-500/20">
               <button
                 onClick={() => {
                   setErrorMessage(null);
                   setStep('choice');
                 }}
-                className="absolute top-3.5 left-3.5 sm:top-4 sm:left-4 p-1.5 sm:p-2 rounded-lg bg-ink-800 text-slate hover:text-surface transition flex items-center gap-1 text-xs font-bold"
-                aria-label="Back to choice"
+                className="absolute top-3.5 left-3.5 sm:top-4 sm:left-4 p-1.5 sm:p-2 rounded-lg bg-surface/10 hover:bg-surface/20 text-slate-200 hover:text-surface transition flex items-center gap-1 text-xs font-bold"
+                aria-label="Back to overview"
               >
                 <ArrowLeft className="w-4 h-4" />
                 <span className="inline">Back</span>
               </button>
               <button
                 onClick={handleClose}
-                className="absolute top-3.5 right-3.5 sm:top-4 sm:right-4 p-1.5 sm:p-2 rounded-lg bg-ink-800 text-slate hover:text-surface transition"
+                className="absolute top-3.5 right-3.5 sm:top-4 sm:right-4 p-1.5 sm:p-2 rounded-lg bg-surface/10 hover:bg-surface/20 text-slate-200 hover:text-surface transition"
                 aria-label="Close"
               >
                 <X className="w-5 h-5" />
@@ -397,7 +409,7 @@ export const RoleChoiceModal: React.FC<RoleChoiceModalProps> = ({
                   Candidate Login
                 </h2>
                 <p className="text-xs text-slate-300 mt-1 max-w-sm mx-auto">
-                  Enter your Full Name and Email ID to access your profile, dashboard, and applications.
+                  Enter your Full Name and Email ID to access your profile, matched roles, and job application history.
                 </p>
               </div>
             </div>
@@ -416,7 +428,7 @@ export const RoleChoiceModal: React.FC<RoleChoiceModalProps> = ({
                   setErrorMessage(null);
                   setStep('candidate-signup');
                 }}
-                className="flex-1 py-2.5 text-slate hover:text-ink-900 text-center transition"
+                className="flex-1 py-2.5 text-slate-600 hover:text-ink-900 text-center transition"
               >
                 New Registration
               </button>
@@ -477,7 +489,7 @@ export const RoleChoiceModal: React.FC<RoleChoiceModalProps> = ({
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full bg-teal-500 hover:bg-teal-600 disabled:opacity-50 text-surface font-bold py-2.5 sm:py-3 rounded-lg transition-colors text-sm flex items-center justify-center gap-2 shadow-xs"
+                  className="w-full bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-surface font-bold py-2.5 sm:py-3 rounded-lg transition-colors text-sm flex items-center justify-center gap-2 shadow-sm"
                 >
                   {isSubmitting ? (
                     <span>Signing in to Portal...</span>
@@ -499,7 +511,7 @@ export const RoleChoiceModal: React.FC<RoleChoiceModalProps> = ({
                   }}
                   className="text-xs font-medium text-teal-700 hover:underline"
                 >
-                  Don't have a profile yet? Register here
+                  Don&apos;t have a profile yet? Register here
                 </button>
               </div>
             </form>
@@ -510,21 +522,21 @@ export const RoleChoiceModal: React.FC<RoleChoiceModalProps> = ({
         {step === 'candidate-signup' && (
           <>
             {/* Header */}
-            <div className="bg-ink-900 text-surface p-5 sm:p-6 relative shrink-0">
+            <div className="bg-gradient-to-br from-ink-950 via-ink-900 to-teal-950 text-surface p-5 sm:p-6 relative shrink-0 border-b border-teal-500/20">
               <button
                 onClick={() => {
                   setErrorMessage(null);
                   setStep('choice');
                 }}
-                className="absolute top-3.5 left-3.5 sm:top-4 sm:left-4 p-1.5 sm:p-2 rounded-lg bg-ink-800 text-slate hover:text-surface transition flex items-center gap-1 text-xs font-bold"
-                aria-label="Back to choice"
+                className="absolute top-3.5 left-3.5 sm:top-4 sm:left-4 p-1.5 sm:p-2 rounded-lg bg-surface/10 hover:bg-surface/20 text-slate-200 hover:text-surface transition flex items-center gap-1 text-xs font-bold"
+                aria-label="Back to overview"
               >
                 <ArrowLeft className="w-4 h-4" />
                 <span className="inline">Back</span>
               </button>
               <button
                 onClick={handleClose}
-                className="absolute top-3.5 right-3.5 sm:top-4 sm:right-4 p-1.5 sm:p-2 rounded-lg bg-ink-800 text-slate hover:text-surface transition"
+                className="absolute top-3.5 right-3.5 sm:top-4 sm:right-4 p-1.5 sm:p-2 rounded-lg bg-surface/10 hover:bg-surface/20 text-slate-200 hover:text-surface transition"
                 aria-label="Close"
               >
                 <X className="w-5 h-5" />
@@ -537,7 +549,7 @@ export const RoleChoiceModal: React.FC<RoleChoiceModalProps> = ({
                   Create Candidate Profile
                 </h2>
                 <p className="text-xs text-slate-300 mt-1 max-w-sm mx-auto">
-                  Register to get matched with high-paying banking and corporate vacancies.
+                  Register to get matched with high-paying banking and corporate vacancies in under 60 seconds.
                 </p>
               </div>
             </div>
@@ -550,7 +562,7 @@ export const RoleChoiceModal: React.FC<RoleChoiceModalProps> = ({
                   setErrorMessage(null);
                   setStep('candidate-login');
                 }}
-                className="flex-1 py-2.5 text-slate hover:text-ink-900 text-center transition"
+                className="flex-1 py-2.5 text-slate-600 hover:text-ink-900 text-center transition"
               >
                 Candidate Login
               </button>
@@ -583,6 +595,7 @@ export const RoleChoiceModal: React.FC<RoleChoiceModalProps> = ({
                       placeholder="e.g. Priya Nair"
                       value={registerData.name}
                       onChange={(e) => setRegisterData({ ...registerData, name: e.target.value })}
+                      autoFocus
                     />
                   </div>
                 </div>
@@ -628,12 +641,15 @@ export const RoleChoiceModal: React.FC<RoleChoiceModalProps> = ({
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full bg-teal-500 hover:bg-teal-600 disabled:opacity-50 text-surface font-bold py-2.5 sm:py-3 rounded-lg transition-colors text-sm flex items-center justify-center gap-2 shadow-xs"
+                  className="w-full bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 disabled:opacity-50 text-surface font-bold py-2.5 sm:py-3 rounded-lg transition-all text-sm flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
                 >
                   {isSubmitting ? (
                     <span>Setting up Profile...</span>
                   ) : (
-                    <span>Create Account &amp; Go to Dashboard</span>
+                    <>
+                      <Sparkles className="w-4 h-4 text-amber-300" />
+                      <span>Create Account &amp; Go to Dashboard</span>
+                    </>
                   )}
                 </button>
               </div>
@@ -657,3 +673,4 @@ export const RoleChoiceModal: React.FC<RoleChoiceModalProps> = ({
     </div>
   );
 };
+

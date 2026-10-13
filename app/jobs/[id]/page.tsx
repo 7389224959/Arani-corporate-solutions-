@@ -368,7 +368,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                     Aranii Candidate Placement Promise
                   </h4>
                   <p className="text-xs text-slate">
-                    This position is 100% free for all applicants. Your details are pre-screened directly with official hiring leads.
+                    Verified corporate placement opportunity. Your details are pre-screened directly with official hiring leads.
                   </p>
                 </div>
               </div>
