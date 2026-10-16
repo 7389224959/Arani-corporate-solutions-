@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { usePathname } from 'next/navigation';
 import {
   Sparkles,
   ArrowRight,
@@ -16,6 +17,12 @@ import {
 
 export function MegaDriveTopBanner() {
   const [isExpanded, setIsExpanded] = useState(true);
+  const pathname = usePathname();
+
+  // On the dedicated Mega Drive landing page itself, suppress the top referral banner
+  if (pathname === '/mega-job-drive') {
+    return null;
+  }
 
   return (
     <aside aria-label="Mega Job Drive Announcement" className="w-full bg-slate-950 border-b-2 border-amber-500 shadow-xl relative z-40">

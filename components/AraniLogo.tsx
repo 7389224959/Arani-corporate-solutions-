@@ -5,6 +5,7 @@ interface AraniLogoProps {
   size?: 'sm' | 'md' | 'lg' | 'xl';
   showTagline?: boolean;
   headerTagline?: string;
+  iconOnly?: boolean;
   className?: string;
 }
 
@@ -13,14 +14,15 @@ export const AraniLogo: React.FC<AraniLogoProps> = ({
   size = 'md',
   showTagline = true,
   headerTagline,
+  iconOnly = false,
   className = ''
 }) => {
   // Height sizing
   const heights = {
     sm: 'h-8 sm:h-9',
-    md: 'h-11 sm:h-12',
-    lg: 'h-14 sm:h-16',
-    xl: 'h-20 sm:h-24'
+    md: 'h-10 sm:h-11',
+    lg: 'h-12 sm:h-14',
+    xl: 'h-16 sm:h-20'
   };
 
   const isLight = variant === 'light';
@@ -29,13 +31,44 @@ export const AraniLogo: React.FC<AraniLogoProps> = ({
   const subtextColor = isLight ? '#F1F5F9' : '#1C3154';
   const tagColor = isLight ? 'rgba(255, 255, 255, 0.75)' : '#7A8694';
 
+  if (iconOnly) {
+    return (
+      <div className={`inline-flex items-center justify-center select-none shrink-0 ${className}`}>
+        <svg
+          className={`${heights[size]} w-auto aspect-square object-contain transition-transform duration-200 hover:scale-105`}
+          viewBox="0 0 80 80"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-label="Aranii Logo Icon"
+        >
+          {/* Circular soft backing for contrast if needed */}
+          <rect width="80" height="80" rx="16" fill={isLight ? 'rgba(255,255,255,0.1)' : '#F0FDF4'} />
+          {/* Main 'A' */}
+          <path
+            d="M 40 18 L 18 62 L 32 62 L 37 51 L 53 51 L 58 62 L 72 62 L 50 18 Z M 45 30 L 50 43 L 40 43 Z"
+            fill={navyColor}
+          />
+          {/* Rising Teal Swoosh */}
+          <path
+            d="M 12 55 C 32 50, 52 38, 68 20"
+            stroke={tealColor}
+            strokeWidth="5"
+            strokeLinecap="round"
+            fill="none"
+          />
+          <polygon points="74,18 62,17 66,25" fill={tealColor} />
+        </svg>
+      </div>
+    );
+  }
+
   return (
-    <div className={`inline-flex flex-col items-start ${className}`}>
+    <div className={`inline-flex flex-col items-start shrink-0 ${className}`}>
       <div className="inline-flex items-center select-none">
         {/* SVG Vector Logo Mark accurately matching Aranii Corporate Solutions */}
         <svg
-          className={`${heights[size]} w-auto object-contain transition-transform duration-200 hover:scale-[1.02]`}
-          viewBox="0 0 280 92"
+          className={`${heights[size]} w-auto object-contain transition-transform duration-200 hover:scale-[1.02] shrink-0`}
+          viewBox={showTagline ? '0 0 280 92' : '0 0 280 80'}
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
           aria-label="Aranii Corporate Solutions Logo"
