@@ -30,22 +30,26 @@ import {
 } from 'lucide-react';
 
 const BANKING_ROLES = [
-  'Relationship Manager (Retail / Corporate)',
-  'Branch Operations Executive / Teller',
-  'Credit Analyst / Underwriter',
+  'Data Entry Operator & Back Office Executive (WFH / Office)',
+  'Work From Home (Remote Customer Care & Chat Support)',
+  'Computer Operator & Document Verification Specialist',
+  'Tele-calling & Inside Sales Associate',
+  'Relationship Manager (Retail & Corporate Banking)',
+  'Branch Operations Executive & Cashier',
+  'Credit Analyst & Loan Processing Officer',
   'Home Loan & LAP Sales Officer',
   'Gold Loan & Microfinance Officer',
   'Wealth Management / Premier Banking Advisor',
   'KYC, AML & Risk Operations',
-  'Digital Banking & FinTech Solutions',
+  'Logistics, Supply Chain & Field Coordinator',
 ];
 
 const QUALIFICATIONS = [
-  'Graduate (B.Com / BBA / B.Sc / BA)',
-  'Post Graduate / MBA (Finance / Marketing)',
-  'Engineering Graduate (B.Tech / B.E)',
-  'CA / CMA / CFA / CS Pursuing / Qualified',
-  'Diploma / Final Year Student (2026 Batch)',
+  '10th Pass (High School / Matriculation)',
+  '12th Pass / Intermediate (Arts / Science / Commerce)',
+  'Graduate (BA / B.Sc / B.Com / BBA / BCA / Any Stream)',
+  'Post Graduate / Master\'s (MBA / M.Com / MCA / MA / M.Sc)',
+  'Diploma / ITI / Final Year Student (2025-2026 Batch)',
 ];
 
 const EXPERIENCE_LEVELS = [
@@ -91,7 +95,7 @@ export function MegaJobDriveClient() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const feeAmount = Number(process.env.NEXT_PUBLIC_MEGA_DRIVE_FEE) || 499;
+  const feeAmount = Number(process.env.NEXT_PUBLIC_MEGA_DRIVE_FEE) || 299;
   const upiId = process.env.NEXT_PUBLIC_MEGA_DRIVE_UPI_ID || 'aranii@icici';
   const upiName = process.env.NEXT_PUBLIC_MEGA_DRIVE_UPI_NAME || 'Aranii Corporate Solutions';
 

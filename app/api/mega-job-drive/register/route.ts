@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
       utm_campaign: utm?.utm_campaign || '',
       utm_content: utm?.utm_content || '',
       utm_term: utm?.utm_term || '',
-      fee_amount: Number(process.env.NEXT_PUBLIC_MEGA_DRIVE_FEE) || 499,
+      fee_amount: Number(process.env.NEXT_PUBLIC_MEGA_DRIVE_FEE) || 299,
     });
 
     return NextResponse.json({

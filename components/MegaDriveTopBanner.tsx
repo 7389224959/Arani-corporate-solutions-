@@ -2,115 +2,166 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import {
-  Sparkles,
   ArrowRight,
   ChevronDown,
   ChevronUp,
-  Clock,
-  Briefcase,
-  Flame,
-  CheckCircle2
+  X,
+  Calendar,
+  Building2,
+  CheckCircle2,
+  Sparkles
 } from 'lucide-react';
 
 export function MegaDriveTopBanner() {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [isDismissed, setIsDismissed] = useState(false);
   const pathname = usePathname();
 
-  // On the dedicated Mega Drive landing page itself, suppress the top referral banner
-  if (pathname === '/mega-job-drive') {
+  // Suppress top banner on the dedicated Mega Job Drive landing page itself
+  if (pathname === '/mega-job-drive' || isDismissed) {
     return null;
   }
 
   return (
-    <aside aria-label="Mega Job Drive Announcement" className="w-full bg-slate-950 border-b-2 border-amber-500 shadow-xl relative z-40">
-      {/* Dynamic Top Announcement Strip */}
-      <div className="bg-gradient-to-r from-red-600 via-amber-500 to-red-600 text-slate-950 px-3 py-1.5 text-xs font-mono font-black flex items-center justify-between shadow-inner">
+    <aside
+      aria-label="Mega Job Drive 2026 Announcement"
+      className="w-full bg-[#001428] text-white border-b border-[#003865]/80 relative z-40 shadow-sm"
+    >
+      {/* Sleek Executive Notification Ribbon */}
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 py-2 sm:py-2.5 flex items-center justify-between gap-3 text-xs">
+        
+        {/* Left / Center Link to Landing Page */}
         <Link
           href="/mega-job-drive"
-          className="flex-1 flex items-center justify-center gap-2 overflow-hidden hover:opacity-90 transition text-center"
+          className="flex-1 flex items-center gap-2 sm:gap-3 overflow-hidden group hover:opacity-95 transition"
         >
-          <span className="bg-slate-950 text-amber-300 text-[10px] uppercase px-2 py-0.5 rounded font-extrabold shrink-0 flex items-center gap-1 shadow-xs">
-            <Flame className="w-3 h-3 text-red-400 fill-red-400 animate-pulse" />
-            4 DAYS ONLY
+          {/* Status Badge */}
+          <span className="shrink-0 inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-mono font-bold uppercase bg-teal-500/20 text-teal-300 border border-teal-400/30">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            MEGA JOB DRIVE 2026
           </span>
-          <span className="truncate tracking-wide uppercase font-black text-[11px] sm:text-xs">
-            🚨 ARANII MEGA JOB DRIVE: 10 LAKH+ VACANCIES • 10th / 12th / GRADUATE / PG • REGISTRATION &amp; SUPPORT ONLY ₹299!
-          </span>
-          <span className="hidden md:inline-flex items-center gap-1 bg-slate-950 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">
-            REGISTER NOW <ArrowRight className="w-2.5 h-2.5" />
-          </span>
+
+          {/* Primary Announcement Copy */}
+          <div className="truncate flex items-center gap-2 text-slate-200">
+            <span className="font-semibold text-white truncate">
+              10 Lakh+ Banking &amp; Corporate Vacancies Across India
+            </span>
+            <span className="hidden md:inline text-slate-400">•</span>
+            <span className="hidden md:inline text-teal-300 font-medium">
+              10th to Post-Graduate
+            </span>
+            <span className="hidden lg:inline text-slate-400">•</span>
+            <span className="hidden lg:inline text-amber-300 font-mono font-semibold">
+              Intake Fee ₹299
+            </span>
+          </div>
         </Link>
 
-        <button
-          type="button"
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="p-1 rounded text-slate-900 hover:bg-black/10 transition shrink-0 ml-2"
-          aria-label={isExpanded ? 'Collapse banner' : 'Expand banner'}
-        >
-          {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-        </button>
-      </div>
-
-      {/* Main Clickable Hero Visual Banner Container */}
-      {isExpanded && (
-        <div className="bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 p-2 sm:p-3">
+        {/* Right Action Controls */}
+        <div className="flex items-center gap-2 shrink-0">
           <Link
             href="/mega-job-drive"
-            className="block max-w-5xl mx-auto rounded-xl overflow-hidden border-2 border-amber-400/80 hover:border-amber-300 shadow-2xl transition duration-300 transform hover:-translate-y-0.5 group bg-slate-950"
-            title="Click to Register for All India Mega Banking & Corporate Job Drive"
+            className="px-3 sm:px-3.5 py-1 rounded-full bg-teal-500 hover:bg-teal-400 text-[#001D3D] text-[11px] sm:text-xs font-bold shadow-xs hover:shadow transition flex items-center gap-1"
           >
-            {/* Desktop & Tablet Panorama View */}
-            <div className="relative w-full aspect-[21/9] sm:aspect-[16/6] md:aspect-[16/5] bg-slate-950 overflow-hidden flex items-center justify-between">
-              <Image
-                src="/mega-drive-banner.png"
-                alt="All India Mega Job Drive 2026 - 10 Lakh+ Vacancies, Pan India Opportunity, Registration only ₹299"
-                fill
-                className="object-cover object-top group-hover:scale-[1.02] transition duration-500"
-                priority
-                referrerPolicy="no-referrer"
-              />
+            <span>Register Now</span>
+            <ArrowRight className="w-3 h-3" />
+          </Link>
 
-              {/* Gradient Scrim for crisp text contrast */}
-              <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/40 to-black/80 pointer-events-none" />
+          {/* Quick Details Toggle */}
+          <button
+            type="button"
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="p-1 rounded text-slate-400 hover:text-white hover:bg-white/10 transition flex items-center gap-0.5 text-[11px] font-mono"
+            aria-label={isExpanded ? 'Collapse drive details' : 'Expand drive details'}
+            title={isExpanded ? 'Collapse details' : 'View drive summary'}
+          >
+            <span className="hidden sm:inline text-[10px]">
+              {isExpanded ? 'Hide' : 'Details'}
+            </span>
+            {isExpanded ? (
+              <ChevronUp className="w-3.5 h-3.5" />
+            ) : (
+              <ChevronDown className="w-3.5 h-3.5" />
+            )}
+          </button>
 
-              {/* Dynamic Overlay Content for High Readability across all viewports */}
-              <div className="relative z-10 p-4 sm:p-6 w-full flex flex-col justify-between h-full pointer-events-none">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="bg-amber-400 text-slate-950 font-black font-mono text-[10px] sm:text-xs uppercase px-2.5 py-1 rounded shadow-md tracking-wider">
-                    PAN-INDIA OPPORTUNITY • 12 OCT – 15 OCT
-                  </span>
-                  <span className="bg-red-600 text-white font-black font-mono text-[10px] sm:text-xs uppercase px-2.5 py-1 rounded shadow-md animate-pulse">
-                    FEE ONLY ₹299
-                  </span>
-                </div>
+          {/* Dismiss Button */}
+          <button
+            type="button"
+            onClick={() => setIsDismissed(true)}
+            className="p-1 rounded text-slate-400 hover:text-white hover:bg-white/10 transition"
+            aria-label="Dismiss banner"
+            title="Dismiss banner"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </div>
 
-                <div className="max-w-xl space-y-1">
-                  <h2 className="text-xl sm:text-3xl md:text-4xl font-black text-amber-300 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] tracking-tight uppercase leading-none">
-                    MEGA JOB DRIVE
-                  </h2>
-                  <p className="text-white text-xs sm:text-sm md:text-base font-extrabold drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
-                    10 LAKH+ JOB VACANCIES • 10th, 12th, Graduate &amp; Post Graduate
-                  </p>
-                  <p className="text-slate-300 text-[11px] sm:text-xs hidden sm:block drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
-                    Banking, IT, Retail, Healthcare, Data Entry &amp; Work From Home • Salary ₹35,000 to ₹2.5 Lakhs*
-                  </p>
-                </div>
+      {/* Expandable Executive Mini-Summary (Only visible when user clicks Details) */}
+      {isExpanded && (
+        <div className="bg-[#001D3D] border-t border-[#003865] px-4 py-4 sm:py-5 animate-fadeIn">
+          <div className="max-w-6xl mx-auto space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-white/10">
+              <div>
+                <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-teal-400" />
+                  All India Mega Banking &amp; Corporate Recruitment Drive Overview
+                </h4>
+                <p className="text-xs text-slate-300 mt-0.5">
+                  Spot and virtual interview schedules coordinated with premier private banks and multinational enterprises.
+                </p>
+              </div>
 
-                <div className="flex items-center justify-between gap-2 pt-1">
-                  <span className="text-[10px] sm:text-xs font-mono text-slate-300 font-bold hidden sm:inline-block">
-                    Listed on National Career Service (NCS) Platform*
-                  </span>
-                  <span className="px-4 py-2 sm:px-6 sm:py-2.5 bg-gradient-to-r from-red-600 to-amber-500 group-hover:from-red-500 group-hover:to-amber-400 text-white font-mono text-xs sm:text-sm font-black rounded-lg uppercase tracking-wider shadow-lg flex items-center gap-1.5 transition ml-auto">
-                    <span>APPLY ONLINE NOW</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </span>
-                </div>
+              <Link
+                href="/mega-job-drive"
+                className="self-start sm:self-auto px-4 py-1.5 rounded-full bg-teal-500 hover:bg-teal-400 text-[#001D3D] text-xs font-bold transition flex items-center gap-1.5 shadow"
+              >
+                <span>Open Full Drive Portal</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+
+            {/* Quick Metrics Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+              <div className="bg-white/5 p-3 rounded-lg border border-white/10">
+                <span className="text-slate-400 block text-[11px] font-mono">VACANCIES</span>
+                <span className="font-extrabold text-teal-300 text-sm sm:text-base">10 Lakh+ Positions</span>
+              </div>
+              <div className="bg-white/5 p-3 rounded-lg border border-white/10">
+                <span className="text-slate-400 block text-[11px] font-mono">DRIVE WINDOW</span>
+                <span className="font-bold text-white text-sm sm:text-base">20th – 27th Oct 2026</span>
+              </div>
+              <div className="bg-white/5 p-3 rounded-lg border border-white/10">
+                <span className="text-slate-400 block text-[11px] font-mono">ELIGIBILITY</span>
+                <span className="font-bold text-white text-sm sm:text-base">10th, 12th, Graduate, PG</span>
+              </div>
+              <div className="bg-white/5 p-3 rounded-lg border border-white/10">
+                <span className="text-slate-400 block text-[11px] font-mono">REGISTRATION FEE</span>
+                <span className="font-bold text-amber-300 text-sm sm:text-base">₹299 (Pass &amp; Support)</span>
               </div>
             </div>
-          </Link>
+
+            {/* Participating Banks Pills */}
+            <div className="flex flex-wrap items-center gap-2 text-[11px] pt-1">
+              <span className="text-slate-400 font-mono flex items-center gap-1">
+                <Building2 className="w-3 h-3 text-teal-400" />
+                Featured Employers:
+              </span>
+              {['HDFC Bank', 'ICICI Bank', 'Axis Bank', 'Kotak Mahindra', 'IndusInd', 'Standard Chartered'].map(
+                (name, idx) => (
+                  <span
+                    key={idx}
+                    className="px-2 py-0.5 rounded bg-white/5 text-slate-300 border border-white/10"
+                  >
+                    {name}
+                  </span>
+                )
+              )}
+            </div>
+          </div>
         </div>
       )}
     </aside>

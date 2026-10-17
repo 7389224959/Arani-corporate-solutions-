@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import React, { useState, useEffect } from 'react';
 import { AraniLogo } from '@/components/AraniLogo';
-import { PromoBanner } from '@/components/PromoBanner';
+import { MegaDriveHomeSection } from '@/components/MegaDriveHomeSection';
 import { JobQuickModal } from '@/components/JobQuickModal';
 import { RoleChoiceModal } from '@/components/RoleChoiceModal';
 import { CounsellingModal } from '@/components/CounsellingModal';
@@ -291,9 +291,6 @@ export default function HomePage() {
   return (
     <div className="min-h-screen flex flex-col bg-paper text-ink-900 font-sans selection:bg-teal-500 selection:text-surface">
       
-      {/* TOP PROMO BANNER */}
-      <PromoBanner onActionClick={() => setSearchOverlayOpen(true)} />
-
       {/* GLOBAL UTILITY BAR */}
       <div className="bg-ink-950 text-slate-300 text-[11px] font-mono py-1.5 px-3 md:px-4 border-b border-ink-800">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
@@ -674,6 +671,9 @@ export default function HomePage() {
           ))}
         </div>
       </section>
+
+      {/* ALL INDIA MEGA JOB DRIVE 2026 FEATURED SHOWCASE BANNER */}
+      <MegaDriveHomeSection />
 
       {/* LIVE JOB OPENINGS SECTION (Kept directly below the banner section) */}
       <section id="live-job-openings" className="py-8 bg-paper border-b border-line">
