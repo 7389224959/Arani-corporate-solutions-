@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { AraniLogo } from '@/components/AraniLogo';
 import ClientReelWizard from '@/components/ClientReelWizard';
 import ClientTemplatesAdmin from '@/components/ClientTemplatesAdmin';
+import AiPageAdManager from '@/components/AiPageAdManager';
 import { SAMPLE_JOBS, SAMPLE_ARTICLES, SAMPLE_TESTIMONIALS, SAMPLE_FAQS, PARTNER_LOGOS, DEFAULT_DIRECTOR_DATA, DirectorData, Job, Article, Testimonial, FAQ } from '@/lib/sampleData';
 import {
   LayoutDashboard,
@@ -184,7 +185,7 @@ export default function AdminPage() {
   const [loginError, setLoginError] = useState<string | null>(null);
   const [isLoggingIn, setIsLoggingIn] = useState<boolean>(false);
 
-  const [activeTab, setActiveTab] = useState<'kpi' | 'content' | 'jobs' | 'applicants' | 'crm' | 'users' | 'candidates' | 'settings' | 'reel-wizard' | 'reel-templates'>('kpi');
+  const [activeTab, setActiveTab] = useState<'kpi' | 'content' | 'jobs' | 'applicants' | 'crm' | 'users' | 'candidates' | 'settings' | 'reel-wizard' | 'reel-templates' | 'ai-page-ad-manager'>('kpi');
   const [contentSubTab, setContentSubTab] = useState<'director' | 'hero' | 'promo' | 'articles' | 'videos' | 'testimonials' | 'logos' | 'stats' | 'faqs' | 'ticker'>('director');
 
   // Search & Global Filter State
@@ -1126,6 +1127,23 @@ export default function AdminPage() {
                   <Layers className="w-4 h-4 text-teal-600" />
                   Reel Templates
                 </button>
+
+                <button
+                  onClick={() => setActiveTab('ai-page-ad-manager')}
+                  className={`w-full text-left px-3 py-2.5 rounded text-xs font-mono font-bold uppercase tracking-wider transition flex items-center justify-between ${
+                    activeTab === 'ai-page-ad-manager'
+                      ? 'bg-teal-50 text-teal-700 border-l-2 border-teal-500 shadow-xs'
+                      : 'text-slate hover:bg-paper'
+                  }`}
+                >
+                  <span className="flex items-center gap-2.5">
+                    <Share2 className="w-4 h-4 text-teal-600" />
+                    <span>Ai Page Add Manager</span>
+                  </span>
+                  <span className="bg-purple-100 text-purple-800 text-[9px] font-bold px-1.5 py-0.5 rounded">
+                    FB + IG Ads
+                  </span>
+                </button>
               </nav>
             </div>
 
@@ -1136,6 +1154,15 @@ export default function AdminPage() {
               </span>
               <p className="text-xs text-slate-300">Fast action triggers for recruitment advisors and staff.</p>
               <div className="space-y-1.5 pt-1">
+                <button
+                  onClick={() => {
+                    setActiveTab('ai-page-ad-manager');
+                  }}
+                  className="w-full text-left px-2.5 py-1.5 bg-gradient-to-r from-purple-700 to-teal-600 hover:from-purple-600 hover:to-teal-500 text-surface text-xs font-bold rounded flex items-center gap-1.5 transition shadow-xs"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-yellow-300" />
+                  Launch Reel Ad (FB + IG)
+                </button>
                 <button
                   onClick={() => {
                     setActiveTab('jobs');
@@ -2875,6 +2902,11 @@ export default function AdminPage() {
   />
                 </div>
               </div>
+            )}
+
+            {/* AI PAGE ADD MANAGER TAB */}
+            {activeTab === 'ai-page-ad-manager' && (
+              <AiPageAdManager />
             )}
           </main>
         </div>

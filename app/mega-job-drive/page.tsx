@@ -3,19 +3,19 @@ import type { Metadata } from 'next';
 import { MegaJobDriveLandingView } from './MegaJobDriveLandingView';
 
 export const metadata: Metadata = {
-  title: 'All India Mega Job Drive 2026 | 10 Lakh+ Vacancies • Data Entry, WFH & Banking | Aranii',
+  title: 'All India Mega Job Drive 2026 | 10 Lakh+ Vacancies • WFH, Data Entry, KYC & Freshers | Aranii',
   description:
-    'Join the All India Mega Job Drive 2026. 10 Lakh+ verified openings in Data Entry, Work From Home, Banking, and Corporate sectors. 10th Pass, 12th Pass, Graduate & PG eligible. Official Candidate Intake & Admit Pass: ₹299.',
+    'Join the All India Mega Job Drive 2026. 10 Lakh+ verified openings in Work From Home, Data Entry, KYC Verification, Freshers (0 Exp), and Corporate sectors. 10th Pass, 12th Pass, Graduate & PG eligible. Official Candidate Intake & Admit Pass: ₹299.',
   openGraph: {
     title: 'All India Mega Job Drive 2026 | 10 Lakh+ Vacancies • Aranii',
     description:
-      'Spot and virtual interviews open across India. Data Entry, Work From Home, Banking & Corporate roles. Candidate Intake Fee: ₹299.',
+      'Spot and virtual interviews open across India. Work From Home, Data Entry, KYC Verification, and Fresher roles. Candidate Intake Fee: ₹299.',
     images: ['/mega-drive-banner.png'],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'All India Mega Job Drive 2026 | 10 Lakh+ Vacancies',
-    description: 'Data Entry, Work From Home, Banking & Corporate roles. Freshers & experienced welcome.',
+    description: 'Work From Home, Data Entry, KYC Verification, and Fresher roles. Freshers & experienced welcome.',
     images: ['/mega-drive-banner.png'],
   },
 };

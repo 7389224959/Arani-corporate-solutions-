@@ -256,10 +256,10 @@ export default function CandidateDashboardPage() {
       if (job.category === 'Banking' && (roleLower.includes('bank') || roleLower.includes('credit') || skillsLower.includes('credit') || skillsLower.includes('bank'))) {
         score += 16;
         reasons.push('Matches your Banking & Credit domain experience');
-      } else if (job.category === 'Finance' && (skillsLower.includes('financial') || skillsLower.includes('kyc') || skillsLower.includes('eval'))) {
+      } else if ((job.category as string) === 'Finance' && (skillsLower.includes('financial') || skillsLower.includes('kyc') || skillsLower.includes('eval'))) {
         score += 14;
         reasons.push('Fits your Financial operations & Compliance skillset');
-      } else if (job.category === 'Corporate' || job.category === 'Operations') {
+      } else if (job.category === 'Corporate' || (job.category as string) === 'Operations') {
         score += 10;
         reasons.push('Matches Corporate & Operational workflow skills');
       }

@@ -19,7 +19,8 @@ import {
   Building2,
   Award,
   Zap,
-  Compass
+  Compass,
+  Lock
 } from 'lucide-react';
 import { loginCandidate, saveCandidateProfile } from '@/lib/supabase';
 
@@ -134,14 +135,13 @@ export const RoleChoiceModal: React.FC<RoleChoiceModalProps> = ({
             email: loginData.email.trim(),
             phone: '',
             city: 'Mumbai',
-            education: 'Graduate / Post-Graduate',
-            currentCompany: 'Banking / Corporate Firm',
-            currentRole: 'Credit Analyst / Banking Officer',
-            experienceYears: '1-3 Years',
-            expectedCtc: '₹6,00,000 - ₹12,00,000 / yr',
-            noticePeriod: '30 Days',
-            skills: 'Banking Operations, Credit Analysis, Customer Relationship, KYC & Compliance, Financial Evaluation',
-            preferredLocation: 'Mumbai / Hybrid'
+            currentCompany: 'Corporate / Operations Firm',
+            currentRole: 'Work From Home / Data Entry / KYC Specialist',
+            experienceYears: 'Fresher / 0-2 Years',
+            expectedCtc: '₹3,00,000 - ₹5,50,000 / yr',
+            noticePeriod: 'Immediate',
+            skills: 'Data Entry, 30 WPM Typing, MS Excel, KYC Document Verification, Customer Support, WFH Operations',
+            preferredLocation: 'Remote / Pan-India'
           })
         );
       }
@@ -183,7 +183,7 @@ export const RoleChoiceModal: React.FC<RoleChoiceModalProps> = ({
         experienceYears: '1-3 Years',
         expectedCtc: '',
         noticePeriod: '30 Days',
-        skills: 'Banking Operations, Customer Relationship, KYC & Compliance',
+        skills: 'Data Entry, Typing 30 WPM, MS Excel, KYC Document Verification, Customer Support',
         confidentialSearch: true
       });
     } catch (err) {
@@ -211,12 +211,12 @@ export const RoleChoiceModal: React.FC<RoleChoiceModalProps> = ({
           city: 'Mumbai',
           education: 'Graduate / Post-Graduate',
           currentCompany: '',
-          currentRole: '',
-          experienceYears: '1-3 Years',
+          currentRole: 'Fresher / Trainee',
+          experienceYears: '0-1 Years',
           expectedCtc: '',
-          noticePeriod: '30 Days',
-          skills: 'Banking Operations, Customer Relationship, KYC & Compliance',
-          preferredLocation: 'Mumbai / Hybrid'
+          noticePeriod: 'Immediate',
+          skills: 'Data Entry, Typing 30 WPM, MS Excel, KYC Document Verification, Customer Support',
+          preferredLocation: 'Remote / Pan-India'
         })
       );
     }
@@ -367,13 +367,28 @@ export const RoleChoiceModal: React.FC<RoleChoiceModalProps> = ({
             {/* Modal Bottom Footer */}
             <div className="bg-paper border-t border-line px-5 py-3 flex items-center justify-between text-xs shrink-0">
               <span className="text-slate-500 text-[11px]">Need guidance? Call Career Counselling</span>
-              <a
-                href="tel:+919425545374"
-                className="text-teal-700 font-bold hover:underline flex items-center gap-1 text-[11px]"
-              >
-                <Phone className="w-3 h-3 text-teal-600" />
-                <span>+91 94255 45374</span>
-              </a>
+              <div className="flex items-center gap-3">
+                <a
+                  href="tel:+919425545374"
+                  className="text-teal-700 font-bold hover:underline flex items-center gap-1 text-[11px]"
+                >
+                  <Phone className="w-3 h-3 text-teal-600" />
+                  <span>+91 94255 45374</span>
+                </a>
+                <span className="text-slate-300">•</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleClose();
+                    router.push('/admin');
+                  }}
+                  className="text-slate-600 hover:text-teal-700 font-mono text-[11px] font-bold flex items-center gap-1 transition"
+                  title="Administrator Portal"
+                >
+                  <Lock className="w-3 h-3 text-slate-500" />
+                  <span>Admin Login</span>
+                </button>
+              </div>
             </div>
           </>
         )}

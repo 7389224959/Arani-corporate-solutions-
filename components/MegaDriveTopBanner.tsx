@@ -11,7 +11,11 @@ import {
   Calendar,
   Building2,
   CheckCircle2,
-  Sparkles
+  Sparkles,
+  Laptop,
+  FileText,
+  ShieldCheck,
+  GraduationCap
 } from 'lucide-react';
 
 export function MegaDriveTopBanner() {
@@ -46,11 +50,11 @@ export function MegaDriveTopBanner() {
           {/* Primary Announcement Copy */}
           <div className="truncate flex items-center gap-2 text-slate-200">
             <span className="font-semibold text-white truncate">
-              10 Lakh+ Banking &amp; Corporate Vacancies Across India
+              10 Lakh+ Openings: Work From Home, Data Entry, KYC &amp; Freshers
             </span>
             <span className="hidden md:inline text-slate-400">•</span>
             <span className="hidden md:inline text-teal-300 font-medium">
-              10th to Post-Graduate
+              10th, 12th &amp; Graduates
             </span>
             <span className="hidden lg:inline text-slate-400">•</span>
             <span className="hidden lg:inline text-amber-300 font-mono font-semibold">
@@ -108,10 +112,10 @@ export function MegaDriveTopBanner() {
               <div>
                 <h4 className="text-sm font-bold text-white flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-teal-400" />
-                  All India Mega Banking &amp; Corporate Recruitment Drive Overview
+                  All India Mega Recruitment Drive 2026: Multi-Stream Intake
                 </h4>
                 <p className="text-xs text-slate-300 mt-0.5">
-                  Spot and virtual interview schedules coordinated with premier private banks and multinational enterprises.
+                  Spot and virtual interview schedules for Work From Home, Data Entry, KYC Verification, and Freshers across 500+ enterprises and corporate employers.
                 </p>
               </div>
 
@@ -124,8 +128,40 @@ export function MegaDriveTopBanner() {
               </Link>
             </div>
 
+            {/* 4 Core Pillars Pills */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+              <div className="bg-emerald-500/10 border border-emerald-500/20 p-2.5 rounded-lg flex items-center gap-2 text-emerald-300">
+                <Laptop className="w-4 h-4 shrink-0" />
+                <div>
+                  <span className="font-bold block text-white text-[11px]">Work From Home</span>
+                  <span className="text-[10px] text-slate-300">Remote Support &amp; Chat</span>
+                </div>
+              </div>
+              <div className="bg-purple-500/10 border border-purple-500/20 p-2.5 rounded-lg flex items-center gap-2 text-purple-300">
+                <FileText className="w-4 h-4 shrink-0" />
+                <div>
+                  <span className="font-bold block text-white text-[11px]">Data Entry &amp; Ops</span>
+                  <span className="text-[10px] text-slate-300">25-35 WPM / MS Excel</span>
+                </div>
+              </div>
+              <div className="bg-cyan-500/10 border border-cyan-500/20 p-2.5 rounded-lg flex items-center gap-2 text-cyan-300">
+                <ShieldCheck className="w-4 h-4 shrink-0" />
+                <div>
+                  <span className="font-bold block text-white text-[11px]">KYC Verification</span>
+                  <span className="text-[10px] text-slate-300">Fintech &amp; Banking Docs</span>
+                </div>
+              </div>
+              <div className="bg-amber-500/10 border border-amber-500/20 p-2.5 rounded-lg flex items-center gap-2 text-amber-300">
+                <GraduationCap className="w-4 h-4 shrink-0" />
+                <div>
+                  <span className="font-bold block text-white text-[11px]">Freshers (0 Exp)</span>
+                  <span className="text-[10px] text-slate-300">10th, 12th &amp; Graduates</span>
+                </div>
+              </div>
+            </div>
+
             {/* Quick Metrics Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs pt-1">
               <div className="bg-white/5 p-3 rounded-lg border border-white/10">
                 <span className="text-slate-400 block text-[11px] font-mono">VACANCIES</span>
                 <span className="font-extrabold text-teal-300 text-sm sm:text-base">10 Lakh+ Positions</span>
@@ -144,13 +180,13 @@ export function MegaDriveTopBanner() {
               </div>
             </div>
 
-            {/* Participating Banks Pills */}
+            {/* Participating Employers Pills */}
             <div className="flex flex-wrap items-center gap-2 text-[11px] pt-1">
               <span className="text-slate-400 font-mono flex items-center gap-1">
                 <Building2 className="w-3 h-3 text-teal-400" />
                 Featured Employers:
               </span>
-              {['HDFC Bank', 'ICICI Bank', 'Axis Bank', 'Kotak Mahindra', 'IndusInd', 'Standard Chartered'].map(
+              {['Amazon Remote', 'Teleperformance', 'Concentrix', 'Paytm Fintech', 'Flipkart Ops', 'HDFC Bank', 'ICICI Bank', 'Wipro ITES'].map(
                 (name, idx) => (
                   <span
                     key={idx}

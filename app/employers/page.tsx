@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { AraniLogo } from '@/components/AraniLogo';
+import { SiteFooter } from '@/components/SiteFooter';
 import { SAMPLE_FAQS } from '@/lib/sampleData';
 import {
   Building2,
@@ -29,8 +30,8 @@ export default function EmployersPage() {
     contactName: '',
     email: '',
     phone: '',
-    industry: 'Commercial Banking',
-    roleNeeded: 'Branch Operations Lead',
+    industry: 'Multi-Stream (WFH / Data Entry / KYC / BPO)',
+    roleNeeded: 'Work From Home Support Associate',
     headcount: '1-5 Openings',
     urgency: 'Within 72 Hours',
     notes: ''
@@ -119,7 +120,7 @@ export default function EmployersPage() {
             </h1>
 
             <p className="text-slate-300 text-base md:text-lg max-w-2xl leading-relaxed">
-              Aranii Corporate Solutions connects premier banks, NBFCs, and enterprise MNCs with pre-screened, interview-ready talent. Success-fee model — no shortlist, no invoice.
+              Aranii Corporate Solutions connects leading enterprises, BPO hubs, fintechs, and corporate houses with pre-screened talent across Work From Home, Data Entry, KYC Verification, Freshers, and all professional streams. Success-fee model — no shortlist, no invoice.
             </p>
 
             {/* SLA Badges Grid */}
@@ -161,7 +162,7 @@ export default function EmployersPage() {
                       required
                       value={formData.companyName}
                       onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
-                      placeholder="e.g. Kotak Bank / HDFC"
+                      placeholder="e.g. Teleperformance / Flipkart / Axis"
                       className="w-full px-3 py-2 bg-paper border border-line rounded text-xs text-ink-900 focus:outline-none focus:border-teal-500"
                     />
                   </div>
@@ -278,9 +279,9 @@ export default function EmployersPage() {
             <div className="w-10 h-10 bg-teal-50 text-teal-600 rounded flex items-center justify-center font-bold font-mono">
               01
             </div>
-            <h3 className="font-display font-bold text-lg text-ink-900">Permanent Talent Placement</h3>
+            <h3 className="font-display font-bold text-lg text-ink-900">Multi-Stream &amp; Bulk Staffing</h3>
             <p className="text-xs text-slate leading-relaxed">
-              Full-cycle executive search and contingency placement for commercial banking, credit underwriting, and corporate leadership.
+              High-volume and permanent placement for Work From Home support, Data Entry operators, KYC specialists, and corporate teams.
             </p>
           </div>
 
@@ -288,9 +289,9 @@ export default function EmployersPage() {
             <div className="w-10 h-10 bg-teal-50 text-teal-600 rounded flex items-center justify-center font-bold font-mono">
               02
             </div>
-            <h3 className="font-display font-bold text-lg text-ink-900">Contract &amp; Temp Staffing</h3>
+            <h3 className="font-display font-bold text-lg text-ink-900">Contract &amp; Remote Staffing</h3>
             <p className="text-xs text-slate leading-relaxed">
-              Agile workforce solutions for seasonal banking operations, audit drives, and project-based fintech deployments.
+              Agile workforce solutions for remote customer chat, back-office data processing, fintech onboarding, and seasonal project deployments.
             </p>
           </div>
 
@@ -298,9 +299,9 @@ export default function EmployersPage() {
             <div className="w-10 h-10 bg-teal-50 text-teal-600 rounded flex items-center justify-center font-bold font-mono">
               03
             </div>
-            <h3 className="font-display font-bold text-lg text-ink-900">Executive Search</h3>
+            <h3 className="font-display font-bold text-lg text-ink-900">Executive Search &amp; Leadership</h3>
             <p className="text-xs text-slate leading-relaxed">
-              Confidential headhunting for C-suite, VP, and Vice President level appointments across banking and financial conglomerates.
+              Confidential headhunting for managerial, operations heads, and leadership appointments across enterprise tech, BPO, and BFSI conglomerates.
             </p>
           </div>
 
@@ -399,6 +400,9 @@ export default function EmployersPage() {
           })}
         </div>
       </section>
+
+      {/* Global Footer with Admin Login Button */}
+      <SiteFooter />
     </div>
   );
 }

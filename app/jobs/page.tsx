@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { AraniLogo } from '@/components/AraniLogo';
+import { SiteFooter } from '@/components/SiteFooter';
 import { JobQuickModal } from '@/components/JobQuickModal';
 import { SAMPLE_JOBS, Job } from '@/lib/sampleData';
 import { getJobsList } from '@/lib/supabase-cms';
@@ -159,14 +160,14 @@ export default function JobsPage() {
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <div className="inline-flex items-center gap-2 text-xs font-mono font-bold text-teal-400 bg-ink-800 px-3 py-1 rounded mb-2">
-                <span>{"// LIVE BANKING & CORPORATE DIRECTORY"}</span>
+                <span>{"// MULTI-STREAM LIVE CAREER DIRECTORY"}</span>
                 <span className="w-1.5 h-1.5 rounded-full bg-teal-400 animate-ping" />
               </div>
               <h1 className="text-2xl md:text-3xl font-display font-bold text-surface">
-                Explore Verified Career Opportunities
+                Explore Verified Career Opportunities Across India
               </h1>
               <p className="text-slate text-xs md:text-sm mt-1 max-w-xl">
-                Professional placement consultancy for candidates. Direct pre-screening with top Indian banks &amp; MNC corporations.
+                Specializing in Work From Home, Data Entry, KYC Verification, Freshers, and Corporate roles with verified employers.
               </p>
             </div>
 
@@ -212,10 +213,10 @@ export default function JobsPage() {
               {/* Category Filter */}
               <div>
                 <label className="block text-xs font-mono uppercase font-bold text-slate mb-2">
-                  Industry Sector
+                  Employment Stream
                 </label>
                 <div className="space-y-1.5 text-xs text-ink-900">
-                  {['All', 'Banking', 'Corporate', 'Finance', 'Operations', 'IT'].map((cat) => (
+                  {['All', 'Work From Home', 'Data Entry', 'KYC & Verification', 'Freshers', 'Banking', 'Corporate', 'IT'].map((cat) => (
                     <button
                       key={cat}
                       onClick={() => setSelectedCategory(cat)}
@@ -228,8 +229,8 @@ export default function JobsPage() {
                       <span>{cat}</span>
                       <span className="text-[10px] font-mono text-muted">
                         {cat === 'All'
-                          ? SAMPLE_JOBS.length
-                          : SAMPLE_JOBS.filter((j) => j.category === cat).length}
+                          ? jobs.length
+                          : jobs.filter((j) => j.category === cat).length}
                       </span>
                     </button>
                   ))}
@@ -496,11 +497,14 @@ export default function JobsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-mono text-slate mb-1">Preferred Sector</label>
+                  <label className="block text-xs font-mono text-slate mb-1">Preferred Stream</label>
                   <select className="w-full px-3 py-2 bg-paper border border-line rounded text-xs text-ink-900 focus:outline-none focus:border-teal-500">
+                    <option value="Work From Home">Work From Home (WFH)</option>
+                    <option value="Data Entry">Data Entry &amp; Back Office</option>
+                    <option value="KYC & Verification">KYC &amp; Verification</option>
+                    <option value="Freshers">Freshers (0 Exp)</option>
                     <option value="Banking">Banking &amp; Financial Services</option>
-                    <option value="Corporate">Corporate HR &amp; Operations</option>
-                    <option value="Finance">Finance &amp; FP&amp;A</option>
+                    <option value="Corporate">Corporate Operations &amp; HR</option>
                     <option value="IT">IT &amp; Systems</option>
                   </select>
                 </div>
@@ -524,6 +528,9 @@ export default function JobsPage() {
         </div>
       )}
 
+      {/* Global Footer with Admin Login Button */}
+      <SiteFooter />
+
       {/* Mobile Filter Drawer */}
       {mobileFilterOpen && (
         <div className="fixed inset-0 z-50 bg-ink-950/70 backdrop-blur-xs flex justify-end lg:hidden">
@@ -535,11 +542,11 @@ export default function JobsPage() {
               </button>
             </div>
 
-            {/* Sector */}
+            {/* Stream */}
             <div>
-              <label className="block text-xs font-mono font-bold uppercase text-slate mb-2">Sector</label>
+              <label className="block text-xs font-mono font-bold uppercase text-slate mb-2">Stream</label>
               <div className="space-y-1 text-xs">
-                {['All', 'Banking', 'Corporate', 'Finance', 'Operations', 'IT'].map((cat) => (
+                {['All', 'Work From Home', 'Data Entry', 'KYC & Verification', 'Freshers', 'Banking', 'Corporate', 'IT'].map((cat) => (
                   <button
                     key={cat}
                     onClick={() => {

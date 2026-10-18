@@ -34,11 +34,26 @@ import {
   BadgeAlert,
   ArrowUpRight,
   ShieldAlert,
-  CreditCard
+  CreditCard,
+  Lock
 } from 'lucide-react';
 
-// Curated vacancies covering Data Entry, Work From Home, Banking, and Entry-Level Roles
+// Curated vacancies covering Work From Home, Data Entry, KYC Verification, Freshers, and Enterprise Streams
 export const MEGA_DRIVE_VACANCIES = [
+  {
+    id: 'wfh-1',
+    title: 'Work From Home Customer Support & Chat Associate',
+    category: 'Work From Home',
+    badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-400/40',
+    type: 'Full-Time Remote / WFH',
+    location: 'Work From Anywhere in India (Laptop or Mobile)',
+    salary: '₹24,000 – ₹38,000 / month',
+    exp: 'Fresher to 4 Years',
+    qualification: '12th Pass / Any Graduate',
+    skills: 'Good Hindi / English Communication, Smartphone / PC, Internet',
+    openings: '4,200+ Vacancies',
+    spotOffer: true,
+  },
   {
     id: 'de-1',
     title: 'Data Entry Operator & Back Office Executive',
@@ -49,50 +64,92 @@ export const MEGA_DRIVE_VACANCIES = [
     salary: '₹22,000 – ₹34,000 / month',
     exp: 'Fresher to 3 Years',
     qualification: '10th Pass / 12th Pass / Any Graduate',
-    skills: 'Typing Speed 25-35 WPM, Basic MS Excel, Document Scanning',
+    skills: 'Typing Speed 25-35 WPM, Basic MS Excel, Document Ingestion',
     openings: '3,800+ Vacancies',
     spotOffer: true,
   },
   {
-    id: 'wfh-1',
-    title: 'Work From Home Customer Support & Chat Associate',
-    category: 'Work From Home',
-    badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-400/40',
-    type: 'Full-Time Remote / WFH',
-    location: 'Work From Anywhere in India (Laptop/Mobile)',
-    salary: '₹24,000 – ₹38,000 / month',
-    exp: 'Fresher to 4 Years',
+    id: 'kyc-1',
+    title: 'KYC & Document Verification Specialist',
+    category: 'KYC & Verification',
+    badgeColor: 'bg-cyan-500/20 text-cyan-300 border-cyan-400/40',
+    type: 'Full-Time (Fintech & Corporate Hubs)',
+    location: 'Mumbai / Pune / Delhi NCR / Bengaluru / Virtual Hubs',
+    salary: '₹25,000 – ₹40,000 / month',
+    exp: '0 to 3 Years (Freshers Welcome)',
     qualification: '12th Pass / Graduate (Any Stream)',
-    skills: 'Good Hindi / English Communication, Smartphone / PC, Internet',
-    openings: '4,200+ Vacancies',
+    skills: 'Aadhaar / PAN Ingestion, OCR Verification, Compliance Auditing',
+    openings: '3,100+ Vacancies',
     spotOffer: true,
   },
   {
-    id: 'de-2',
-    title: 'Computer Operator & KYC Document Specialist',
-    category: 'Data Entry',
-    badgeColor: 'bg-purple-500/20 text-purple-300 border-purple-400/40',
-    type: 'Full-Time Banking Ops',
-    location: 'All Metro & Tier-1 Hubs (Bank Branches)',
+    id: 'fresh-1',
+    title: 'Fresher Process Trainee / Customer Care (0 Exp Required)',
+    category: 'Freshers',
+    badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-400/40',
+    type: 'Full-Time Entry-Level',
+    location: 'Pan-India Metro & Regional Centers',
     salary: '₹20,000 – ₹32,000 / month',
-    exp: '0 to 2 Years (Freshers Welcome)',
-    qualification: '12th Pass / Graduate (BA, B.Com, B.Sc)',
-    skills: 'Data Verification, Basic Typing, Document Ingestion',
-    openings: '2,500+ Vacancies',
+    exp: '0 Years (Batches 2021 – 2026)',
+    qualification: '10th Pass / 12th Pass / Any Graduate',
+    skills: 'Willingness to learn, Basic communication, Computer basics',
+    openings: '5,500+ Vacancies',
     spotOffer: true,
   },
   {
     id: 'wfh-2',
-    title: 'Tele-calling & Customer Advisory Executive (WFH / Hybrid)',
+    title: 'Tele-calling & Digital Advisory Executive (WFH / Hybrid)',
     category: 'Work From Home',
     badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-400/40',
-    type: 'Remote / Hybrid',
-    location: 'Virtual / Regional Centers (Flexible Hours)',
+    type: 'Remote / Hybrid (Flexible Shifts)',
+    location: 'Virtual / Regional Centers (Home-Based)',
     salary: '₹25,000 – ₹42,000 / month + Incentives',
     exp: '0 to 5 Years',
     qualification: '12th Pass / Any Graduate',
     skills: 'Client Communication, Follow-ups, Basic CRM Software',
-    openings: '1,900+ Vacancies',
+    openings: '2,900+ Vacancies',
+    spotOffer: true,
+  },
+  {
+    id: 'de-2',
+    title: 'Computer Operator & Catalog Indexing Specialist',
+    category: 'Data Entry',
+    badgeColor: 'bg-purple-500/20 text-purple-300 border-purple-400/40',
+    type: 'Full-Time E-Commerce & Back Office',
+    location: 'Metro & Tier-2 Hubs (Day Shifts)',
+    salary: '₹21,000 – ₹32,000 / month',
+    exp: '0 to 2 Years (Freshers Welcome)',
+    qualification: '10th / 12th Pass / Graduate',
+    skills: 'Keyboard accuracy, MS Word & Excel, Inventory entries',
+    openings: '2,400+ Vacancies',
+    spotOffer: true,
+  },
+  {
+    id: 'kyc-2',
+    title: 'e-KYC Onboarding & Identity Compliance Officer',
+    category: 'KYC & Verification',
+    badgeColor: 'bg-cyan-500/20 text-cyan-300 border-cyan-400/40',
+    type: 'Full-Time Operations',
+    location: 'Bengaluru / Hyderabad / Mumbai / Chennai',
+    salary: '₹28,000 – ₹45,000 / month',
+    exp: '1 to 4 Years',
+    qualification: 'Graduate in any discipline',
+    skills: 'AML Check, Video-KYC Tools, Customer Due Diligence',
+    openings: '1,700+ Vacancies',
+    spotOffer: false,
+  },
+  {
+    id: 'fresh-2',
+    title: 'Field Operations & Logistics Dispatch Coordinator',
+    category: 'Freshers',
+    badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-400/40',
+    type: 'Full-Time On-Site',
+    location: 'All India Logistics Hubs & Warehouses',
+    salary: '₹19,000 – ₹28,000 / month',
+    exp: '0 to 1 Year (Strictly Freshers Welcome)',
+    qualification: '10th Pass / 12th Pass',
+    skills: 'Barcode scanning, Dispatch coordination, Smartphone handling',
+    openings: '4,800+ Vacancies',
     spotOffer: true,
   },
   {
@@ -123,93 +180,66 @@ export const MEGA_DRIVE_VACANCIES = [
     openings: '850+ Vacancies',
     spotOffer: false,
   },
-  {
-    id: 'entry-1',
-    title: 'Field Operations, Logistics & Dispatch Coordinator',
-    category: '10th/12th Entry',
-    badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-400/40',
-    type: 'Full-Time On-Site',
-    location: 'All India Logistics Hubs & Warehouses',
-    salary: '₹18,000 – ₹28,000 / month',
-    exp: 'Fresher (No Prior Experience Required)',
-    qualification: '10th Pass / 12th Pass',
-    skills: 'Inventory Checks, Barcode Scanning, Basic Smart Phone Handling',
-    openings: '5,000+ Vacancies',
-    spotOffer: true,
-  },
-  {
-    id: 'bank-3',
-    title: 'Credit Analyst & Loan Processing Associate',
-    category: 'Banking',
-    badgeColor: 'bg-blue-500/20 text-blue-300 border-blue-400/40',
-    type: 'Full-Time Regional Hub',
-    location: 'Mumbai / Chennai / Hyderabad / Ahmedabad',
-    salary: '₹5.50 – ₹11.00 LPA',
-    exp: '1 to 5 Years',
-    qualification: 'Graduate / MBA Finance / M.Com',
-    skills: 'Credit Scoring, Financial Statements, Loan Underwriting',
-    openings: '620+ Vacancies',
-    spotOffer: false,
-  },
 ];
 
 const SECTORS_LIST = [
-  { name: 'IT & ITES / Tech Support', icon: Laptop, color: 'text-cyan-400', bg: 'bg-cyan-500/10' },
-  { name: 'Banking & Financial Services', icon: Building2, color: 'text-blue-400', bg: 'bg-blue-500/10' },
-  { name: 'Data Entry & Back Office', icon: FileText, color: 'text-purple-400', bg: 'bg-purple-500/10' },
   { name: 'Work From Home (Remote Support)', icon: Home, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
-  { name: 'Retail, E-Commerce & Sales', icon: Briefcase, color: 'text-amber-400', bg: 'bg-amber-500/10' },
-  { name: 'Healthcare & Pharma Ops', icon: ShieldCheck, color: 'text-rose-400', bg: 'bg-rose-500/10' },
-  { name: 'Logistics & Supply Chain', icon: Users, color: 'text-sky-400', bg: 'bg-sky-500/10' },
+  { name: 'Data Entry & Back Office', icon: FileText, color: 'text-purple-400', bg: 'bg-purple-500/10' },
+  { name: 'KYC & Document Verification', icon: ShieldCheck, color: 'text-cyan-400', bg: 'bg-cyan-500/10' },
+  { name: 'Freshers & Entry-Level (0 Exp)', icon: GraduationCap, color: 'text-amber-400', bg: 'bg-amber-500/10' },
+  { name: 'Banking & Financial Services', icon: Building2, color: 'text-blue-400', bg: 'bg-blue-500/10' },
+  { name: 'Customer Support & BPO', icon: Users, color: 'text-sky-400', bg: 'bg-sky-500/10' },
+  { name: 'IT & Tech Operations', icon: Laptop, color: 'text-indigo-400', bg: 'bg-indigo-500/10' },
+  { name: 'Logistics & Supply Chain', icon: Briefcase, color: 'text-rose-400', bg: 'bg-rose-500/10' },
 ];
 
 const PARTNER_EMPLOYERS = [
+  'Amazon Remote Ops',
+  'Teleperformance BPO',
+  'Concentrix Support',
+  'Paytm Fintech KYC',
+  'Flipkart Logistics',
   'HDFC Bank',
   'ICICI Bank',
   'Axis Bank',
-  'Kotak Mahindra Bank',
-  'IndusInd Bank',
-  'State Bank Network',
-  'Standard Chartered',
-  'Bajaj Finserv',
-  'AU Small Finance',
+  'Startek Global',
+  'Genpact Operations',
   'Wipro ITES',
-  'Teleperformance BPO',
-  'Tata Capital'
+  'Kotak Mahindra'
 ];
 
 const VERIFIED_TESTIMONIALS = [
   {
     name: 'Pooja Verma',
-    qualification: '12th Pass (2023 Batch)',
-    role: 'Data Entry Specialist',
-    company: 'Leading NBFC Partner (Mumbai)',
-    salary: '₹26,500 / month',
+    qualification: '12th Pass (2024 Batch)',
+    role: 'Work From Home Chat Associate',
+    company: 'E-Commerce Enterprise Support',
+    salary: '₹32,500 / month',
     quote:
-      'I was worried when I saw the ₹299 fee on Instagram, thinking it might be fake. But Aranii gave me an official QR-coded Admit Card within 2 hours. My virtual interview was scheduled with an actual HR panel, and I got my spot selection letter the next day!',
+      'I was looking for a genuine Work From Home job without spam. Aranii gave me an official QR-coded Admit Card and scheduled my virtual interview. I work 8 hours from my hometown with full internet allowance and confirmed salary!',
     avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=150&q=80',
     verified: true,
   },
   {
-    name: 'Amitabh Sen',
-    qualification: 'BA Graduate (Fresher)',
-    role: 'Work From Home Support Associate',
-    company: 'E-Commerce Enterprise Support',
-    salary: '₹32,000 / month',
+    name: 'Rahul Sen',
+    qualification: 'BA Graduate (Fresher - 0 Exp)',
+    role: 'Data Entry & KYC Operations',
+    company: 'Leading Fintech Partner (Mumbai)',
+    salary: '₹28,000 / month',
     quote:
-      'Aranii provided me with the question bank and typing guidelines. The ₹299 covers real recruiter review and slot booking. I work 8 hours from my hometown on my laptop with confirmed monthly bank direct deposit.',
-    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
+      'As a fresher with no previous experience, I thought getting a corporate job would be impossible. Aranii checked my typing speed, verified my Aadhaar, and got me a spot offer in 48 hours for KYC document verification.',
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80',
     verified: true,
   },
   {
-    name: 'Rohan Deshmukh',
-    qualification: 'B.Com Graduate',
-    role: 'Branch Operations Officer',
-    company: 'HDFC Bank Partner Hub',
-    salary: '₹4.60 LPA Take-Home',
+    name: 'Amitabh Sen',
+    qualification: '10th Pass (High School)',
+    role: 'Back Office & Computer Operator',
+    company: 'National Logistics Hub',
+    salary: '₹22,000 / month',
     quote:
-      'Very professional team. Unlike scam WhatsApp groups, Aranii operates from a registered BKC Mumbai office. The admit pass had my roll number and the video interview link worked smoothly.',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80',
+      'Aranii is a real registered company in BKC Mumbai. The ₹299 covers real recruiter review and slot booking. My admit pass had my roll number and I was selected on the same day during the virtual interview round.',
+    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
     verified: true,
   },
 ];
@@ -242,16 +272,17 @@ const FAQS_LIST = [
 ];
 
 export function MegaJobDriveLandingView() {
-  const [activeTab, setActiveTab] = useState<'all' | 'data-entry' | 'wfh' | 'banking' | '10th/12th'>('all');
+  const [activeTab, setActiveTab] = useState<'all' | 'wfh' | 'data-entry' | 'kyc' | 'freshers' | 'banking'>('all');
   const [showPosterModal, setShowPosterModal] = useState(false);
   const [activeFaqIndex, setActiveFaqIndex] = useState<number | null>(0);
 
   const filteredVacancies = MEGA_DRIVE_VACANCIES.filter((job) => {
     if (activeTab === 'all') return true;
-    if (activeTab === 'data-entry') return job.category === 'Data Entry';
     if (activeTab === 'wfh') return job.category === 'Work From Home';
+    if (activeTab === 'data-entry') return job.category === 'Data Entry';
+    if (activeTab === 'kyc') return job.category === 'KYC & Verification';
+    if (activeTab === 'freshers') return job.category === 'Freshers';
     if (activeTab === 'banking') return job.category === 'Banking';
-    if (activeTab === '10th/12th') return job.category === '10th/12th Entry';
     return true;
   });
 
@@ -414,56 +445,102 @@ export function MegaJobDriveLandingView() {
             </div>
           </div>
 
-          {/* TWO PRIMARY FOCUS BARS (DATA ENTRY & WORK FROM HOME) - EXACT HIGHLIGHTS FROM POSTER */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 max-w-4xl mx-auto pt-2">
+          {/* 4 PRIMARY FOCUS SPECIALIZATIONS (WFH, DATA ENTRY, KYC, FRESHERS) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 max-w-5xl mx-auto pt-2">
             
-            {/* DATA ENTRY FOCUS BAR (PURPLE GLOW) */}
-            <div className="relative p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-purple-950/90 via-[#2E1065] to-purple-950/90 border-2 border-purple-400/60 shadow-xl overflow-hidden group hover:border-purple-300 transition">
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 rounded-xl bg-purple-500/30 text-purple-200 flex items-center justify-center shrink-0 border border-purple-400/40 shadow-inner">
-                    <Laptop className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <span className="text-lg sm:text-xl font-black text-white flex items-center gap-2">
-                      Data Entry Jobs
-                      <span className="bg-purple-500 text-white text-[10px] font-mono px-2 py-0.5 rounded-full uppercase">
-                        High Demand
-                      </span>
-                    </span>
-                    <p className="text-xs text-purple-200 mt-0.5">
-                      Typing Speed 25-35 WPM • MS Excel • In-Office &amp; Remote Hubs
-                    </p>
-                  </div>
+            {/* 1. WORK FROM HOME (EMERALD GLOW) */}
+            <div className="relative p-4 rounded-2xl bg-gradient-to-br from-emerald-950/90 via-[#064E3B] to-emerald-950/90 border-2 border-emerald-400/60 shadow-xl overflow-hidden group hover:border-emerald-300 transition">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/30 text-emerald-200 flex items-center justify-center shrink-0 border border-emerald-400/40 shadow-inner">
+                  <Home className="w-5 h-5" />
                 </div>
-                <span className="text-xs font-mono font-bold text-amber-300 shrink-0 hidden sm:block">
-                  ₹22,000 – ₹34,000/mo
-                </span>
+                <div>
+                  <span className="text-base font-black text-white flex items-center gap-1.5">
+                    Work From Home
+                    <span className="bg-emerald-500 text-slate-950 text-[9px] font-mono font-bold px-1.5 py-0.5 rounded-full uppercase">
+                      Remote
+                    </span>
+                  </span>
+                  <p className="text-[11px] text-emerald-200 mt-0.5">
+                    Chat &amp; Support • Flexible Hours
+                  </p>
+                </div>
+              </div>
+              <div className="mt-2.5 pt-2 border-t border-emerald-400/20 flex items-center justify-between text-xs font-mono">
+                <span className="text-slate-300 text-[11px]">4,200+ Openings</span>
+                <span className="text-amber-300 font-bold">₹24k – ₹38k/mo</span>
               </div>
             </div>
 
-            {/* WORK FROM HOME FOCUS BAR (GREEN GLOW) */}
-            <div className="relative p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-emerald-950/90 via-[#064E3B] to-emerald-950/90 border-2 border-emerald-400/60 shadow-xl overflow-hidden group hover:border-emerald-300 transition">
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 rounded-xl bg-emerald-500/30 text-emerald-200 flex items-center justify-center shrink-0 border border-emerald-400/40 shadow-inner">
-                    <Home className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <span className="text-lg sm:text-xl font-black text-white flex items-center gap-2">
-                      Work From Home Jobs
-                      <span className="bg-emerald-500 text-slate-950 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full uppercase">
-                        Flexible
-                      </span>
-                    </span>
-                    <p className="text-xs text-emerald-200 mt-0.5">
-                      Chat Support • Customer Care • Laptop or Smartphone Provided*
-                    </p>
-                  </div>
+            {/* 2. DATA ENTRY (PURPLE GLOW) */}
+            <div className="relative p-4 rounded-2xl bg-gradient-to-br from-purple-950/90 via-[#2E1065] to-purple-950/90 border-2 border-purple-400/60 shadow-xl overflow-hidden group hover:border-purple-300 transition">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-purple-500/30 text-purple-200 flex items-center justify-center shrink-0 border border-purple-400/40 shadow-inner">
+                  <Laptop className="w-5 h-5" />
                 </div>
-                <span className="text-xs font-mono font-bold text-amber-300 shrink-0 hidden sm:block">
-                  ₹24,000 – ₹38,000/mo
-                </span>
+                <div>
+                  <span className="text-base font-black text-white flex items-center gap-1.5">
+                    Data Entry Jobs
+                    <span className="bg-purple-500 text-white text-[9px] font-mono px-1.5 py-0.5 rounded-full uppercase">
+                      High Demand
+                    </span>
+                  </span>
+                  <p className="text-[11px] text-purple-200 mt-0.5">
+                    25-35 WPM • MS Excel • Back Office
+                  </p>
+                </div>
+              </div>
+              <div className="mt-2.5 pt-2 border-t border-purple-400/20 flex items-center justify-between text-xs font-mono">
+                <span className="text-slate-300 text-[11px]">3,800+ Openings</span>
+                <span className="text-amber-300 font-bold">₹22k – ₹34k/mo</span>
+              </div>
+            </div>
+
+            {/* 3. KYC & DOCUMENT VERIFICATION (CYAN GLOW) */}
+            <div className="relative p-4 rounded-2xl bg-gradient-to-br from-cyan-950/90 via-[#0E4A5E] to-cyan-950/90 border-2 border-cyan-400/60 shadow-xl overflow-hidden group hover:border-cyan-300 transition">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-cyan-500/30 text-cyan-200 flex items-center justify-center shrink-0 border border-cyan-400/40 shadow-inner">
+                  <ShieldCheck className="w-5 h-5" />
+                </div>
+                <div>
+                  <span className="text-base font-black text-white flex items-center gap-1.5">
+                    KYC Verification
+                    <span className="bg-cyan-500 text-slate-950 text-[9px] font-mono font-bold px-1.5 py-0.5 rounded-full uppercase">
+                      Fintech
+                    </span>
+                  </span>
+                  <p className="text-[11px] text-cyan-200 mt-0.5">
+                    Aadhaar/PAN Ingestion &amp; Review
+                  </p>
+                </div>
+              </div>
+              <div className="mt-2.5 pt-2 border-t border-cyan-400/20 flex items-center justify-between text-xs font-mono">
+                <span className="text-slate-300 text-[11px]">3,100+ Openings</span>
+                <span className="text-amber-300 font-bold">₹25k – ₹40k/mo</span>
+              </div>
+            </div>
+
+            {/* 4. FRESHERS & TRAINEES (AMBER GLOW) */}
+            <div className="relative p-4 rounded-2xl bg-gradient-to-br from-amber-950/90 via-[#78350F] to-amber-950/90 border-2 border-amber-400/60 shadow-xl overflow-hidden group hover:border-amber-300 transition">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-500/30 text-amber-200 flex items-center justify-center shrink-0 border border-amber-400/40 shadow-inner">
+                  <GraduationCap className="w-5 h-5" />
+                </div>
+                <div>
+                  <span className="text-base font-black text-white flex items-center gap-1.5">
+                    Freshers (0 Exp)
+                    <span className="bg-amber-400 text-slate-950 text-[9px] font-mono font-bold px-1.5 py-0.5 rounded-full uppercase">
+                      Spot Offers
+                    </span>
+                  </span>
+                  <p className="text-[11px] text-amber-200 mt-0.5">
+                    10th/12th/Grads • Full Training
+                  </p>
+                </div>
+              </div>
+              <div className="mt-2.5 pt-2 border-t border-amber-400/20 flex items-center justify-between text-xs font-mono">
+                <span className="text-slate-300 text-[11px]">5,500+ Openings</span>
+                <span className="text-amber-300 font-bold">₹20k – ₹32k/mo</span>
               </div>
             </div>
 
@@ -648,17 +725,6 @@ export function MegaJobDriveLandingView() {
             All Roles ({MEGA_DRIVE_VACANCIES.length})
           </button>
           <button
-            onClick={() => setActiveTab('data-entry')}
-            className={`px-4 py-2 rounded-full text-xs font-mono font-bold transition flex items-center gap-1.5 cursor-pointer ${
-              activeTab === 'data-entry'
-                ? 'bg-purple-500 text-white shadow-md'
-                : 'bg-purple-500/10 text-purple-300 hover:bg-purple-500/20 border border-purple-500/30'
-            }`}
-          >
-            <Laptop className="w-3.5 h-3.5" />
-            <span>Data Entry (High Demand)</span>
-          </button>
-          <button
             onClick={() => setActiveTab('wfh')}
             className={`px-4 py-2 rounded-full text-xs font-mono font-bold transition flex items-center gap-1.5 cursor-pointer ${
               activeTab === 'wfh'
@@ -670,6 +736,39 @@ export function MegaJobDriveLandingView() {
             <span>Work From Home</span>
           </button>
           <button
+            onClick={() => setActiveTab('data-entry')}
+            className={`px-4 py-2 rounded-full text-xs font-mono font-bold transition flex items-center gap-1.5 cursor-pointer ${
+              activeTab === 'data-entry'
+                ? 'bg-purple-500 text-white shadow-md'
+                : 'bg-purple-500/10 text-purple-300 hover:bg-purple-500/20 border border-purple-500/30'
+            }`}
+          >
+            <Laptop className="w-3.5 h-3.5" />
+            <span>Data Entry Jobs</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('kyc')}
+            className={`px-4 py-2 rounded-full text-xs font-mono font-bold transition flex items-center gap-1.5 cursor-pointer ${
+              activeTab === 'kyc'
+                ? 'bg-cyan-500 text-slate-950 shadow-md'
+                : 'bg-cyan-500/10 text-cyan-300 hover:bg-cyan-500/20 border border-cyan-500/30'
+            }`}
+          >
+            <ShieldCheck className="w-3.5 h-3.5" />
+            <span>KYC &amp; Verification</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('freshers')}
+            className={`px-4 py-2 rounded-full text-xs font-mono font-bold transition flex items-center gap-1.5 cursor-pointer ${
+              activeTab === 'freshers'
+                ? 'bg-amber-500 text-slate-950 shadow-md'
+                : 'bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 border border-amber-400/30'
+            }`}
+          >
+            <GraduationCap className="w-3.5 h-3.5" />
+            <span>Freshers (0 Exp)</span>
+          </button>
+          <button
             onClick={() => setActiveTab('banking')}
             className={`px-4 py-2 rounded-full text-xs font-mono font-bold transition flex items-center gap-1.5 cursor-pointer ${
               activeTab === 'banking'
@@ -679,17 +778,6 @@ export function MegaJobDriveLandingView() {
           >
             <Building2 className="w-3.5 h-3.5" />
             <span>Banking &amp; Corporate</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('10th/12th')}
-            className={`px-4 py-2 rounded-full text-xs font-mono font-bold transition flex items-center gap-1.5 cursor-pointer ${
-              activeTab === '10th/12th'
-                ? 'bg-amber-500 text-slate-950 shadow-md'
-                : 'bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 border border-amber-400/30'
-            }`}
-          >
-            <GraduationCap className="w-3.5 h-3.5" />
-            <span>10th / 12th Pass Entry</span>
           </button>
         </div>
 
@@ -982,8 +1070,8 @@ export function MegaJobDriveLandingView() {
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-4 text-[11px] text-slate-400 pt-2">
-            <Link href="/mega-job-drive/terms" className="hover:text-teal-300 transition">
-              Terms &amp; Conditions
+            <Link href="/mega-job-drive/terms" className="hover:text-teal-300 font-semibold transition">
+              Terms &amp; Conditions (T&amp;C)
             </Link>
             <span>•</span>
             <Link href="/mega-job-drive/privacy" className="hover:text-teal-300 transition">
@@ -1001,12 +1089,33 @@ export function MegaJobDriveLandingView() {
             <Link href="/" className="hover:text-teal-300 transition">
               Aranii Main Portal
             </Link>
+            <span>•</span>
+            <Link
+              href="/admin"
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-teal-500/10 hover:bg-teal-500/20 text-teal-300 hover:text-white border border-teal-500/40 text-xs font-mono font-bold transition shadow-xs"
+            >
+              <Lock className="w-3.5 h-3.5 text-teal-400" />
+              <span>Admin Login</span>
+            </Link>
           </div>
 
-          <div className="text-[10px] text-slate-500 pt-3 border-t border-slate-800">
-            Registered Office: Aranii Corporate Towers, BKC Commercial Complex, Bandra Kurla Complex, Mumbai – 400051. CIN: U74999MH2021PTC368924.
-            <br />
-            © {new Date().getFullYear()} Aranii Corporate Solutions Private Limited. All rights reserved.
+          {/* Bottom End Footer Strip with T&C Button */}
+          <div className="pt-4 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-slate-400">
+            <div className="text-[10px] text-slate-500 text-center sm:text-left">
+              Registered Office: Aranii Corporate Towers, BKC Commercial Complex, Bandra Kurla Complex, Mumbai – 400051. CIN: U74999MH2021PTC368924.
+              <br />
+              © {new Date().getFullYear()} Aranii Corporate Solutions Private Limited. All rights reserved.
+            </div>
+
+            <Link
+              href="/mega-job-drive/terms"
+              id="mjd-footer-bottom-tc-btn"
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-teal-500/10 hover:bg-teal-500/20 text-teal-300 hover:text-white border border-teal-500/40 hover:border-teal-400 font-mono font-bold text-xs transition shadow-xs shrink-0 group"
+              title="Official Terms & Conditions"
+            >
+              <FileText className="w-3.5 h-3.5 text-teal-400 group-hover:scale-110 transition-transform" />
+              <span>Terms &amp; Conditions (T&amp;C)</span>
+            </Link>
           </div>
         </div>
       </footer>

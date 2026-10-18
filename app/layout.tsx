@@ -4,8 +4,8 @@ import { MetaPixel } from '@/components/MetaPixel';
 import { MegaDriveTopBanner } from '@/components/MegaDriveTopBanner';
 
 export const metadata: Metadata = {
-  title: 'Aranii Corporate Solutions | Banking & Corporate Recruitment, HR Advisory',
-  description: 'Connecting top talent with leading banks and enterprise corporations. End-to-end HR services, contract staffing, and career placement.',
+  title: 'Aranii Corporate Solutions | Multi-Stream Recruitment: Work From Home, Data Entry, KYC & Freshers',
+  description: 'Connecting job seekers and enterprise employers across India. Specializing in Work From Home jobs, Data Entry, KYC Verification, Fresher hiring, and Corporate placements.',
   verification: {
     google: 'googlecde01b7b69da4d8f',
   },

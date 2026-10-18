@@ -30,18 +30,18 @@ import {
 } from 'lucide-react';
 
 const BANKING_ROLES = [
+  'Work From Home Customer Support & Chat Associate (Remote)',
   'Data Entry Operator & Back Office Executive (WFH / Office)',
-  'Work From Home (Remote Customer Care & Chat Support)',
-  'Computer Operator & Document Verification Specialist',
-  'Tele-calling & Inside Sales Associate',
+  'KYC & Document Verification Specialist (Fintech / Banking)',
+  'Fresher Process Trainee / Customer Care (0 Exp / Batches 2021-2026)',
+  'Computer Operator & Catalog Indexing Specialist',
+  'Tele-calling & Digital Advisory Associate (Remote / Hybrid)',
+  'e-KYC Onboarding & Digital Compliance Associate',
+  'Field Operations, Logistics & Dispatch Coordinator (10th/12th Pass)',
+  'Banking Branch Operations Executive & Cashier',
   'Relationship Manager (Retail & Corporate Banking)',
-  'Branch Operations Executive & Cashier',
   'Credit Analyst & Loan Processing Officer',
-  'Home Loan & LAP Sales Officer',
-  'Gold Loan & Microfinance Officer',
-  'Wealth Management / Premier Banking Advisor',
-  'KYC, AML & Risk Operations',
-  'Logistics, Supply Chain & Field Coordinator',
+  'Technical Helpdesk & IT Support Associate',
 ];
 
 const QUALIFICATIONS = [

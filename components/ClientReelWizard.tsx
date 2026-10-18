@@ -218,7 +218,7 @@ export default function ClientReelWizard({ settings, onClose }: { settings: any,
                     className={`cursor-pointer border-2 rounded-xl overflow-hidden transition-all ${selectedTemplateId === t.id ? 'border-teal-600 shadow-md scale-[1.02]' : 'border-gray-200 hover:border-teal-300'}`}
                   >
                     <div className="aspect-[9/16] relative bg-black">
-                       <img src={t.screenshotUrl || t.mediaUrl} className="w-full h-full object-cover opacity-80" />
+                       <img src={t.screenshotUrl || t.mediaUrl} alt={t.name || "Template preview"} className="w-full h-full object-cover opacity-80" />
                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end p-3 text-white">
                          <span className="font-bold text-sm truncate">{t.name}</span>
                          <span className="text-xs text-teal-300 mb-1">{t.category}</span>
@@ -370,7 +370,7 @@ export default function ClientReelWizard({ settings, onClose }: { settings: any,
               filteredTemplates.find(t=>t.id===selectedTemplateId)?.mediaUrl ? (
                 <video src={filteredTemplates.find(t=>t.id===selectedTemplateId)?.mediaUrl} poster={filteredTemplates.find(t=>t.id===selectedTemplateId)?.screenshotUrl} autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover" />
               ) : (
-                <img src={filteredTemplates.find(t=>t.id===selectedTemplateId)?.screenshotUrl} className="absolute inset-0 w-full h-full object-cover" />
+                <img src={filteredTemplates.find(t=>t.id===selectedTemplateId)?.screenshotUrl} alt="Selected template background" className="absolute inset-0 w-full h-full object-cover" />
               )
             ) : (
               <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-500 font-medium bg-gray-100 ring-inset ring-1 ring-gray-200">

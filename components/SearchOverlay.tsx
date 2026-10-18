@@ -95,7 +95,7 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose, o
             ))
           ) : (
             <div className="py-8 text-center text-slate font-mono text-xs">
-              No matching job roles found for &quot;{query}&quot;. Try searching &quot;Banking&quot; or &quot;Credit&quot;.
+              No matching job roles found for &quot;{query}&quot;. Try searching &quot;Data Entry&quot;, &quot;Work From Home&quot;, &quot;KYC&quot;, or &quot;Fresher&quot;.
             </div>
           )}
         </div>

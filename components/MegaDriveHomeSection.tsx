@@ -12,18 +12,24 @@ import {
   Building2,
   Flame,
   Award,
-  Users
+  Users,
+  Laptop,
+  FileText,
+  ShieldCheck,
+  GraduationCap
 } from 'lucide-react';
 
-const TOP_BANKS = [
+const FEATURED_EMPLOYERS = [
+  'Amazon Remote',
+  'Teleperformance BPO',
+  'Concentrix Support',
+  'Paytm KYC Hub',
+  'Flipkart Logistics',
   'HDFC Bank',
   'ICICI Bank',
-  'Axis Bank',
-  'Kotak Mahindra',
-  'IndusInd Bank',
-  'Standard Chartered',
-  'AU Small Finance',
-  'Bajaj Finserv'
+  'Startek Operations',
+  'Wipro ITES',
+  'Genpact'
 ];
 
 export function MegaDriveHomeSection() {
@@ -31,7 +37,7 @@ export function MegaDriveHomeSection() {
     <section className="relative py-10 sm:py-14 bg-paper border-b border-line overflow-hidden">
       {/* Decorative ambient background glows */}
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-teal-500/5 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-[#00509D]/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Main Banner Card */}
@@ -51,11 +57,11 @@ export function MegaDriveHomeSection() {
               <div className="flex items-center gap-2.5">
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold font-mono uppercase bg-teal-500/20 text-teal-300 border border-teal-400/30">
                   <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                  FLAGSHIP HIRING EVENT
+                  FLAGSHIP NATIONAL HIRING DRIVE 2026
                 </span>
                 <span className="hidden sm:inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold font-mono uppercase bg-amber-400/15 text-amber-300 border border-amber-400/30">
                   <Flame className="w-3.5 h-3.5 text-amber-400" />
-                  10 LAKH+ VACANCIES
+                  10 LAKH+ VACANCIES ACROSS INDIA
                 </span>
               </div>
 
@@ -66,26 +72,53 @@ export function MegaDriveHomeSection() {
                 </span>
                 <span className="hidden md:flex items-center gap-1.5">
                   <MapPin className="w-3.5 h-3.5 text-teal-400" />
-                  Virtual &amp; 500+ Hubs
+                  100% Virtual &amp; 500+ Hubs
                 </span>
               </div>
             </div>
 
             {/* Central Content Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center py-8">
-              {/* Left Column: Headlines & Value Prop */}
+              {/* Left Column: Headlines & 4 Core Streams */}
               <div className="lg:col-span-7 space-y-4">
                 <span className="text-teal-400 text-xs sm:text-sm font-bold tracking-wider uppercase font-mono block">
-                  All India Mega Banking &amp; Corporate Recruitment Drive
+                  All India Multi-Stream Mega Job Drive
                 </span>
 
                 <h2 className="text-2xl sm:text-4xl md:text-5xl font-extrabold font-display tracking-tight text-white leading-tight">
-                  Step Into High-Impact Roles With Leading Banks &amp; MNCs
+                  High-Volume Openings in WFH, Data Entry, KYC &amp; Freshers
                 </h2>
 
                 <p className="text-slate-300 text-sm sm:text-base leading-relaxed max-w-2xl">
-                  Virtual &amp; spot interview slots now open for freshers and experienced professionals. Direct interview scheduling, candidate pre-screening, and spot offer letters backed by Aranii Corporate Solutions.
+                  Immediate virtual and spot interview schedules open across India. Tailored for candidates from 10th Pass, 12th Pass, and Fresh Graduates to Experienced professionals. Direct pre-screening and spot offer letters backed by Aranii Corporate Solutions.
                 </p>
+
+                {/* 4 Core Focus Cards */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-2">
+                  <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs">
+                    <Laptop className="w-4 h-4 mb-1 text-emerald-400" />
+                    <span className="font-bold text-white block text-[11px]">Work From Home</span>
+                    <span className="text-[10px] text-slate-300">₹24k–₹38k/mo</span>
+                  </div>
+
+                  <div className="p-2.5 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-300 text-xs">
+                    <FileText className="w-4 h-4 mb-1 text-purple-400" />
+                    <span className="font-bold text-white block text-[11px]">Data Entry &amp; Ops</span>
+                    <span className="text-[10px] text-slate-300">25-35 WPM Typing</span>
+                  </div>
+
+                  <div className="p-2.5 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-xs">
+                    <ShieldCheck className="w-4 h-4 mb-1 text-cyan-400" />
+                    <span className="font-bold text-white block text-[11px]">KYC Verification</span>
+                    <span className="text-[10px] text-slate-300">Fintech &amp; Banking</span>
+                  </div>
+
+                  <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs">
+                    <GraduationCap className="w-4 h-4 mb-1 text-amber-400" />
+                    <span className="font-bold text-white block text-[11px]">Freshers (0 Exp)</span>
+                    <span className="text-[10px] text-slate-300">Full Training Given</span>
+                  </div>
+                </div>
 
                 {/* Key Benefit Highlights */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2 text-xs">
@@ -99,12 +132,12 @@ export function MegaDriveHomeSection() {
                   </div>
                   <div className="flex items-center gap-2 text-slate-200 col-span-2 sm:col-span-1">
                     <CheckCircle2 className="w-4 h-4 text-teal-400 shrink-0" />
-                    <span>Nominal Fee: ₹299 Only</span>
+                    <span>Candidate Pass: ₹299 Only</span>
                   </div>
                 </div>
 
                 {/* CTAs */}
-                <div className="pt-4 flex flex-wrap items-center gap-3.5">
+                <div className="pt-3 flex flex-wrap items-center gap-3.5">
                   <Link
                     href="/mega-job-drive"
                     className="px-6 py-3.5 rounded-full bg-teal-500 hover:bg-teal-400 text-[#001D3D] font-extrabold text-sm shadow-lg hover:shadow-teal-500/20 transition transform hover:-translate-y-0.5 flex items-center gap-2"
@@ -114,10 +147,10 @@ export function MegaDriveHomeSection() {
                   </Link>
 
                   <Link
-                    href="/mega-job-drive#openings"
+                    href="/mega-job-drive#vacancies"
                     className="px-5 py-3.5 rounded-full bg-white/10 hover:bg-white/15 text-white font-bold text-sm border border-white/20 transition flex items-center gap-2"
                   >
-                    <span>View All 1,500+ Openings</span>
+                    <span>Explore All 10L+ Roles</span>
                   </Link>
                 </div>
               </div>
@@ -130,7 +163,7 @@ export function MegaDriveHomeSection() {
                       Drive Fast Facts
                     </span>
                     <span className="text-[11px] font-mono text-slate-400">
-                      Pan-India Coverage
+                      All-Stream Placement
                     </span>
                   </div>
 
@@ -146,7 +179,7 @@ export function MegaDriveHomeSection() {
 
                     <div className="bg-[#001020]/60 p-3.5 rounded-xl border border-white/5">
                       <span className="text-2xl sm:text-3xl font-extrabold font-mono text-amber-300 block">
-                        ₹3.5 - 18L
+                        ₹2.4 - 9L
                       </span>
                       <span className="text-xs text-slate-300 font-medium">
                         Salary CTC Range
@@ -158,7 +191,7 @@ export function MegaDriveHomeSection() {
                         500+
                       </span>
                       <span className="text-xs text-slate-300 font-medium">
-                        Metro &amp; Tier-2 Hubs
+                        Virtual &amp; Metro Hubs
                       </span>
                     </div>
 
@@ -176,27 +209,27 @@ export function MegaDriveHomeSection() {
                   <div className="pt-2 text-[11px] text-slate-400 flex items-start gap-2 bg-white/[0.03] p-2.5 rounded-lg border border-white/5">
                     <Award className="w-4 h-4 text-teal-400 shrink-0 mt-0.5" />
                     <span>
-                      Direct interviews with leading private banks, NBFCs, and enterprise tech employers. Verified candidate passes with confirmed interview slot.
+                      Direct interviews with leading E-Commerce, BPO, Fintech, Logistics &amp; Banking employers. Official QR admit card with confirmed virtual interview slot.
                     </span>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Bottom Marquee / Partner Bank Badges */}
+            {/* Bottom Marquee / Partner Badges */}
             <div className="pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-2 text-xs font-mono text-slate-400 shrink-0">
                 <Building2 className="w-3.5 h-3.5 text-teal-400" />
-                <span>PARTICIPATING EMPLOYERS:</span>
+                <span>FEATURED RECRUITERS:</span>
               </div>
 
               <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2 text-xs">
-                {TOP_BANKS.map((bank, i) => (
+                {FEATURED_EMPLOYERS.map((employer, i) => (
                   <span
                     key={i}
                     className="px-2.5 py-1 rounded-md bg-white/5 hover:bg-white/10 text-slate-200 border border-white/10 font-medium text-[11px] transition"
                   >
-                    {bank}
+                    {employer}
                   </span>
                 ))}
               </div>

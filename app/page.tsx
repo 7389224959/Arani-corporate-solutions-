@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import React, { useState, useEffect } from 'react';
 import { AraniLogo } from '@/components/AraniLogo';
 import { MegaDriveHomeSection } from '@/components/MegaDriveHomeSection';
@@ -50,55 +51,56 @@ import {
   Award,
   Users,
   FileText,
-  Check
+  Check,
+  Lock
 } from 'lucide-react';
 
 // Hero Carousel Slide Data
 const HERO_CAROUSEL_SLIDES = [
   {
     id: 1,
-    title: 'Office Reception & Corporate Headquarters',
-    image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1920&q=80',
-    badge: 'Trusted Recruitment & Placement Consultancy',
-    headline: 'Connecting Talent With Opportunity',
-    subheadline: 'Aranii Corporate Solutions helps job seekers secure opportunities with leading companies while helping businesses hire qualified professionals across multiple industries.',
-    tag: 'Corporate Headquarters'
+    title: 'Work From Home & Remote Career Hub',
+    image: 'https://images.unsplash.com/photo-1593642632823-8f785ba67e45?auto=format&fit=crop&w=1920&q=80',
+    badge: 'High-Demand Work From Home (WFH) Openings',
+    headline: 'Work From Anywhere Across India',
+    subheadline: 'Verified remote customer support, chat associate, and virtual operations roles with flexible shifts, internet allowance, and guaranteed monthly bank payouts.',
+    tag: 'Work From Home'
   },
   {
     id: 2,
-    title: 'Executive Recruitment & Talent Consultation',
-    image: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1920&q=80',
-    badge: '350+ Enterprise & Banking Employer Partners',
-    headline: 'Engineered Talent for High-Growth Businesses',
-    subheadline: 'From banking branch leadership to corporate executive positions, we deliver pre-screened, background-verified candidates within 72 hours.',
-    tag: 'Talent Acquisition'
+    title: 'Data Entry & Back Office Operations',
+    image: 'https://images.unsplash.com/photo-1450133064473-71024230f91b?auto=format&fit=crop&w=1920&q=80',
+    badge: '10th & 12th Pass Friendly • Immediate Onboarding',
+    headline: 'High-Volume Data Entry & Back Office Jobs',
+    subheadline: 'Computer operator, MS Excel, catalog processing, and document indexing vacancies with spot interview scheduling and typing speed assessments (25-35 WPM).',
+    tag: 'Data Entry'
   },
   {
     id: 3,
-    title: '1-on-1 Candidate Placement Session',
-    image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=1920&q=80',
-    badge: 'Premier Placement & Career Consultancy',
-    headline: 'Accelerate Your Career in Banking & Corporate',
-    subheadline: 'Access unadvertised vacancies in premier financial institutions with personalized resume guidance and expert placement consulting.',
-    tag: 'Career Growth'
+    title: 'KYC & Document Verification Specialist Hub',
+    image: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1920&q=80',
+    badge: 'Fintech, Telecom & Banking Compliance Openings',
+    headline: 'Specialized KYC & Document Verification Careers',
+    subheadline: 'Join India’s rapid e-KYC and digital onboarding revolution. Fast-track placement in customer identification, identity fraud prevention, and biometric verification.',
+    tag: 'KYC Operations'
   },
   {
     id: 4,
-    title: 'Modern Corporate Office Workspace',
-    image: 'https://images.unsplash.com/photo-1497215728101-856f4ea42174?auto=format&fit=crop&w=1920&q=80',
-    badge: '12,000+ Successful Placements Made',
-    headline: 'End-to-End HR & Staffing Advisory',
-    subheadline: 'Permanent recruitment, contract staffing, payroll administration, and background verification backed by a 90-day replacement guarantee.',
-    tag: 'HR Solutions'
+    title: 'Fresher & Entry-Level Special Hiring Drive',
+    image: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1920&q=80',
+    badge: '0 Experience Required • Batches 2021 - 2026',
+    headline: 'Launch Your Career With Zero Prior Experience',
+    subheadline: 'Dedicated placement tracks for fresh 10th pass, 12th pass, and college graduates with free induction training, resume building, and spot offer letters within 48 hours.',
+    tag: 'Freshers Track'
   },
   {
     id: 5,
-    title: 'Candidate Interview & Screening Session',
-    image: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=1920&q=80',
-    badge: '98% Employer & Candidate Retention Rate',
-    headline: 'Quality Hiring. Zero Recruitment Delay.',
-    subheadline: 'Rigorous multi-stage screening and background verification ensure long-term employee retention and immediate office productivity.',
-    tag: 'Executive Search'
+    title: 'Multi-Stream Enterprise Staffing Solutions',
+    image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1920&q=80',
+    badge: '350+ Partner Companies Nationwide',
+    headline: 'Hiring Across All Streams & Industries',
+    subheadline: 'From Customer Care and IT Support to Logistics, Finance, and Corporate Administration — Aranii connects top employers with verified talent within 72 hours.',
+    tag: 'All Streams'
   }
 ];
 
@@ -359,7 +361,7 @@ export default function HomePage() {
               </a>
               <div className="absolute top-full left-0 hidden group-hover:block w-64 bg-surface border border-line rounded-lg shadow-card p-3 space-y-2 text-xs">
                 <a href="#jobs-ledger" className="block p-2 hover:bg-teal-50 rounded text-slate hover:text-teal-700 font-semibold">
-                  Browse Banking &amp; Corporate Jobs
+                  Browse WFH, Data Entry, KYC &amp; All Jobs
                 </a>
                 <a href="#services" className="block p-2 hover:bg-teal-50 rounded text-slate hover:text-teal-700 font-semibold">
                   Verified Openings &amp; Direct Interviews
@@ -481,7 +483,7 @@ export default function HomePage() {
             {mobileTab === 'seeker' ? (
               <div className="space-y-2 text-sm font-medium">
                 <a href="#jobs-ledger" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-ink-900 border-b border-line">
-                  Browse Banking &amp; Corporate Jobs
+                  Browse WFH, Data Entry, KYC &amp; All Jobs
                 </a>
                 <a href="#services" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-ink-900 border-b border-line">
                   Our Four Placement Services
@@ -694,19 +696,19 @@ export default function HomePage() {
                       2,400+ Active
                     </span>
                   </h3>
-                  <p className="text-xs text-slate font-medium">Explore instant hiring drives across Tier-1 Banks &amp; Top Corporate Firms</p>
+                  <p className="text-xs text-slate font-medium">Verified openings in Work From Home, Data Entry, KYC Verification, Freshers &amp; Enterprise roles</p>
                 </div>
               </div>
 
               {/* Quick Search & Filter Inputs */}
               <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-paper border border-line rounded-lg focus-within:border-teal-500 text-xs min-w-[180px]">
+                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-paper border border-line rounded-lg focus-within:border-teal-500 text-xs min-w-[200px]">
                   <Search className="w-3.5 h-3.5 text-teal-600 shrink-0" />
                   <input
                     type="text"
                     value={heroSearchKeyword}
                     onChange={(e) => setHeroSearchKeyword(e.target.value)}
-                    placeholder="Search designation or company..."
+                    placeholder="Search WFH, Data Entry, KYC, Fresher..."
                     className="w-full bg-transparent text-xs font-semibold text-ink-950 focus:outline-none placeholder:text-slate-400"
                   />
                 </div>
@@ -715,11 +717,14 @@ export default function HomePage() {
                   onChange={(e) => setHeroSearchCategory(e.target.value)}
                   className="bg-paper text-xs font-bold text-ink-900 border border-line rounded-lg px-3 py-2 focus:outline-none cursor-pointer"
                 >
-                  <option value="All">All Sectors</option>
-                  <option value="Banking">Banking</option>
-                  <option value="Corporate">Corporate</option>
-                  <option value="Finance">Finance</option>
-                  <option value="IT">IT</option>
+                  <option value="All">All Streams</option>
+                  <option value="Work From Home">Work From Home (WFH)</option>
+                  <option value="Data Entry">Data Entry &amp; Ops</option>
+                  <option value="KYC & Verification">KYC &amp; Verification</option>
+                  <option value="Freshers">Freshers (0 Exp)</option>
+                  <option value="Banking">Banking &amp; Finance</option>
+                  <option value="Corporate">Corporate &amp; HR</option>
+                  <option value="IT">IT &amp; Tech</option>
                 </select>
               </div>
             </div>
@@ -913,78 +918,78 @@ export default function HomePage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             
-            {/* Card 1: Job Placement */}
+            {/* Card 1: Work From Home */}
             <div className="p-6 bg-surface border-2 border-line hover:border-teal-500 rounded-xl shadow-xs hover:shadow-card transition-all duration-300 group flex flex-col justify-between">
               <div>
-                <div className="w-12 h-12 rounded-xl bg-teal-50 text-teal-600 group-hover:bg-teal-500 group-hover:text-surface transition-colors flex items-center justify-center font-bold mb-4 shadow-sm">
+                <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 group-hover:bg-emerald-500 group-hover:text-surface transition-colors flex items-center justify-center font-bold mb-4 shadow-sm">
                   <Briefcase className="w-6 h-6" />
                 </div>
                 <h3 className="font-display font-bold text-xl text-ink-950 group-hover:text-teal-600 transition-colors mb-2">
-                  Job Placement
+                  Work From Home (WFH)
                 </h3>
                 <p className="text-slate text-xs sm:text-sm leading-relaxed">
-                  Find verified opportunities from trusted employers with direct access to decision-makers and expert consultancy guidance.
+                  Remote customer care, chat support, and virtual operations with flexible shifts, internet allowance, and verified monthly payouts.
                 </p>
               </div>
               <div className="mt-6 pt-4 border-t border-line/60 flex items-center justify-between text-xs font-mono font-bold text-teal-600">
-                <span>Placement Advisory</span>
+                <span>Remote Careers</span>
                 <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </div>
             </div>
 
-            {/* Card 2: Recruitment Solutions */}
+            {/* Card 2: Data Entry & Back Office */}
             <div className="p-6 bg-surface border-2 border-line hover:border-teal-500 rounded-xl shadow-xs hover:shadow-card transition-all duration-300 group flex flex-col justify-between">
               <div>
-                <div className="w-12 h-12 rounded-xl bg-teal-50 text-teal-600 group-hover:bg-teal-500 group-hover:text-surface transition-colors flex items-center justify-center font-bold mb-4 shadow-sm">
-                  <Building2 className="w-6 h-6" />
+                <div className="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 group-hover:bg-purple-500 group-hover:text-surface transition-colors flex items-center justify-center font-bold mb-4 shadow-sm">
+                  <FileText className="w-6 h-6" />
                 </div>
                 <h3 className="font-display font-bold text-xl text-ink-950 group-hover:text-teal-600 transition-colors mb-2">
-                  Recruitment Solutions
+                  Data Entry &amp; Back Office
                 </h3>
                 <p className="text-slate text-xs sm:text-sm leading-relaxed">
-                  Hire qualified professionals efficiently with custom shortlists delivered within 72 hours for high-growth enterprises.
+                  High-demand computer operator, MS Excel, catalog indexing, and document processing roles for 10th, 12th pass &amp; graduates.
                 </p>
               </div>
               <div className="mt-6 pt-4 border-t border-line/60 flex items-center justify-between text-xs font-mono font-bold text-teal-600">
-                <span>72h Shortlist SLA</span>
+                <span>25-35 WPM Typing</span>
                 <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </div>
             </div>
 
-            {/* Card 3: Verified Openings */}
+            {/* Card 3: KYC & Document Verification */}
             <div className="p-6 bg-surface border-2 border-line hover:border-teal-500 rounded-xl shadow-xs hover:shadow-card transition-all duration-300 group flex flex-col justify-between">
               <div>
-                <div className="w-12 h-12 rounded-xl bg-teal-50 text-teal-600 group-hover:bg-teal-500 group-hover:text-surface transition-colors flex items-center justify-center font-bold mb-4 shadow-sm">
+                <div className="w-12 h-12 rounded-xl bg-cyan-50 text-cyan-600 group-hover:bg-cyan-500 group-hover:text-surface transition-colors flex items-center justify-center font-bold mb-4 shadow-sm">
                   <ShieldCheck className="w-6 h-6" />
                 </div>
                 <h3 className="font-display font-bold text-xl text-ink-950 group-hover:text-teal-600 transition-colors mb-2">
-                  Verified Openings
+                  KYC Verification &amp; Ops
                 </h3>
                 <p className="text-slate text-xs sm:text-sm leading-relaxed">
-                  Access genuine and screened job opportunities in private banking, corporate HR, finance, and cloud technologies.
+                  Digital identity ingestion, Aadhaar/PAN compliance review, and e-KYC onboarding across leading fintech and banking networks.
                 </p>
               </div>
               <div className="mt-6 pt-4 border-t border-line/60 flex items-center justify-between text-xs font-mono font-bold text-teal-600">
-                <span>Genuine Employers</span>
+                <span>Compliance Roles</span>
                 <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </div>
             </div>
 
-            {/* Card 4: End-to-End Support */}
+            {/* Card 4: Freshers & Trainees */}
             <div className="p-6 bg-surface border-2 border-line hover:border-teal-500 rounded-xl shadow-xs hover:shadow-card transition-all duration-300 group flex flex-col justify-between">
               <div>
-                <div className="w-12 h-12 rounded-xl bg-teal-50 text-teal-600 group-hover:bg-teal-500 group-hover:text-surface transition-colors flex items-center justify-center font-bold mb-4 shadow-sm">
+                <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 group-hover:bg-amber-500 group-hover:text-surface transition-colors flex items-center justify-center font-bold mb-4 shadow-sm">
                   <Award className="w-6 h-6" />
                 </div>
                 <h3 className="font-display font-bold text-xl text-ink-950 group-hover:text-teal-600 transition-colors mb-2">
-                  End-to-End Support
+                  Freshers (0 Exp Track)
                 </h3>
                 <p className="text-slate text-xs sm:text-sm leading-relaxed">
-                  Dedicated guidance from initial resume drafting and interview preparation all the way through appointment offer placement.
+                  Dedicated fast-track placement for candidates with zero prior experience. Complete company induction training and spot offer letters in 48h.
                 </p>
               </div>
               <div className="mt-6 pt-4 border-t border-line/60 flex items-center justify-between text-xs font-mono font-bold text-teal-600">
-                <span>Complete Guidance</span>
+                <span>Batches 2021-2026</span>
                 <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </div>
             </div>
@@ -1029,10 +1034,10 @@ export default function HomePage() {
             {/* Stat 2 */}
             <div className="p-6 bg-ink-800/90 border border-ink-700 rounded-xl text-center shadow-lg hover:border-teal-400/50 transition">
               <span className="block text-4xl sm:text-5xl font-display font-extrabold text-surface mb-1">
-                12,000+
+                14,000+
               </span>
               <span className="font-mono text-xs font-bold text-teal-300 uppercase block mt-3">Placements Made</span>
-              <p className="text-[11px] text-slate-400 mt-1">Banking &amp; Corporate</p>
+              <p className="text-[11px] text-slate-400 mt-1">WFH, Data Entry, KYC &amp; Freshers</p>
             </div>
 
             {/* Stat 3 */}
@@ -1041,7 +1046,7 @@ export default function HomePage() {
                 350+
               </span>
               <span className="font-mono text-xs font-bold text-surface uppercase block mt-3">Partner Companies</span>
-              <p className="text-[11px] text-slate-400 mt-1">Banks, IT &amp; Enterprises</p>
+              <p className="text-[11px] text-slate-400 mt-1">BPOs, Tech, E-Comm &amp; Banks</p>
             </div>
 
             {/* Stat 4 */}
@@ -1071,13 +1076,13 @@ export default function HomePage() {
                 Trusted By Leading Companies
               </h2>
               <p className="text-slate text-xs sm:text-sm mt-1">
-                Partnering with premier private banks, technology conglomerates, and manufacturing firms.
+                Partnering with top BPO &amp; customer care giants, fintechs, e-commerce networks, IT firms, and premier banks.
               </p>
             </div>
 
             {/* Category Filter Pills */}
             <div className="flex flex-wrap items-center gap-1.5 font-mono text-xs">
-              {['All', 'Banking', 'IT', 'Manufacturing', 'Corporate'].map((cat) => (
+              {['All', 'BPO', 'E-Commerce', 'KYC', 'Banking', 'IT'].map((cat) => (
                 <button
                   key={cat}
                   onClick={() => setPartnerCategory(cat)}
@@ -1155,7 +1160,7 @@ export default function HomePage() {
 
             {/* Category Filter Pills */}
             <div className="flex flex-wrap items-center gap-1.5 overflow-x-auto pb-1 text-xs font-mono">
-              {['All', 'Banking', 'Corporate', 'Finance', 'Operations', 'IT'].map((cat) => (
+              {['All', 'Work From Home', 'Data Entry', 'KYC & Verification', 'Freshers', 'Banking', 'Corporate', 'IT'].map((cat) => (
                 <button
                   key={cat}
                   onClick={() => setLedgerCategory(cat)}
@@ -1389,7 +1394,7 @@ export default function HomePage() {
                     <input
                       type="text"
                       required
-                      placeholder="Acme Bank Corp"
+                      placeholder="Acme Global / Enterprise Inc."
                       className="w-full px-3 py-2 bg-paper border border-line rounded text-sm focus:outline-none focus:border-teal-500"
                     />
                   </div>
@@ -1410,7 +1415,7 @@ export default function HomePage() {
                     <input
                       type="email"
                       required
-                      placeholder="sanjay@acmebank.com"
+                      placeholder="hr@company.com"
                       className="w-full px-3 py-2 bg-paper border border-line rounded text-sm focus:outline-none focus:border-teal-500"
                     />
                   </div>
@@ -1428,10 +1433,14 @@ export default function HomePage() {
                 <div>
                   <label className="block text-xs font-mono text-slate mb-1">Primary Staffing Need</label>
                   <select className="w-full px-3 py-2 bg-paper border border-line rounded text-sm focus:outline-none focus:border-teal-500">
-                    <option value="Permanent Recruitment">Permanent Banking Recruitment</option>
-                    <option value="Contract Staffing">Contract &amp; Temporary Staffing</option>
-                    <option value="Executive Search">Executive Search Leadership</option>
-                    <option value="Background Verification">Background &amp; Audit Verification</option>
+                    <option value="Work From Home Staffing">Work From Home (WFH) &amp; Remote Support</option>
+                    <option value="Data Entry Staffing">Data Entry &amp; Back Office Bulk Staffing</option>
+                    <option value="KYC Verification Staffing">KYC &amp; Document Verification Staffing</option>
+                    <option value="Freshers Bulk Hiring">Freshers &amp; Campus Intake (0 Exp)</option>
+                    <option value="BPO & Customer Care">Customer Support &amp; BPO Operations</option>
+                    <option value="Banking & Finance">Banking &amp; Financial Services Recruitment</option>
+                    <option value="IT & Tech Operations">IT &amp; Digital Operations Staffing</option>
+                    <option value="Contract Staffing">General Contract &amp; Payroll Staffing</option>
                   </select>
                 </div>
 
@@ -1710,7 +1719,7 @@ export default function HomePage() {
                 Your Next Career or Your Next Hire is 72 Hours Away.
               </h2>
               <p className="text-slate-300 text-sm">
-                Join thousands of banking candidates and hundreds of enterprise employers powered by Aranii Corporate Solutions.
+                Join thousands of candidates and hundreds of enterprise employers powered by Aranii Corporate Solutions across Work From Home, Data Entry, KYC, Freshers, and Corporate roles.
               </p>
 
               <div className="flex flex-wrap items-center gap-4">
@@ -1736,7 +1745,7 @@ export default function HomePage() {
                 Subscribe to Monthly Intelligence
               </h3>
               <p className="text-slate-300 text-xs mb-4">
-                Get monthly banking salary benchmarks, regulatory compliance updates, and executive hiring trends.
+                Get monthly hiring benchmarks across WFH, Data Entry, KYC operations, and corporate placement trends.
               </p>
 
               {!newsletterSubscribed ? (
@@ -1778,7 +1787,7 @@ export default function HomePage() {
             <div className="lg:col-span-2 space-y-4">
               <AraniLogo variant="light" size="md" />
               <p className="text-slate-400 leading-relaxed max-w-sm">
-                Aranii Corporate Solutions is a premier recruitment consultancy and HR advisory firm connecting talent with leading financial institutions and enterprise corporations.
+                Aranii Corporate Solutions is an all-stream recruitment and HR advisory firm connecting talent with leading companies, specializing in Work From Home, Data Entry, KYC Verification, and Fresher hiring.
               </p>
               <div className="font-mono text-[11px] text-teal-400 font-bold tracking-widest">
                 TAGLINE: GROW WITH THE OPPORTUNITY
@@ -1788,8 +1797,8 @@ export default function HomePage() {
             <div>
               <h4 className="font-mono text-xs uppercase font-bold text-surface mb-3">For Candidates</h4>
               <ul className="space-y-2 text-slate-400">
-                <li><a href="#jobs-ledger" className="hover:text-surface transition">Browse Banking Jobs</a></li>
-                <li><a href="#services" className="hover:text-surface transition">Job Placement Services</a></li>
+                <li><a href="#jobs-ledger" className="hover:text-surface transition">Browse Jobs by Stream</a></li>
+                <li><a href="#services" className="hover:text-surface transition">WFH &amp; Data Entry Tracks</a></li>
                 <li><a href="#director-trust" className="hover:text-surface transition">Director Leadership</a></li>
                 <li><a href="#faq" className="hover:text-surface transition">Candidate FAQ</a></li>
               </ul>
@@ -1810,7 +1819,17 @@ export default function HomePage() {
               <p className="text-slate-400 leading-relaxed mb-2">
                 Aranii Corporate Towers, BKC Commercial Complex, Mumbai - 400051
               </p>
-              <p className="text-teal-400 font-mono font-bold">+91 (0) 800-ARANII-HR</p>
+              <p className="text-teal-400 font-mono font-bold mb-3">+91 (0) 800-ARANII-HR</p>
+              <div className="pt-2 border-t border-ink-800">
+                <span className="text-[10px] text-slate-500 uppercase font-mono block mb-1">Staff Access</span>
+                <Link
+                  href="/admin"
+                  className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-teal-300 transition font-mono"
+                >
+                  <Lock className="w-3 h-3 text-teal-400" />
+                  <span>Admin Portal Login →</span>
+                </Link>
+              </div>
             </div>
 
           </div>
@@ -1819,10 +1838,58 @@ export default function HomePage() {
             <div>
               © {new Date().getFullYear()} Aranii Corporate Solutions. All rights reserved.
             </div>
-            <div className="flex items-center gap-4">
-              <a href="#" className="hover:text-slate-300">Privacy Policy</a>
-              <a href="#" className="hover:text-slate-300">Terms of Service</a>
-              <a href="#" className="hover:text-slate-300">Candidate Data Consent</a>
+            <div className="flex flex-wrap items-center justify-center gap-4">
+              <a href="/mega-job-drive/privacy" className="hover:text-slate-300 transition">Privacy Policy</a>
+              <span className="text-slate-700">•</span>
+              <a href="/mega-job-drive/terms" className="hover:text-teal-300 font-semibold transition">Terms &amp; Conditions (T&amp;C)</a>
+              <span className="text-slate-700">•</span>
+              <a href="/mega-job-drive/refund" className="hover:text-slate-300 transition">Refund Policy / Data Consent</a>
+              <span className="text-slate-700">•</span>
+              <Link
+                href="/admin"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-ink-900 hover:bg-teal-950/80 text-teal-400 hover:text-teal-300 border border-ink-700 hover:border-teal-500/50 shadow-xs transition font-mono font-bold text-xs group"
+                title="Aranii Administrator Portal"
+              >
+                <Lock className="w-3.5 h-3.5 text-teal-400 group-hover:scale-110 transition-transform" />
+                <span>Admin Login</span>
+              </Link>
+            </div>
+          </div>
+
+          {/* Bottom End Administrative Strip with T&C Button */}
+          <div className="mt-8 pt-4 border-t border-ink-900/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-slate-500 font-mono text-[11px]">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>Aranii Secure Operations &amp; Enterprise Governance</span>
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
+              {/* T&C Page Button */}
+              <Link
+                href="/mega-job-drive/terms"
+                id="footer-bottom-tc-btn"
+                className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-teal-500/10 hover:bg-teal-500/20 text-teal-300 hover:text-white border border-teal-500/40 hover:border-teal-400 font-bold text-xs transition shadow-xs group"
+                title="Read Terms and Conditions (T&C)"
+              >
+                <FileText className="w-3.5 h-3.5 text-teal-400 group-hover:scale-110 transition-transform" />
+                <span>Terms &amp; Conditions (T&amp;C)</span>
+              </Link>
+
+              <span className="text-slate-700 hidden sm:inline">|</span>
+
+              <div className="flex items-center gap-2">
+                <span className="text-slate-500 hidden sm:inline">Authorized Staff Only:</span>
+                <Link
+                  href="/admin"
+                  className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-teal-500/10 hover:bg-teal-500/20 text-teal-300 hover:text-surface border border-teal-500/40 hover:border-teal-400 font-bold text-xs transition-all shadow-xs group"
+                  id="footer-admin-login-button"
+                >
+                  <Lock className="w-3.5 h-3.5 text-teal-400 group-hover:rotate-12 transition-transform" />
+                  <span>Admin Login</span>
+                  <span className="text-[10px] font-normal px-1.5 py-0.5 rounded bg-teal-500/20 text-teal-300 group-hover:bg-teal-500/30">
+                    CMS &amp; CRM
+                  </span>
+                </Link>
+              </div>
             </div>
           </div>
 

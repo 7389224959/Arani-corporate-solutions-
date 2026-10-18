@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { AraniLogo } from '@/components/AraniLogo';
+import { SiteFooter } from '@/components/SiteFooter';
 import { SAMPLE_ARTICLES, Article } from '@/lib/sampleData';
 import { ArticleCardSkeleton, EmptyArticlesState } from '@/components/SkeletonsAndEmptyStates';
 import { trackPixelEvent, captureUtmParams } from '@/lib/metaPixel';
@@ -395,6 +396,9 @@ export default function InsightsPage() {
           </div>
         </div>
       )}
+
+      {/* Global Footer with Admin Login Button */}
+      <SiteFooter />
     </div>
   );
 }
