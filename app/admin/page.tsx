@@ -202,13 +202,6 @@ export default function AdminPage() {
           setAdminRole(savedRole as any);
         }
       }
-      if (typeof window !== 'undefined') {
-        const params = new URLSearchParams(window.location.search);
-        const tab = params.get('tab');
-        if (tab && ['kpi', 'content', 'jobs', 'applicants', 'crm', 'users', 'candidates', 'settings', 'reel-wizard', 'reel-templates', 'ai-page-ad-manager'].includes(tab)) {
-          setActiveTab(tab as any);
-        }
-      }
     }, 0);
     return () => clearTimeout(timer);
   }, []);
@@ -1151,19 +1144,6 @@ export default function AdminPage() {
                     FB + IG Ads
                   </span>
                 </button>
-
-                <Link
-                  href="/admin/manual"
-                  className="w-full text-left px-3 py-2.5 rounded text-xs font-mono font-bold uppercase tracking-wider transition flex items-center justify-between text-teal-800 bg-teal-50/70 hover:bg-teal-100 border border-teal-200/80 shadow-xs"
-                >
-                  <span className="flex items-center gap-2.5">
-                    <Sparkles className="w-4 h-4 text-teal-600" />
-                    <span>Meta Ads Manual</span>
-                  </span>
-                  <span className="bg-teal-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded">
-                    Handbook
-                  </span>
-                </Link>
               </nav>
             </div>
 
