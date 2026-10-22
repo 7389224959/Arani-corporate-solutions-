@@ -40,6 +40,98 @@ interface AdCampaignRecord {
   };
 }
 
+export interface DemoWalletTransaction {
+  id: string;
+  type: "credit" | "debit";
+  amount: number;
+  description: string;
+  category: "initial_deposit" | "top_up" | "ad_spend" | "refund" | "adjustment";
+  campaignId?: string;
+  campaignName?: string;
+  balanceAfter: number;
+  timestamp: string;
+}
+
+export interface DemoWalletSummary {
+  isDemoWallet: boolean;
+  currency: string;
+  currencySymbol: string;
+  totalDeposited: number;
+  totalSpent: number;
+  availableBalance: number;
+  burnRatePerDay: number;
+  daysRemaining: number;
+  estimatedCandidateLeadsLeft: number;
+  utilizationPercentage: number;
+  transactions: DemoWalletTransaction[];
+  disclaimer: string;
+}
+
+let demoWalletState = {
+  totalDeposited: 35000,
+  transactions: [
+    {
+      id: "TXN-DEMO-INIT",
+      type: "credit" as const,
+      amount: 35000,
+      description: "Initial Simulated Demo Ad Budget Allocation",
+      category: "initial_deposit" as const,
+      balanceAfter: 35000,
+      timestamp: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+    {
+      id: "TXN-DEMO-001",
+      type: "debit" as const,
+      amount: 5000,
+      description: "Ad Spend: Work From Home & Hybrid KYC Analysts",
+      category: "ad_spend" as const,
+      campaignId: "CAM-META-902",
+      campaignName: "KYC Verification & Data Entry Campaign",
+      balanceAfter: 30000,
+      timestamp: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+    {
+      id: "TXN-DEMO-002",
+      type: "debit" as const,
+      amount: 4500,
+      description: "Ad Spend: Urgent Hiring: 200+ Branch Operations Officers",
+      category: "ad_spend" as const,
+      campaignId: "CAM-META-901",
+      campaignName: "Banking Officers Walk-In Drive 2026",
+      balanceAfter: 25500,
+      timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+  ],
+};
+
+function getDemoWalletSummary(): DemoWalletSummary {
+  const totalSpent = storedCampaigns.reduce((sum, c) => sum + (c.metrics?.spent || 0), 0);
+  const totalDeposited = demoWalletState.totalDeposited;
+  const availableBalance = Math.max(0, totalDeposited - totalSpent);
+
+  const dailyBurnRate = storedCampaigns
+    .filter((c) => c.status === "ACTIVE" && c.budgetType === "daily")
+    .reduce((sum, c) => sum + c.budgetAmount, 0);
+
+  const daysRemaining = dailyBurnRate > 0 ? Math.floor(availableBalance / dailyBurnRate) : 999;
+  const estimatedCandidateLeadsLeft = Math.round(availableBalance / 35);
+
+  return {
+    isDemoWallet: true,
+    currency: "INR",
+    currencySymbol: "₹",
+    totalDeposited,
+    totalSpent,
+    availableBalance,
+    burnRatePerDay: dailyBurnRate,
+    daysRemaining,
+    estimatedCandidateLeadsLeft,
+    utilizationPercentage: Number(((totalSpent / Math.max(totalDeposited, 1)) * 100).toFixed(1)),
+    transactions: demoWalletState.transactions,
+    disclaimer: "Sandbox Demo Ad Wallet • Zero connection to live Meta Business Suite billing or credit cards.",
+  };
+}
+
 let storedCampaigns: AdCampaignRecord[] = [
   {
     id: "CAM-META-901",
@@ -163,6 +255,7 @@ export async function GET() {
         },
       },
       campaigns: storedCampaigns,
+      demoWallet: getDemoWalletSummary(),
       diagnostics: {
         hasGeminiKey,
         hasLiveFbToken,
@@ -478,10 +571,27 @@ Return valid JSON with the exact structure:
       // Add to session store
       storedCampaigns = [newRecord, ...storedCampaigns];
 
+      // Record simulated deduction in Demo Wallet
+      const initialSpent = Math.round(totalBudget * 0.12);
+      const currentSummary = getDemoWalletSummary();
+      const newTxn: DemoWalletTransaction = {
+        id: `TXN-DEMO-${Date.now().toString().slice(-6)}`,
+        type: "debit",
+        amount: initialSpent,
+        description: `Ad Run Initiation: ${newRecord.name} (12% day-1 allocation)`,
+        category: "ad_spend",
+        campaignId: newRecord.id,
+        campaignName: newRecord.name,
+        balanceAfter: Math.max(0, currentSummary.availableBalance - initialSpent),
+        timestamp: new Date().toISOString(),
+      };
+      demoWalletState.transactions = [newTxn, ...demoWalletState.transactions];
+
       return NextResponse.json({
         success: true,
         message: "Meta Ad Campaign launched successfully with set budget!",
         campaign: newRecord,
+        demoWallet: getDemoWalletSummary(),
         metaAdDetails: {
           adAccountId,
           campaignId: `meta_cmp_${Date.now()}`,
@@ -502,7 +612,57 @@ Return valid JSON with the exact structure:
       });
     }
 
-    // ACTION 4: Toggle Campaign Status (ACTIVE <-> PAUSED)
+    // ACTION 4: Top Up Demo Ad Wallet
+    if (action === "topup_demo_wallet") {
+      const { amount, note } = body;
+      const numAmount = Math.max(100, Number(amount) || 5000);
+      demoWalletState.totalDeposited += numAmount;
+
+      const currentSummary = getDemoWalletSummary();
+      const newTxn: DemoWalletTransaction = {
+        id: `TXN-DEMO-${Date.now().toString().slice(-6)}`,
+        type: "credit",
+        amount: numAmount,
+        description: note || `Simulated Demo Wallet Top-Up (+₹${numAmount.toLocaleString('en-IN')})`,
+        category: "top_up",
+        balanceAfter: currentSummary.availableBalance,
+        timestamp: new Date().toISOString(),
+      };
+
+      demoWalletState.transactions = [newTxn, ...demoWalletState.transactions];
+
+      return NextResponse.json({
+        success: true,
+        message: `₹${numAmount.toLocaleString('en-IN')} added to Demo Ad Wallet successfully!`,
+        demoWallet: getDemoWalletSummary(),
+      });
+    }
+
+    // ACTION 5: Reset Demo Ad Wallet to Default Balance
+    if (action === "reset_demo_wallet") {
+      demoWalletState = {
+        totalDeposited: 35000,
+        transactions: [
+          {
+            id: "TXN-DEMO-INIT",
+            type: "credit",
+            amount: 35000,
+            description: "Simulated Demo Ad Budget Reset to Initial Allocation",
+            category: "initial_deposit",
+            balanceAfter: 35000,
+            timestamp: new Date().toISOString(),
+          },
+        ],
+      };
+
+      return NextResponse.json({
+        success: true,
+        message: "Demo Ad Wallet reset to default ₹35,000 balance.",
+        demoWallet: getDemoWalletSummary(),
+      });
+    }
+
+    // ACTION 6: Toggle Campaign Status (ACTIVE <-> PAUSED)
     if (action === "toggle_ad_status") {
       const { campaignId, newStatus } = body;
       const target = storedCampaigns.find((c) => c.id === campaignId);
@@ -512,18 +672,20 @@ Return valid JSON with the exact structure:
           success: true,
           message: `Campaign status changed to ${target.status}`,
           campaign: target,
+          demoWallet: getDemoWalletSummary(),
         });
       }
       return NextResponse.json({ success: false, error: "Campaign not found" }, { status: 404 });
     }
 
-    // ACTION 5: Delete Campaign
+    // ACTION 7: Delete Campaign
     if (action === "delete_campaign") {
       const { campaignId } = body;
       storedCampaigns = storedCampaigns.filter((c) => c.id !== campaignId);
       return NextResponse.json({
         success: true,
         message: "Campaign deleted from Meta Ads Manager list",
+        demoWallet: getDemoWalletSummary(),
       });
     }
 

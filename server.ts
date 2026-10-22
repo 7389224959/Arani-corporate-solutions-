@@ -1,5 +1,6 @@
 import express from 'express';
 import next from 'next';
+import { parse } from 'url';
 import renderReelHandler from './api/render-reel.js';
 
 const dev = process.env.NODE_ENV !== 'production';
@@ -16,7 +17,8 @@ app.prepare().then(() => {
   });
 
   server.all(/.*/, (req, res) => {
-    return handle(req, res);
+    const parsedUrl = parse(req.url!, true);
+    return handle(req, res, parsedUrl);
   });
 
   server.listen(port, hostname, () => {
