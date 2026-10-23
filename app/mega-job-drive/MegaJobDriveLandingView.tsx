@@ -1070,8 +1070,8 @@ export function MegaJobDriveLandingView() {
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-4 text-[11px] text-slate-400 pt-2">
-            <Link href="/mega-job-drive/terms" className="hover:text-teal-300 transition">
-              Terms &amp; Conditions
+            <Link href="/mega-job-drive/terms" className="hover:text-teal-300 font-semibold transition">
+              Terms &amp; Conditions (T&amp;C)
             </Link>
             <span>•</span>
             <Link href="/mega-job-drive/privacy" className="hover:text-teal-300 transition">
@@ -1099,10 +1099,23 @@ export function MegaJobDriveLandingView() {
             </Link>
           </div>
 
-          <div className="text-[10px] text-slate-500 pt-3 border-t border-slate-800">
-            Registered Office: Aranii Corporate Towers, BKC Commercial Complex, Bandra Kurla Complex, Mumbai – 400051. CIN: U74999MH2021PTC368924.
-            <br />
-            © {new Date().getFullYear()} Aranii Corporate Solutions Private Limited. All rights reserved.
+          {/* Bottom End Footer Strip with T&C Button */}
+          <div className="pt-4 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-slate-400">
+            <div className="text-[10px] text-slate-500 text-center sm:text-left">
+              Registered Office: Aranii Corporate Towers, BKC Commercial Complex, Bandra Kurla Complex, Mumbai – 400051. CIN: U74999MH2021PTC368924.
+              <br />
+              © {new Date().getFullYear()} Aranii Corporate Solutions Private Limited. All rights reserved.
+            </div>
+
+            <Link
+              href="/mega-job-drive/terms"
+              id="mjd-footer-bottom-tc-btn"
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-teal-500/10 hover:bg-teal-500/20 text-teal-300 hover:text-white border border-teal-500/40 hover:border-teal-400 font-mono font-bold text-xs transition shadow-xs shrink-0 group"
+              title="Official Terms & Conditions"
+            >
+              <FileText className="w-3.5 h-3.5 text-teal-400 group-hover:scale-110 transition-transform" />
+              <span>Terms &amp; Conditions (T&amp;C)</span>
+            </Link>
           </div>
         </div>
       </footer>

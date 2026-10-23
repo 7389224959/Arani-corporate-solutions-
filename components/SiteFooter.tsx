@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { AraniLogo } from '@/components/AraniLogo';
-import { Lock, Phone, Mail, MapPin } from 'lucide-react';
+import { Lock, Phone, Mail, MapPin, FileText } from 'lucide-react';
 
 export function SiteFooter() {
   return (
@@ -75,7 +75,7 @@ export function SiteFooter() {
           <div className="flex flex-wrap items-center justify-center gap-4">
             <Link href="/mega-job-drive/privacy" className="hover:text-slate-300 transition">Privacy Policy</Link>
             <span className="text-slate-700">•</span>
-            <Link href="/mega-job-drive/terms" className="hover:text-slate-300 transition">Terms of Service</Link>
+            <Link href="/mega-job-drive/terms" className="hover:text-teal-300 font-semibold transition">Terms &amp; Conditions (T&amp;C)</Link>
             <span className="text-slate-700">•</span>
             <Link href="/mega-job-drive/refund" className="hover:text-slate-300 transition">Refund Policy</Link>
             <span className="text-slate-700">•</span>
@@ -90,24 +90,39 @@ export function SiteFooter() {
           </div>
         </div>
 
-        {/* Bottom End Administrative Strip */}
+        {/* Bottom End Administrative Strip with T&C Button */}
         <div className="mt-8 pt-4 border-t border-ink-900/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-slate-500 font-mono text-[11px]">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             <span>Aranii Secure Operations &amp; Enterprise Governance</span>
           </div>
-          <div className="flex items-center gap-2.5">
-            <span className="text-slate-500 hidden sm:inline">Authorized Staff Only:</span>
+          <div className="flex flex-wrap items-center gap-3">
+            {/* T&C Page Button */}
             <Link
-              href="/admin"
-              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-teal-500/10 hover:bg-teal-500/20 text-teal-300 hover:text-surface border border-teal-500/40 hover:border-teal-400 font-bold text-xs transition-all shadow-xs group"
+              href="/mega-job-drive/terms"
+              id="footer-bottom-tc-btn"
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-teal-500/10 hover:bg-teal-500/20 text-teal-300 hover:text-white border border-teal-500/40 hover:border-teal-400 font-bold text-xs transition shadow-xs group"
+              title="Read Terms and Conditions (T&C)"
             >
-              <Lock className="w-3.5 h-3.5 text-teal-400 group-hover:rotate-12 transition-transform" />
-              <span>Admin Login</span>
-              <span className="text-[10px] font-normal px-1.5 py-0.5 rounded bg-teal-500/20 text-teal-300 group-hover:bg-teal-500/30">
-                CMS &amp; CRM
-              </span>
+              <FileText className="w-3.5 h-3.5 text-teal-400 group-hover:scale-110 transition-transform" />
+              <span>Terms &amp; Conditions (T&amp;C)</span>
             </Link>
+
+            <span className="text-slate-700 hidden sm:inline">|</span>
+
+            <div className="flex items-center gap-2">
+              <span className="text-slate-500 hidden sm:inline">Authorized Staff Only:</span>
+              <Link
+                href="/admin"
+                className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-teal-500/10 hover:bg-teal-500/20 text-teal-300 hover:text-surface border border-teal-500/40 hover:border-teal-400 font-bold text-xs transition-all shadow-xs group"
+              >
+                <Lock className="w-3.5 h-3.5 text-teal-400 group-hover:rotate-12 transition-transform" />
+                <span>Admin Login</span>
+                <span className="text-[10px] font-normal px-1.5 py-0.5 rounded bg-teal-500/20 text-teal-300 group-hover:bg-teal-500/30">
+                  CMS &amp; CRM
+                </span>
+              </Link>
+            </div>
           </div>
         </div>
 

@@ -13,6 +13,7 @@ import {
   Pause,
   CheckCircle2,
   AlertCircle,
+  AlertTriangle,
   ExternalLink,
   RefreshCw,
   Eye,
@@ -37,7 +38,9 @@ import {
   Radio,
   FileVideo,
   ChevronDown,
-  Trash2
+  Trash2,
+  Key,
+  CheckCheck
 } from 'lucide-react';
 
 interface CampaignItem {
@@ -76,6 +79,7 @@ interface CampaignItem {
     spent: number;
     cpc: number;
   };
+  isLiveCampaign?: boolean;
 }
 
 interface ConnectedAccounts {
@@ -88,16 +92,23 @@ interface ConnectedAccounts {
     category: string;
     followers: string;
     pageUrl: string;
+    pictureUrl?: string | null;
+    isLive?: boolean;
+    source?: string;
   };
   instagram: {
     id: string;
     username: string;
+    name?: string;
     isConnected: boolean;
     isLiveTokenConfigured: boolean;
     category: string;
     followers: string;
     postsCount: number;
     profileUrl: string;
+    profilePictureUrl?: string | null;
+    isLive?: boolean;
+    source?: string;
   };
   metaAdAccount: {
     id: string;
@@ -106,7 +117,11 @@ interface ConnectedAccounts {
     status: string;
     pixelId: string;
     isPixelActive: boolean;
-    billingThreshold: string;
+    billingThreshold?: string;
+    amountSpent?: string;
+    balance?: string;
+    isLive?: boolean;
+    source?: string;
   };
 }
 
@@ -119,13 +134,13 @@ export default function AiPageAdManager() {
   const [accounts, setAccounts] = useState<ConnectedAccounts | null>(null);
   const [campaigns, setCampaigns] = useState<CampaignItem[]>([]);
   const [diagnostics, setDiagnostics] = useState<any>(null);
+  const [isLiveMode, setIsLiveMode] = useState(false);
 
   // Video Upload & Player State
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [videoPreviewUrl, setVideoPreviewUrl] = useState<string>('/sample-hiring-reel.mp4');
   const [videoFileName, setVideoFileName] = useState<string>('sample-hiring-reel.mp4');
   const [isVideoPlaying, setIsVideoPlaying] = useState<boolean>(false);
-  const [videoDuration, setVideoDuration] = useState<number>(0);
   const videoRef = useRef<HTMLVideoElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -170,36 +185,43 @@ export default function AiPageAdManager() {
   const [submissionStep, setSubmissionStep] = useState<string>('');
   const [lastSuccessResult, setLastSuccessResult] = useState<any>(null);
 
-  // Settings modal / view
+  // Settings modal & quick connect form state
   const [showConfigModal, setShowConfigModal] = useState(false);
+  const [runtimePageId, setRuntimePageId] = useState('');
+  const [runtimePageToken, setRuntimePageToken] = useState('');
+  const [runtimeIgId, setRuntimeIgId] = useState('');
+  const [runtimeIgToken, setRuntimeIgToken] = useState('');
+  const [runtimeAdAccountId, setRuntimeAdAccountId] = useState('');
+  const [isTestingConnection, setIsTestingConnection] = useState(false);
+  const [testFeedback, setTestFeedback] = useState<any>(null);
 
-  const availableLocations = [
-    'Pan-India',
-    'Mumbai MMR',
-    'Pune',
-    'Delhi NCR',
-    'Bengaluru',
-    'Hyderabad',
-    'Chennai',
-    'Kolkata',
-    'Ahmedabad',
-    'Jaipur',
-    'Chandigarh'
-  ];
-
-  // Fetch initial accounts and campaigns
-  const fetchMetaStatus = async () => {
+  // Fetch initial accounts and campaigns from API
+  const fetchMetaStatus = async (showNotification = false) => {
     try {
       setLoading(true);
-      const res = await fetch('/api/admin/meta-ads');
+      const res = await fetch('/api/admin/meta-ads', { cache: 'no-store' });
       const data = await res.json();
       if (data.success) {
         setAccounts(data.connectedAccounts);
         setCampaigns(data.campaigns || []);
         setDiagnostics(data.diagnostics);
+        setIsLiveMode(Boolean(data.isLiveMode));
+
+        if (showNotification) {
+          if (data.isLiveMode) {
+            triggerToast(`✅ Live Meta Graph API Active: Connected to ${data.connectedAccounts?.facebook?.name || 'Page'}`);
+          } else if (data.diagnostics?.graphApiErrors?.length > 0) {
+            triggerToast(`⚠️ Meta Graph API returned error: ${data.diagnostics.graphApiErrors[0]}`);
+          } else {
+            triggerToast('Synced Meta connection status successfully.');
+          }
+        }
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error fetching Meta status:', err);
+      if (showNotification) {
+        triggerToast('Failed to connect to Meta endpoint: ' + err.message);
+      }
     } finally {
       setLoading(false);
     }
@@ -211,7 +233,7 @@ export default function AiPageAdManager() {
 
   const triggerToast = (msg: string) => {
     setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 4000);
+    setTimeout(() => setToastMessage(null), 5000);
   };
 
   // Handle Video Selection
@@ -290,18 +312,69 @@ export default function AiPageAdManager() {
     }
   };
 
-  // Toggle Location in targeting
-  const handleToggleLocation = (loc: string) => {
-    if (loc === 'Pan-India') {
-      setSelectedLocations(['Pan-India']);
-      return;
+  // Save runtime credentials directly
+  const handleSaveRuntimeCredentials = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      setIsTestingConnection(true);
+      setTestFeedback(null);
+
+      const res = await fetch('/api/admin/meta-ads', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'save_runtime_credentials',
+          pageId: runtimePageId || undefined,
+          pageAccessToken: runtimePageToken || undefined,
+          instagramId: runtimeIgId || undefined,
+          instagramAccessToken: runtimeIgToken || undefined,
+          adAccountId: runtimeAdAccountId || undefined,
+        }),
+      });
+
+      const data = await res.json();
+      setTestFeedback(data);
+
+      if (data.success) {
+        if (data.isLive) {
+          triggerToast(`🎉 Successfully connected to live page: ${data.facebook?.name || 'Facebook Page'}!`);
+        } else if (data.errors?.length > 0) {
+          triggerToast(`⚠️ Credentials saved but Meta returned: ${data.errors[0]}`);
+        } else {
+          triggerToast('Credentials updated. Refreshing status...');
+        }
+        await fetchMetaStatus();
+      } else {
+        alert(data.error || 'Failed to update credentials');
+      }
+    } catch (err: any) {
+      alert('Connection error: ' + err.message);
+    } finally {
+      setIsTestingConnection(false);
     }
-    const filtered = selectedLocations.filter((l) => l !== 'Pan-India');
-    if (filtered.includes(loc)) {
-      const remaining = filtered.filter((l) => l !== loc);
-      setSelectedLocations(remaining.length ? remaining : ['Pan-India']);
-    } else {
-      setSelectedLocations([...filtered, loc]);
+  };
+
+  const handleResetRuntimeCredentials = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch('/api/admin/meta-ads', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'reset_runtime_credentials' }),
+      });
+      const data = await res.json();
+      setRuntimePageId('');
+      setRuntimePageToken('');
+      setRuntimeIgId('');
+      setRuntimeIgToken('');
+      setRuntimeAdAccountId('');
+      setTestFeedback(null);
+      triggerToast('Reset to Vercel environment variables. Refreshing...');
+      await fetchMetaStatus();
+    } catch (e: any) {
+      alert('Error: ' + e.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -414,8 +487,8 @@ export default function AiPageAdManager() {
 
       triggerToast(
         launchAdEnabled
-          ? '🎉 Reel posted to FB & IG and Meta Ad Campaign launched with budget!'
-          : '🎉 Reel published successfully to connected FB & Instagram page!'
+          ? '🎉 Reel posted to connected Meta channels and Ad Campaign launched with set budget!'
+          : '🎉 Reel published successfully to connected Meta channels!'
       );
 
       // Refresh list
@@ -474,9 +547,17 @@ export default function AiPageAdManager() {
     }
   };
 
+  // Avatar initials helper
+  const getInitials = (name?: string) => {
+    if (!name) return 'AP';
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 2) return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+    return name.slice(0, 2).toUpperCase();
+  };
+
   return (
     <div className="space-y-6">
-      {/* Toast */}
+      {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed top-5 right-5 z-50 bg-teal-600 text-white px-4 py-3 rounded-xl shadow-2xl font-mono text-xs flex items-center gap-2 border border-teal-300 animate-bounce">
           <CheckCircle2 className="w-4 h-4 text-teal-100" />
@@ -489,15 +570,34 @@ export default function AiPageAdManager() {
         <div className="absolute top-0 right-0 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
           <div>
-            <div className="inline-flex items-center gap-2 bg-teal-500/20 text-teal-300 px-3 py-1 rounded-full text-xs font-mono font-bold uppercase tracking-wider border border-teal-500/40 mb-2">
-              <Sparkles className="w-3.5 h-3.5 text-teal-300 animate-pulse" />
-              <span>Official Meta Marketing Integration</span>
+            <div className="flex flex-wrap items-center gap-2 mb-2">
+              <div className="inline-flex items-center gap-2 bg-teal-500/20 text-teal-300 px-3 py-1 rounded-full text-xs font-mono font-bold uppercase tracking-wider border border-teal-500/40">
+                <Sparkles className="w-3.5 h-3.5 text-teal-300 animate-pulse" />
+                <span>Meta Marketing Graph API v21.0</span>
+              </div>
+
+              {isLiveMode ? (
+                <span className="inline-flex items-center gap-1.5 bg-emerald-500/20 text-emerald-300 px-3 py-1 rounded-full text-xs font-mono font-bold border border-emerald-500/40">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                  <span>Live Page Connected</span>
+                </span>
+              ) : diagnostics?.hasLiveFbToken ? (
+                <span className="inline-flex items-center gap-1.5 bg-amber-500/20 text-amber-300 px-3 py-1 rounded-full text-xs font-mono font-bold border border-amber-500/40">
+                  <span className="w-2 h-2 rounded-full bg-amber-400" />
+                  <span>Tokens Detected (Click Settings to Verify)</span>
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1.5 bg-slate-500/20 text-slate-300 px-3 py-1 rounded-full text-xs font-mono font-bold border border-slate-500/40">
+                  <span>Demo Mode (Vercel Env / Token Setup Available)</span>
+                </span>
+              )}
             </div>
+
             <h1 className="text-2xl sm:text-3xl font-display font-extrabold tracking-tight">
               AI Page Ad Manager
             </h1>
             <p className="text-slate-300 text-xs sm:text-sm mt-1 max-w-2xl leading-relaxed">
-              Upload and publish hiring reels directly to your connected Facebook &amp; Instagram pages, and launch targeted high-performing Meta Ad campaigns by setting a custom budget in INR.
+              Upload and publish hiring reels directly to your live connected Facebook &amp; Instagram pages, and launch targeted high-performing Meta Ad campaigns by setting a custom budget in INR.
             </p>
           </div>
 
@@ -507,80 +607,162 @@ export default function AiPageAdManager() {
               className="px-3.5 py-2 bg-ink-800/80 hover:bg-ink-700 text-slate-200 border border-ink-600 rounded-lg text-xs font-mono flex items-center gap-2 transition cursor-pointer"
             >
               <Settings className="w-3.5 h-3.5 text-teal-400" />
-              <span>Meta Setup &amp; Tokens</span>
+              <span>Connection &amp; Tokens</span>
             </button>
             <button
-              onClick={fetchMetaStatus}
+              onClick={() => fetchMetaStatus(true)}
               className="p-2 bg-ink-800/80 hover:bg-ink-700 text-slate-200 border border-ink-600 rounded-lg text-xs transition cursor-pointer"
-              title="Refresh connection status"
+              title="Refresh connection status from Meta Graph API"
             >
               <RefreshCw className={`w-3.5 h-3.5 text-teal-400 ${loading ? 'animate-spin' : ''}`} />
             </button>
           </div>
         </div>
 
+        {/* Live Warning Notice if Meta Graph API returned error */}
+        {diagnostics?.graphApiErrors && diagnostics.graphApiErrors.length > 0 && (
+          <div className="mt-4 bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 flex items-start justify-between gap-3 text-xs text-amber-200">
+            <div className="flex items-start gap-2">
+              <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+              <div>
+                <strong className="font-bold block text-amber-300">Meta Graph API Sync Notice:</strong>
+                <p className="text-amber-200/90 text-[11px] leading-relaxed mt-0.5">
+                  {diagnostics.graphApiErrors[0]}
+                </p>
+                <p className="text-[10px] text-amber-300/80 mt-1 font-mono">
+                  Tip: Check your Page Access Token in Vercel settings or use the &quot;Connection &amp; Tokens&quot; button to test your token directly.
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowConfigModal(true)}
+              className="shrink-0 px-2.5 py-1 bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 rounded font-mono text-[10px] border border-amber-500/40 cursor-pointer"
+            >
+              Fix Tokens
+            </button>
+          </div>
+        )}
+
         {/* Connected Channels Status Bar */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6 pt-5 border-t border-teal-500/20">
           {/* Facebook */}
           <div className="bg-ink-900/60 backdrop-blur-xs border border-ink-700/60 rounded-xl p-3 flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-blue-600/20 text-blue-400 border border-blue-500/30 flex items-center justify-center shrink-0">
-                <Facebook className="w-4 h-4 fill-current" />
-              </div>
+            <div className="flex items-center gap-2.5 min-w-0">
+              {accounts?.facebook?.pictureUrl ? (
+                <img
+                  src={accounts.facebook.pictureUrl}
+                  alt="Facebook Page"
+                  className="w-9 h-9 rounded-lg object-cover border border-blue-500/40 shrink-0"
+                />
+              ) : (
+                <div className="w-9 h-9 rounded-lg bg-blue-600/20 text-blue-400 border border-blue-500/30 flex items-center justify-center shrink-0">
+                  <Facebook className="w-4 h-4 fill-current" />
+                </div>
+              )}
               <div className="min-w-0">
                 <div className="flex items-center gap-1.5">
-                  <span className="font-bold text-xs text-white truncate">Facebook Page</span>
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className="font-bold text-xs text-white truncate">
+                    {accounts?.facebook?.name || 'Facebook Page'}
+                  </span>
+                  {accounts?.facebook?.isLive && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+                  )}
                 </div>
                 <p className="text-[11px] text-slate-400 truncate">
-                  {accounts?.facebook?.name || 'Aranii Corporate Solutions'}
+                  {accounts?.facebook?.handle || `@page_${accounts?.facebook?.id || ''}`}
+                  {accounts?.facebook?.followers && ` • ${accounts.facebook.followers} followers`}
                 </p>
               </div>
             </div>
-            <span className="bg-emerald-500/20 text-emerald-300 text-[10px] font-mono font-bold px-2 py-0.5 rounded border border-emerald-500/30">
-              Connected
+            <span
+              className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border shrink-0 ${
+                accounts?.facebook?.isLive
+                  ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                  : accounts?.facebook?.isLiveTokenConfigured
+                  ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                  : 'bg-slate-700/60 text-slate-300 border-slate-600'
+              }`}
+            >
+              {accounts?.facebook?.isLive
+                ? 'Live'
+                : accounts?.facebook?.isLiveTokenConfigured
+                ? 'Configured'
+                : 'Demo'}
             </span>
           </div>
 
           {/* Instagram */}
           <div className="bg-ink-900/60 backdrop-blur-xs border border-ink-700/60 rounded-xl p-3 flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-pink-600/20 text-pink-400 border border-pink-500/30 flex items-center justify-center shrink-0">
-                <Instagram className="w-4 h-4" />
-              </div>
+            <div className="flex items-center gap-2.5 min-w-0">
+              {accounts?.instagram?.profilePictureUrl ? (
+                <img
+                  src={accounts.instagram.profilePictureUrl}
+                  alt="Instagram Account"
+                  className="w-9 h-9 rounded-lg object-cover border border-pink-500/40 shrink-0"
+                />
+              ) : (
+                <div className="w-9 h-9 rounded-lg bg-pink-600/20 text-pink-400 border border-pink-500/30 flex items-center justify-center shrink-0">
+                  <Instagram className="w-4 h-4" />
+                </div>
+              )}
               <div className="min-w-0">
                 <div className="flex items-center gap-1.5">
-                  <span className="font-bold text-xs text-white truncate">Instagram Account</span>
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className="font-bold text-xs text-white truncate">
+                    {accounts?.instagram?.name || 'Instagram Profile'}
+                  </span>
+                  {accounts?.instagram?.isLive && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+                  )}
                 </div>
                 <p className="text-[11px] text-slate-400 truncate">
-                  {accounts?.instagram?.username ? `@${accounts.instagram.username}` : '@aranii_corporate_official'}
+                  @{accounts?.instagram?.username || 'instagram_account'}
+                  {accounts?.instagram?.followers && ` • ${accounts.instagram.followers} followers`}
                 </p>
               </div>
             </div>
-            <span className="bg-emerald-500/20 text-emerald-300 text-[10px] font-mono font-bold px-2 py-0.5 rounded border border-emerald-500/30">
-              Connected
+            <span
+              className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border shrink-0 ${
+                accounts?.instagram?.isLive
+                  ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                  : accounts?.instagram?.isLiveTokenConfigured
+                  ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                  : 'bg-slate-700/60 text-slate-300 border-slate-600'
+              }`}
+            >
+              {accounts?.instagram?.isLive
+                ? 'Live'
+                : accounts?.instagram?.isLiveTokenConfigured
+                ? 'Configured'
+                : 'Demo'}
             </span>
           </div>
 
           {/* Meta Ad Account */}
           <div className="bg-ink-900/60 backdrop-blur-xs border border-ink-700/60 rounded-xl p-3 flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-teal-600/20 text-teal-400 border border-teal-500/30 flex items-center justify-center shrink-0">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-9 h-9 rounded-lg bg-teal-600/20 text-teal-400 border border-teal-500/30 flex items-center justify-center shrink-0">
                 <DollarSign className="w-4 h-4" />
               </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-1.5">
-                  <span className="font-bold text-xs text-white truncate">Meta Ad Account</span>
+                  <span className="font-bold text-xs text-white truncate">
+                    {accounts?.metaAdAccount?.name || 'Meta Ad Account'}
+                  </span>
                   <span className="w-1.5 h-1.5 rounded-full bg-teal-400" />
                 </div>
                 <p className="text-[11px] text-slate-400 font-mono truncate">
-                  {accounts?.metaAdAccount?.id || 'act_592019481920'} (INR)
+                  {accounts?.metaAdAccount?.id || 'act_configured'} ({accounts?.metaAdAccount?.currency || 'INR'})
                 </p>
               </div>
             </div>
-            <span className="bg-teal-500/20 text-teal-300 text-[10px] font-mono font-bold px-2 py-0.5 rounded border border-teal-500/30">
-              Pixel Active
+            <span
+              className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border shrink-0 ${
+                accounts?.metaAdAccount?.isLive
+                  ? 'bg-teal-500/20 text-teal-300 border-teal-500/40'
+                  : 'bg-slate-700/60 text-slate-300 border-slate-600'
+              }`}
+            >
+              {accounts?.metaAdAccount?.isLive ? 'Live Ads' : 'Ready'}
             </span>
           </div>
         </div>
@@ -591,7 +773,7 @@ export default function AiPageAdManager() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setActiveTab('create')}
-            className={`px-4 py-2 rounded-lg text-xs font-mono font-bold uppercase transition flex items-center gap-2 ${
+            className={`px-4 py-2 rounded-lg text-xs font-mono font-bold uppercase transition flex items-center gap-2 cursor-pointer ${
               activeTab === 'create'
                 ? 'bg-teal-600 text-white shadow-xs'
                 : 'text-slate hover:bg-paper'
@@ -602,7 +784,7 @@ export default function AiPageAdManager() {
           </button>
           <button
             onClick={() => setActiveTab('campaigns')}
-            className={`px-4 py-2 rounded-lg text-xs font-mono font-bold uppercase transition flex items-center gap-2 ${
+            className={`px-4 py-2 rounded-lg text-xs font-mono font-bold uppercase transition flex items-center gap-2 cursor-pointer ${
               activeTab === 'campaigns'
                 ? 'bg-teal-600 text-white shadow-xs'
                 : 'text-slate hover:bg-paper'
@@ -619,7 +801,7 @@ export default function AiPageAdManager() {
         <div className="hidden sm:flex items-center gap-2 text-xs font-mono text-slate">
           <span>Active Ad Currency:</span>
           <span className="font-bold text-ink-900 bg-paper px-2 py-0.5 rounded border border-line">
-            INR (₹)
+            {accounts?.metaAdAccount?.currency || 'INR'} (₹)
           </span>
         </div>
       </div>
@@ -643,7 +825,7 @@ export default function AiPageAdManager() {
                 <button
                   type="button"
                   onClick={handleUseSampleVideo}
-                  className="text-xs font-mono text-teal-700 hover:text-teal-900 underline flex items-center gap-1"
+                  className="text-xs font-mono text-teal-700 hover:text-teal-900 underline flex items-center gap-1 cursor-pointer"
                 >
                   <FileVideo className="w-3.5 h-3.5" />
                   <span>Use Sample Reel</span>
@@ -696,7 +878,7 @@ export default function AiPageAdManager() {
 
                 <div className="flex items-center gap-1.5 bg-paper px-2 py-1 rounded border border-line text-xs font-mono">
                   <Sparkles className="w-3.5 h-3.5 text-purple-600" />
-                  <span className="text-ink-900 font-bold">Gemini 2.5 AI Powered</span>
+                  <span className="text-ink-900 font-bold">Gemini AI Powered</span>
                 </div>
               </div>
 
@@ -818,15 +1000,23 @@ export default function AiPageAdManager() {
               </div>
             </div>
 
-            {/* Step 3: Destination Platforms */}
+            {/* Step 3: Destination Platforms (Live Connected Accounts) */}
             <div className="bg-surface border border-line rounded-xl p-5 shadow-xs space-y-4">
-              <div className="flex items-center gap-2">
-                <span className="w-6 h-6 rounded-full bg-teal-100 text-teal-800 font-mono text-xs font-bold flex items-center justify-center">
-                  3
-                </span>
-                <h3 className="font-display font-bold text-base text-ink-900">
-                  Select Connected Destination Pages
-                </h3>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="w-6 h-6 rounded-full bg-teal-100 text-teal-800 font-mono text-xs font-bold flex items-center justify-center">
+                    3
+                  </span>
+                  <h3 className="font-display font-bold text-base text-ink-900">
+                    Select Connected Destination Pages
+                  </h3>
+                </div>
+                {accounts?.facebook?.isLive && (
+                  <span className="text-[10px] font-mono text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-300 font-bold flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                    Verified Meta Graph API
+                  </span>
+                )}
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -847,14 +1037,23 @@ export default function AiPageAdManager() {
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5">
                       <Facebook className="w-4 h-4 text-blue-600 fill-current" />
-                      <span className="font-bold text-xs text-ink-900">Facebook Page</span>
+                      <span className="font-bold text-xs text-ink-900 truncate">
+                        {accounts?.facebook?.name || 'Connected Facebook Page'}
+                      </span>
                     </div>
                     <p className="text-[11px] text-slate mt-0.5 truncate">
-                      Aranii Corporate Solutions Official
+                      {accounts?.facebook?.handle || `@page_${accounts?.facebook?.id || ''}`}
                     </p>
-                    <span className="text-[10px] font-mono text-blue-700 bg-blue-100/60 px-1.5 py-0.2 rounded mt-1.5 inline-block">
-                      Reels Feed &amp; Page Timeline
-                    </span>
+                    <div className="flex items-center gap-1.5 mt-1.5">
+                      <span className="text-[10px] font-mono text-blue-700 bg-blue-100/60 px-1.5 py-0.2 rounded inline-block">
+                        Reels Feed &amp; Page
+                      </span>
+                      {accounts?.facebook?.isLive && (
+                        <span className="text-[9px] font-mono text-emerald-700 font-bold">
+                          ● Live
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </label>
 
@@ -875,20 +1074,29 @@ export default function AiPageAdManager() {
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5">
                       <Instagram className="w-4 h-4 text-pink-600" />
-                      <span className="font-bold text-xs text-ink-900">Instagram Profile</span>
+                      <span className="font-bold text-xs text-ink-900 truncate">
+                        {accounts?.instagram?.name || 'Instagram Profile'}
+                      </span>
                     </div>
                     <p className="text-[11px] text-slate mt-0.5 truncate">
-                      @aranii_corporate_official
+                      @{accounts?.instagram?.username || 'instagram_account'}
                     </p>
-                    <span className="text-[10px] font-mono text-pink-700 bg-pink-100/60 px-1.5 py-0.2 rounded mt-1.5 inline-block">
-                      Reels Tab &amp; Grid Feed
-                    </span>
+                    <div className="flex items-center gap-1.5 mt-1.5">
+                      <span className="text-[10px] font-mono text-pink-700 bg-pink-100/60 px-1.5 py-0.2 rounded inline-block">
+                        Reels Tab &amp; Grid
+                      </span>
+                      {accounts?.instagram?.isLive && (
+                        <span className="text-[9px] font-mono text-emerald-700 font-bold">
+                          ● Live
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </label>
               </div>
             </div>
 
-            {/* Step 4: Launch Ad for this Reel Post by Setting Budget */}
+            {/* Step 4: Launch Ad for this Reel Post with Budget */}
             <div className="bg-surface border border-line rounded-xl p-5 shadow-xs space-y-5">
               <div className="flex items-center justify-between border-b border-line pb-3">
                 <div className="flex items-center gap-2">
@@ -900,7 +1108,7 @@ export default function AiPageAdManager() {
                       Launch Ad for this Reel Post (Meta Ads)
                     </h3>
                     <p className="text-xs text-slate">
-                      Boost this reel across Instagram &amp; Facebook with a targeted ad budget.
+                      Boost this reel across Instagram &amp; Facebook with a targeted ad budget in INR.
                     </p>
                   </div>
                 </div>
@@ -916,7 +1124,7 @@ export default function AiPageAdManager() {
                 </label>
               </div>
 
-              {launchAdEnabled ? (
+              {launchAdEnabled && (
                 <div className="space-y-5">
                   {/* Budget Configuration */}
                   <div className="bg-gradient-to-br from-teal-50/70 to-emerald-50/50 border border-teal-200 rounded-xl p-4 space-y-4">
@@ -931,7 +1139,7 @@ export default function AiPageAdManager() {
                         <button
                           type="button"
                           onClick={() => setBudgetType('daily')}
-                          className={`px-2.5 py-1 rounded transition ${
+                          className={`px-2.5 py-1 rounded transition cursor-pointer ${
                             budgetType === 'daily'
                               ? 'bg-teal-600 text-white font-bold'
                               : 'text-slate hover:bg-slate-100'
@@ -942,7 +1150,7 @@ export default function AiPageAdManager() {
                         <button
                           type="button"
                           onClick={() => setBudgetType('lifetime')}
-                          className={`px-2.5 py-1 rounded transition ${
+                          className={`px-2.5 py-1 rounded transition cursor-pointer ${
                             budgetType === 'lifetime'
                               ? 'bg-teal-600 text-white font-bold'
                               : 'text-slate hover:bg-slate-100'
@@ -964,7 +1172,7 @@ export default function AiPageAdManager() {
                             key={amt}
                             type="button"
                             onClick={() => setBudgetAmount(amt)}
-                            className={`py-2 px-3 rounded-lg border text-xs font-mono font-bold transition flex flex-col items-center justify-center ${
+                            className={`py-2 px-3 rounded-lg border text-xs font-mono font-bold transition flex flex-col items-center justify-center cursor-pointer ${
                               budgetAmount === amt
                                 ? 'bg-teal-700 text-white border-teal-700 shadow-xs'
                                 : 'bg-white text-ink-900 border-teal-200 hover:bg-teal-50'
@@ -1007,7 +1215,7 @@ export default function AiPageAdManager() {
                               key={days}
                               type="button"
                               onClick={() => setDurationDays(days)}
-                              className={`px-3 py-1.5 rounded text-xs font-mono transition ${
+                              className={`px-3 py-1.5 rounded text-xs font-mono transition cursor-pointer ${
                                 durationDays === days
                                   ? 'bg-teal-800 text-white font-bold'
                                   : 'bg-white text-ink-900 border border-teal-200 hover:bg-teal-50'
@@ -1021,143 +1229,21 @@ export default function AiPageAdManager() {
 
                       <div>
                         <label className="block text-xs font-bold text-ink-900 mb-1">
-                          Primary Ad Objective
+                          Ad Objective
                         </label>
                         <select
                           value={adObjective}
                           onChange={(e) => setAdObjective(e.target.value as any)}
-                          className="w-full bg-white border border-teal-200 rounded px-2.5 py-1.5 text-xs text-ink-900"
+                          className="w-full bg-white border border-teal-200 rounded px-2.5 py-1.5 text-xs font-mono text-ink-900 outline-none focus:border-teal-500"
                         >
-                          <option value="OUTCOME_LEADS">Candidate Leads (Instant Form)</option>
-                          <option value="OUTCOME_MESSAGES">Direct WhatsApp Inquiries</option>
-                          <option value="OUTCOME_TRAFFIC">Job Board Website Visits</option>
-                          <option value="OUTCOME_AWARENESS">Maximum Video Reel Plays</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    {/* Dynamic Real-Time Performance & Spend Summary Card */}
-                    <div className="bg-white border border-teal-300 rounded-xl p-4 shadow-xs">
-                      <div className="flex items-center justify-between mb-3 border-b border-line pb-2">
-                        <span className="text-xs font-mono font-bold uppercase text-teal-800">
-                          Estimated Meta Performance Forecast
-                        </span>
-                        <span className="text-xs font-mono text-slate">
-                          Total Budget: <strong className="text-ink-900">₹{totalBudgetInr.toLocaleString('en-IN')}</strong> (+GST ₹{gstTax})
-                        </span>
-                      </div>
-
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
-                        <div className="p-2.5 bg-paper rounded-lg">
-                          <p className="text-[10px] font-mono text-muted uppercase">Est. Reel Plays</p>
-                          <p className="text-base font-display font-extrabold text-teal-700 mt-0.5">
-                            {estimatedVideoPlays.toLocaleString('en-IN')}
-                          </p>
-                          <span className="text-[10px] text-slate">Full views</span>
-                        </div>
-                        <div className="p-2.5 bg-paper rounded-lg">
-                          <p className="text-[10px] font-mono text-muted uppercase">Est. Reach</p>
-                          <p className="text-base font-display font-extrabold text-teal-700 mt-0.5">
-                            {estimatedReach.toLocaleString('en-IN')}
-                          </p>
-                          <span className="text-[10px] text-slate">Unique users</span>
-                        </div>
-                        <div className="p-2.5 bg-paper rounded-lg">
-                          <p className="text-[10px] font-mono text-muted uppercase">Est. Clicks</p>
-                          <p className="text-base font-display font-extrabold text-teal-700 mt-0.5">
-                            {estimatedClicks.toLocaleString('en-IN')}
-                          </p>
-                          <span className="text-[10px] text-slate">~2.8% CTR</span>
-                        </div>
-                        <div className="p-2.5 bg-emerald-50 border border-emerald-200 rounded-lg">
-                          <p className="text-[10px] font-mono text-emerald-800 uppercase font-bold">
-                            Est. Candidates
-                          </p>
-                          <p className="text-base font-display font-extrabold text-emerald-700 mt-0.5">
-                            {estimatedLeads.toLocaleString('en-IN')} Leads
-                          </p>
-                          <span className="text-[10px] text-emerald-600 font-mono">
-                            ~₹{Math.max(12, Math.round(totalBudgetInr / Math.max(1, estimatedLeads)))}/lead
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Target Audience Controls */}
-                  <div className="space-y-3">
-                    <label className="block text-xs font-bold text-ink-900">
-                      Target Locations (India)
-                    </label>
-                    <div className="flex flex-wrap gap-1.5">
-                      {availableLocations.map((loc) => {
-                        const isSelected = selectedLocations.includes(loc);
-                        return (
-                          <button
-                            key={loc}
-                            type="button"
-                            onClick={() => handleToggleLocation(loc)}
-                            className={`px-2.5 py-1 rounded-full text-xs font-mono transition cursor-pointer ${
-                              isSelected
-                                ? 'bg-teal-600 text-white font-bold shadow-xs'
-                                : 'bg-paper text-slate hover:bg-slate-200 border border-line'
-                            }`}
-                          >
-                            {isSelected ? '✓ ' : '+ '}
-                            {loc}
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                      <div>
-                        <label className="block text-xs font-bold text-slate mb-1">
-                          Candidate Age Range
-                        </label>
-                        <div className="flex items-center gap-2 text-xs font-mono">
-                          <input
-                            type="number"
-                            min="18"
-                            max="60"
-                            value={ageMin}
-                            onChange={(e) => setAgeMin(Number(e.target.value))}
-                            className="w-20 bg-paper border border-line rounded p-1.5 text-center text-ink-900"
-                          />
-                          <span>to</span>
-                          <input
-                            type="number"
-                            min="18"
-                            max="65"
-                            value={ageMax}
-                            onChange={(e) => setAgeMax(Number(e.target.value))}
-                            className="w-20 bg-paper border border-line rounded p-1.5 text-center text-ink-900"
-                          />
-                          <span className="text-slate">Years</span>
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-bold text-slate mb-1">
-                          Ad Call-To-Action (CTA Button)
-                        </label>
-                        <select
-                          value={ctaType}
-                          onChange={(e) => setCtaType(e.target.value)}
-                          className="w-full bg-paper border border-line rounded px-2.5 py-1.5 text-xs text-ink-900"
-                        >
-                          <option value="APPLY_NOW">Apply Now (Recommended)</option>
-                          <option value="SEND_WHATSAPP_MESSAGE">Send WhatsApp Message</option>
-                          <option value="LEARN_MORE">Learn More</option>
-                          <option value="SIGN_UP">Sign Up for Walk-In</option>
+                          <option value="OUTCOME_LEADS">🎯 Generate Leads (Instant Forms &amp; WhatsApp)</option>
+                          <option value="OUTCOME_TRAFFIC">🚀 Drive Traffic to Jobs Portal</option>
+                          <option value="OUTCOME_MESSAGES">💬 Direct Inquiries via Instagram DM</option>
+                          <option value="OUTCOME_AWARENESS">📢 Brand Awareness &amp; Video Views</option>
                         </select>
                       </div>
                     </div>
                   </div>
-                </div>
-              ) : (
-                <div className="bg-paper border border-line rounded-xl p-4 text-center text-xs text-slate">
-                  <p>Ad Campaign toggle is turned off. The reel will only be published as an organic post on connected Facebook and Instagram pages without spending budget.</p>
                 </div>
               )}
             </div>
@@ -1168,35 +1254,38 @@ export default function AiPageAdManager() {
                 type="button"
                 onClick={handlePublishReelAndAd}
                 disabled={isSubmitting}
-                className="w-full py-4 bg-gradient-to-r from-teal-600 via-teal-700 to-ink-900 hover:from-teal-500 hover:to-ink-800 text-white font-mono text-sm font-bold uppercase rounded-xl shadow-xl transition flex items-center justify-center gap-2.5 disabled:opacity-50 cursor-pointer"
+                className="w-full py-4 bg-gradient-to-r from-teal-600 via-teal-700 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-display font-bold text-base rounded-xl shadow-lg transition flex items-center justify-center gap-3 disabled:opacity-50 cursor-pointer"
               >
                 {isSubmitting ? (
                   <>
-                    <RefreshCw className="w-4 h-4 animate-spin text-teal-200" />
-                    <span>{submissionStep || 'Processing Meta Action...'}</span>
+                    <RefreshCw className="w-5 h-5 animate-spin" />
+                    <span>{submissionStep || 'Processing Meta Graph API Call...'}</span>
                   </>
                 ) : (
                   <>
-                    <Share2 className="w-4 h-4 text-teal-300" />
+                    <Upload className="w-5 h-5" />
                     <span>
                       {launchAdEnabled
-                        ? `Post Reel to FB & IG + Launch Ad Campaign (₹${totalBudgetInr.toLocaleString('en-IN')})`
-                        : 'Post Reel to Connected Facebook & Instagram'}
+                        ? `Publish Reel & Launch Meta Ad (₹${totalPayable.toLocaleString('en-IN')})`
+                        : 'Publish Reel to Connected Channels'}
                     </span>
+                    <ArrowRight className="w-5 h-5" />
                   </>
                 )}
               </button>
             </div>
           </div>
 
-          {/* RIGHT 5 COLS: LIVE REEL PREVIEW & META SMART SIMULATOR */}
-          <div className="lg:col-span-5 space-y-4">
-            <div className="sticky top-20 space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="font-mono text-xs uppercase font-bold text-slate tracking-wider flex items-center gap-1.5">
-                  <Eye className="w-3.5 h-3.5 text-teal-600" />
-                  <span>Live 9:16 Meta Reel Preview</span>
-                </span>
+          {/* RIGHT 5 COLS: LIVE PREVIEW & PHONE MOCKUP */}
+          <div className="lg:col-span-5 space-y-6">
+            <div className="bg-surface border border-line rounded-xl p-5 shadow-xs space-y-4">
+              <div className="flex items-center justify-between border-b border-line pb-3">
+                <div className="flex items-center gap-2">
+                  <Eye className="w-4 h-4 text-teal-600" />
+                  <h3 className="font-display font-bold text-sm text-ink-900">
+                    Live Reel &amp; Feed Preview
+                  </h3>
+                </div>
                 <span className="text-[11px] font-mono text-muted">
                   Instagram / Facebook Format
                 </span>
@@ -1268,12 +1357,20 @@ export default function AiPageAdManager() {
                 {/* Bottom Overlay: Profile Info, Caption & CTA Button */}
                 <div className="relative z-10 p-3.5 bg-gradient-to-t from-black/90 via-black/60 to-transparent text-white space-y-2">
                   <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-full bg-teal-500 border border-white flex items-center justify-center text-[10px] font-bold text-white uppercase">
-                      AC
-                    </div>
+                    {accounts?.instagram?.profilePictureUrl || accounts?.facebook?.pictureUrl ? (
+                      <img
+                        src={accounts.instagram.profilePictureUrl || accounts.facebook.pictureUrl || ''}
+                        alt="Profile Avatar"
+                        className="w-7 h-7 rounded-full object-cover border border-white"
+                      />
+                    ) : (
+                      <div className="w-7 h-7 rounded-full bg-teal-500 border border-white flex items-center justify-center text-[10px] font-bold text-white uppercase">
+                        {getInitials(accounts?.facebook?.name || 'Aranii Corporate')}
+                      </div>
+                    )}
                     <div className="min-w-0">
                       <span className="font-bold text-xs truncate block">
-                        aranii_corporate_official
+                        {accounts?.instagram?.username || (accounts?.facebook?.name ? accounts.facebook.name.toLowerCase().replace(/[^a-z0-9]/g, '') : 'aranii_corporate_official')}
                       </span>
                     </div>
                     <span className="bg-white/20 text-white text-[9px] px-2 py-0.5 rounded font-bold ml-auto shrink-0">
@@ -1288,13 +1385,9 @@ export default function AiPageAdManager() {
 
                   {/* Sponsored CTA banner if ad is enabled */}
                   {launchAdEnabled && (
-                    <div className="pt-1">
-                      <div className="bg-teal-500 text-white rounded-lg py-2 px-3 flex items-center justify-between font-bold text-xs shadow-lg animate-pulse">
-                        <span className="truncate">{adHeadline || 'Apply for Banking Roles'}</span>
-                        <span className="bg-white text-teal-900 text-[10px] px-2 py-0.5 rounded font-mono shrink-0 ml-2">
-                          {ctaType.replace(/_/g, ' ')}
-                        </span>
-                      </div>
+                    <div className="bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold py-2 px-3 rounded-lg flex items-center justify-between shadow-lg cursor-pointer">
+                      <span className="truncate">{adHeadline || 'Apply for Open Positions'}</span>
+                      <ArrowRight className="w-3.5 h-3.5 shrink-0 ml-1" />
                     </div>
                   )}
                 </div>
@@ -1338,7 +1431,7 @@ export default function AiPageAdManager() {
                     <button
                       type="button"
                       onClick={() => setActiveTab('campaigns')}
-                      className="w-full mt-2 py-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-lg transition"
+                      className="w-full mt-2 py-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-lg transition cursor-pointer"
                     >
                       View Live Campaign Analytics →
                     </button>
@@ -1364,7 +1457,7 @@ export default function AiPageAdManager() {
             </div>
             <button
               onClick={() => setActiveTab('create')}
-              className="px-3.5 py-2 bg-teal-600 hover:bg-teal-500 text-white rounded-lg text-xs font-mono font-bold flex items-center gap-1.5 shadow-xs"
+              className="px-3.5 py-2 bg-teal-600 hover:bg-teal-500 text-white rounded-lg text-xs font-mono font-bold flex items-center gap-1.5 shadow-xs cursor-pointer"
             >
               <Upload className="w-3.5 h-3.5" />
               <span>New Reel Ad</span>
@@ -1380,7 +1473,7 @@ export default function AiPageAdManager() {
               </p>
               <button
                 onClick={() => setActiveTab('create')}
-                className="mt-2 px-4 py-2 bg-teal-600 text-white rounded-lg text-xs font-mono font-bold inline-flex items-center gap-2"
+                className="mt-2 px-4 py-2 bg-teal-600 text-white rounded-lg text-xs font-mono font-bold inline-flex items-center gap-2 cursor-pointer"
               >
                 <span>Upload &amp; Launch First Ad</span>
               </button>
@@ -1409,6 +1502,11 @@ export default function AiPageAdManager() {
                           >
                             {cam.status}
                           </span>
+                          {cam.isLiveCampaign && (
+                            <span className="bg-teal-100 text-teal-800 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border border-teal-300">
+                              Live Meta Ad
+                            </span>
+                          )}
                           <span className="text-xs text-muted font-mono">
                             {new Date(cam.createdAt).toLocaleDateString('en-US', {
                               month: 'short',
@@ -1505,40 +1603,6 @@ export default function AiPageAdManager() {
                         <span className="text-[10px] text-emerald-600 font-mono">Verified</span>
                       </div>
                     </div>
-
-                    {/* Footer Details & Direct Post Links */}
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between text-xs text-slate gap-2 pt-2 border-t border-line/60">
-                      <div className="flex items-center gap-3">
-                        <span className="font-mono text-[11px]">
-                          Targeting: {cam.targetAudience.locations.join(', ')} (Ages {cam.targetAudience.ageMin}-{cam.targetAudience.ageMax})
-                        </span>
-                      </div>
-
-                      <div className="flex items-center gap-3 font-mono text-xs">
-                        {cam.postUrls?.facebook && (
-                          <a
-                            href={cam.postUrls.facebook}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="text-blue-600 hover:underline flex items-center gap-1"
-                          >
-                            <Facebook className="w-3.5 h-3.5" />
-                            <span>Facebook Reel</span>
-                          </a>
-                        )}
-                        {cam.postUrls?.instagram && (
-                          <a
-                            href={cam.postUrls.instagram}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="text-pink-600 hover:underline flex items-center gap-1"
-                          >
-                            <Instagram className="w-3.5 h-3.5" />
-                            <span>Instagram Reel</span>
-                          </a>
-                        )}
-                      </div>
-                    </div>
                   </div>
                 );
               })}
@@ -1550,70 +1614,162 @@ export default function AiPageAdManager() {
       {/* META CONFIGURATION MODAL */}
       {showConfigModal && (
         <div className="fixed inset-0 z-50 bg-ink-950/70 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-surface border border-line rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
+          <div className="bg-surface border border-line rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-line pb-3">
               <div className="flex items-center gap-2">
                 <Settings className="w-5 h-5 text-teal-600" />
                 <h3 className="font-display font-bold text-lg text-ink-900">
-                  Meta Graph API &amp; Ads Account Setup
+                  Meta Graph API &amp; Vercel Environment Configuration
                 </h3>
               </div>
               <button
                 onClick={() => setShowConfigModal(false)}
-                className="p-1 hover:bg-paper rounded-lg transition"
+                className="p-1 hover:bg-paper rounded-lg transition cursor-pointer"
               >
                 <X className="w-5 h-5 text-slate" />
               </button>
             </div>
 
             <div className="space-y-4 text-xs font-sans">
+              {/* Vercel Environment Variables Status */}
               <div className="bg-paper border border-line rounded-xl p-4 space-y-3">
-                <h4 className="font-bold text-ink-900 font-display text-sm">
-                  Connected Environment Status
-                </h4>
-                <div className="grid grid-cols-2 gap-3 text-slate">
-                  <div className="flex items-center justify-between p-2 bg-surface rounded border border-line">
-                    <span>Facebook Page ID:</span>
-                    <strong className="text-ink-900 font-mono">
-                      {accounts?.facebook?.id || '10849204918231'}
-                    </strong>
-                  </div>
-                  <div className="flex items-center justify-between p-2 bg-surface rounded border border-line">
-                    <span>Instagram Account ID:</span>
-                    <strong className="text-ink-900 font-mono">
-                      {accounts?.instagram?.id || '17841400293819'}
-                    </strong>
-                  </div>
-                  <div className="flex items-center justify-between p-2 bg-surface rounded border border-line">
-                    <span>Meta Ad Account:</span>
-                    <strong className="text-ink-900 font-mono">
-                      {accounts?.metaAdAccount?.id || 'act_592019481920'}
-                    </strong>
-                  </div>
-                  <div className="flex items-center justify-between p-2 bg-surface rounded border border-line">
-                    <span>Meta Pixel ID:</span>
-                    <strong className="text-teal-700 font-mono">
-                      {accounts?.metaAdAccount?.pixelId || '123456789098765'}
-                    </strong>
-                  </div>
+                <div className="flex items-center justify-between">
+                  <h4 className="font-bold text-ink-900 font-display text-sm">
+                    Vercel Environment Variables Audit
+                  </h4>
+                  <span className="text-[11px] font-mono text-teal-700 bg-teal-50 px-2 py-0.5 rounded border border-teal-200">
+                    Server Status: {isLiveMode ? 'Live Connected' : 'Checking'}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-slate">
+                  {diagnostics?.envAudit &&
+                    Object.entries(diagnostics.envAudit).map(([k, v]: [string, any]) => {
+                      const isSet = v !== 'Not Set';
+                      return (
+                        <div
+                          key={k}
+                          className="flex items-center justify-between p-2.5 bg-surface rounded-lg border border-line"
+                        >
+                          <span className="font-mono text-[11px] font-bold text-ink-900">{k}</span>
+                          <span
+                            className={`font-mono text-[10px] px-2 py-0.5 rounded ${
+                              isSet
+                                ? 'bg-emerald-100 text-emerald-800 font-bold'
+                                : 'bg-slate-100 text-slate-600'
+                            }`}
+                          >
+                            {String(v)}
+                          </span>
+                        </div>
+                      );
+                    })}
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <h4 className="font-bold text-ink-900">Configuring Live Production Meta Tokens</h4>
-                <p className="text-slate leading-relaxed">
-                  To publish directly to your verified production Facebook Page and Instagram Account, configure the following variables in your environment or Secrets panel:
-                </p>
-                <div className="bg-ink-950 text-teal-300 font-mono text-[11px] p-3 rounded-lg overflow-x-auto space-y-1">
-                  <p>META_PAGE_ID=&quot;your-facebook-page-id&quot;</p>
-                  <p>META_PAGE_ACCESS_TOKEN=&quot;EAAB...your-page-access-token&quot;</p>
-                  <p>INSTAGRAM_PAGE_ID=&quot;your-instagram-business-id&quot;</p>
-                  <p>INSTAGRAM_ACCESS_TOKEN=&quot;EAAB...your-ig-token&quot;</p>
-                  <p>META_AD_ACCOUNT_ID=&quot;act_your-ad-account-id&quot;</p>
+              {/* Direct Live Connection & Override Form */}
+              <form onSubmit={handleSaveRuntimeCredentials} className="bg-teal-50/50 border border-teal-200 rounded-xl p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="font-bold text-teal-950 font-display text-sm">
+                      Live Test &amp; Immediate Token Override
+                    </h4>
+                    <p className="text-[11px] text-teal-800 mt-0.5">
+                      Test your Facebook Page ID and Access Token live against Meta Graph API:
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleResetRuntimeCredentials}
+                    className="text-[10px] font-mono text-slate hover:text-ink-900 underline cursor-pointer"
+                  >
+                    Reset Overrides
+                  </button>
                 </div>
-                <p className="text-[11px] text-muted">
-                  Note: In sandbox/preview mode without external Meta tokens, the application uses realistic Meta Graph API simulation with full campaign lifecycle, analytics forecasting, and sample links.
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                  <div>
+                    <label className="block text-slate font-bold mb-1">Facebook Page ID</label>
+                    <input
+                      type="text"
+                      value={runtimePageId}
+                      onChange={(e) => setRuntimePageId(e.target.value)}
+                      placeholder={accounts?.facebook?.id || 'e.g. 10849204918231'}
+                      className="w-full bg-white border border-teal-200 rounded px-3 py-1.5 text-ink-900 outline-none focus:border-teal-500 font-mono text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate font-bold mb-1">Facebook Page Access Token</label>
+                    <input
+                      type="password"
+                      value={runtimePageToken}
+                      onChange={(e) => setRuntimePageToken(e.target.value)}
+                      placeholder="EAAB... (Paste Token)"
+                      className="w-full bg-white border border-teal-200 rounded px-3 py-1.5 text-ink-900 outline-none focus:border-teal-500 font-mono text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate font-bold mb-1">Instagram Business Account ID (Optional)</label>
+                    <input
+                      type="text"
+                      value={runtimeIgId}
+                      onChange={(e) => setRuntimeIgId(e.target.value)}
+                      placeholder={accounts?.instagram?.id || 'e.g. 17841400293819'}
+                      className="w-full bg-white border border-teal-200 rounded px-3 py-1.5 text-ink-900 outline-none focus:border-teal-500 font-mono text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate font-bold mb-1">Meta Ad Account ID (Optional)</label>
+                    <input
+                      type="text"
+                      value={runtimeAdAccountId}
+                      onChange={(e) => setRuntimeAdAccountId(e.target.value)}
+                      placeholder={accounts?.metaAdAccount?.id || 'e.g. act_592019481920'}
+                      className="w-full bg-white border border-teal-200 rounded px-3 py-1.5 text-ink-900 outline-none focus:border-teal-500 font-mono text-xs"
+                    />
+                  </div>
+                </div>
+
+                <div className="pt-1 flex items-center justify-between">
+                  <span className="text-[11px] text-teal-800">
+                    {testFeedback?.message && (
+                      <span className="font-bold text-teal-900">{testFeedback.message}</span>
+                    )}
+                  </span>
+                  <button
+                    type="submit"
+                    disabled={isTestingConnection}
+                    className="px-4 py-2 bg-teal-700 hover:bg-teal-800 text-white font-mono text-xs font-bold rounded-lg shadow-xs flex items-center gap-2 transition disabled:opacity-50 cursor-pointer"
+                  >
+                    {isTestingConnection ? (
+                      <>
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                        <span>Verifying with Meta...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Key className="w-3.5 h-3.5" />
+                        <span>Test &amp; Connect Live Now</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+
+              {/* Troubleshooting Instructions */}
+              <div className="space-y-2">
+                <h4 className="font-bold text-ink-900">Configuring in Vercel Project Settings</h4>
+                <p className="text-slate leading-relaxed">
+                  To permanently configure your connected Facebook Page and Instagram Account in Vercel:
                 </p>
+                <ol className="list-decimal list-inside space-y-1 text-slate text-[11px]">
+                  <li>Open your project dashboard on Vercel &rarr; Settings &rarr; <strong>Environment Variables</strong>.</li>
+                  <li>Add <code>META_PAGE_ID</code> (e.g. your numerical Facebook Page ID from Meta Business Suite).</li>
+                  <li>Add <code>META_PAGE_ACCESS_TOKEN</code> (your permanent System User or Page Access Token starting with <code>EAAB...</code>).</li>
+                  <li>Add <code>INSTAGRAM_PAGE_ID</code> (your Instagram Business Account ID).</li>
+                  <li>Add <code>META_AD_ACCOUNT_ID</code> (e.g. <code>act_1234567890</code>).</li>
+                  <li>Redeploy your project on Vercel so the server runtime loads the new environment variables.</li>
+                </ol>
               </div>
             </div>
 
@@ -1621,7 +1777,7 @@ export default function AiPageAdManager() {
               <button
                 type="button"
                 onClick={() => setShowConfigModal(false)}
-                className="px-5 py-2 bg-teal-600 hover:bg-teal-500 text-white font-mono text-xs font-bold rounded-lg transition"
+                className="px-5 py-2 bg-teal-600 hover:bg-teal-500 text-white font-mono text-xs font-bold rounded-lg transition cursor-pointer"
               >
                 Close Settings
               </button>

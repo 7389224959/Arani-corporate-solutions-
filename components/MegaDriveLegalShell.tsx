@@ -127,11 +127,19 @@ export function MegaDriveLegalShell({
 
       {/* Footer */}
       <footer className="border-t border-slate-900 bg-slate-950 py-6 text-center text-xs font-mono text-slate-500">
-        <p>© 2026 Aranii Corporate Solutions Private Limited. All Rights Reserved.</p>
-        <div className="flex justify-center gap-4 mt-2">
-          <Link href="/mega-job-drive/terms" className="hover:text-teal-400 transition">Terms</Link>
-          <Link href="/mega-job-drive/privacy" className="hover:text-teal-400 transition">Privacy</Link>
+        <p>© {new Date().getFullYear()} Aranii Corporate Solutions Private Limited. All Rights Reserved.</p>
+        <div className="flex flex-wrap justify-center items-center gap-3.5 mt-3">
+          <Link
+            href="/mega-job-drive/terms"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-500/10 hover:bg-teal-500/20 text-teal-300 hover:text-white border border-teal-500/40 hover:border-teal-400 font-bold transition shadow-xs group"
+          >
+            <FileText className="w-3.5 h-3.5 text-teal-400 group-hover:scale-110 transition-transform" />
+            <span>Terms &amp; Conditions (T&amp;C)</span>
+          </Link>
+          <Link href="/mega-job-drive/privacy" className="hover:text-teal-400 transition">Privacy Policy</Link>
+          <span className="text-slate-800">•</span>
           <Link href="/mega-job-drive/refund" className="hover:text-teal-400 transition">Refund Policy</Link>
+          <span className="text-slate-800">•</span>
           <Link href="/mega-job-drive" className="hover:text-teal-400 transition">Job Drive</Link>
         </div>
       </footer>
